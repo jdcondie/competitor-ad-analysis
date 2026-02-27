@@ -494,8 +494,8 @@ export default function Report() {
               <div className="bg-gradient-to-br from-[oklch(0.18_0.015_50)] to-[oklch(0.22_0.02_45)] p-8 text-white">
                 <p className="section-label text-[oklch(0.56_0.12_42)] mb-3">Report Overview</p>
                 <h1 className="text-4xl md:text-5xl font-normal mb-3 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
-                  Mail Subscription<br />
-                  <span style={{ color: '#e8a090' }}>Creative Intelligence</span>
+                  Post Script Society —<br />
+                  <span style={{ color: '#e8a090' }}>Competitor Creative Analysis</span>
                 </h1>
                 <p className="text-[oklch(0.7_0.01_80)] text-sm mb-1">{reportOverview.date} · {reportOverview.source}</p>
                 <p className="text-[oklch(0.7_0.01_80)] text-sm">
