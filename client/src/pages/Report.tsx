@@ -163,10 +163,39 @@ const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
             <p className="text-xs text-[oklch(0.35_0.015_50)] font-medium leading-tight">{ad.hook.split(' — ')[0]}</p>
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap gap-1">
-          {ad.platforms.map(p => (
-            <span key={p} className="text-xs px-1.5 py-0.5 bg-[oklch(0.94_0.008_80)] text-[oklch(0.52_0.015_60)] rounded">{p}</span>
-          ))}
+        <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-1">
+            {ad.platforms.map(p => (
+              <span key={p} className="text-xs px-1.5 py-0.5 bg-[oklch(0.94_0.008_80)] text-[oklch(0.52_0.015_60)] rounded">{p}</span>
+            ))}
+          </div>
+          {ad.metaUrl && (
+            <a
+              href={ad.metaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all duration-150 hover:shadow-sm flex-shrink-0"
+              style={{
+                color: ad.brandColor,
+                borderColor: ad.brandColor,
+                backgroundColor: `${ad.brandColor}10`,
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLAnchorElement).style.backgroundColor = `${ad.brandColor}20`;
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLAnchorElement).style.backgroundColor = `${ad.brandColor}10`;
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.04C6.5 2.04 2 6.53 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.85C10.44 7.34 11.93 5.96 14.22 5.96C15.31 5.96 16.45 6.15 16.45 6.15V8.62H15.19C13.95 8.62 13.56 9.39 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96A10 10 0 0 0 22 12.06C22 6.53 17.5 2.04 12 2.04Z"/>
+              </svg>
+              View on Meta
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M7 17L17 7M17 7H7M17 7v10"/>
+              </svg>
+            </a>
+          )}
         </div>
       </div>
     </motion.div>

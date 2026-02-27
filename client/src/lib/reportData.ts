@@ -25,6 +25,7 @@ export interface SwipeAd {
   discount?: string;
   thumbnailUrl?: string;
   isVideo?: boolean;
+  metaUrl?: string;
 }
 
 export interface AngleData {
@@ -91,6 +92,7 @@ export const swipeAds: SwipeAd[] = [
     discount: '10% Off',
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad1_thumb_96df7a4e.jpg',
     isVideo: true,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=1951604545399807',
   },
   {
     id: '417849649580093',
@@ -113,6 +115,7 @@ export const swipeAds: SwipeAd[] = [
     discount: undefined,
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad2_thumb_d03a43e6.jpg',
     isVideo: false,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=417849649580093',
   },
   {
     id: '1152497043722083',
@@ -135,6 +138,7 @@ export const swipeAds: SwipeAd[] = [
     discount: '10% Off',
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad3_thumb_bc122308.jpg',
     isVideo: true,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=1152497043722083',
   },
   {
     id: '688166740929474',
@@ -157,6 +161,7 @@ export const swipeAds: SwipeAd[] = [
     discount: undefined,
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad4_thumb_4aedced8.jpg',
     isVideo: false,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=688166740929474',
   },
   {
     id: '821680534124383',
@@ -179,6 +184,7 @@ export const swipeAds: SwipeAd[] = [
     discount: '10% Off',
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad5_thumb_90d1de2b.jpg',
     isVideo: true,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=821680534124383',
   },
 
   // THE FLOWER LETTERS
@@ -205,6 +211,7 @@ export const swipeAds: SwipeAd[] = [
     discount: 'Save $20',
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad1_thumb_bb954be9.jpg',
     isVideo: true,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=25226223914113342',
   },
   {
     id: '827130309894834',
@@ -229,6 +236,7 @@ export const swipeAds: SwipeAd[] = [
     discount: 'Save $60 + Free Shipping',
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad2_thumb_8f0a91d6.jpg',
     isVideo: true,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=924513796775188',
   },
   {
     id: '1271490417775371',
@@ -252,6 +260,7 @@ export const swipeAds: SwipeAd[] = [
     discount: '30% Off',
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad3_thumb_1e3ef087.jpg',
     isVideo: true,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=727040570687',
   },
   {
     id: '1297176508795742',
@@ -275,6 +284,7 @@ export const swipeAds: SwipeAd[] = [
     discount: undefined,
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad4_thumb_16932894.jpg',
     isVideo: true,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=1318074266315227',
   },
   {
     id: '2341843932962488',
@@ -298,6 +308,7 @@ export const swipeAds: SwipeAd[] = [
     discount: undefined,
     thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad5_thumb_659cc414.jpg',
     isVideo: true,
+    metaUrl: 'https://www.facebook.com/ads/library/?id=181751750550432',
   },
 ];
 
