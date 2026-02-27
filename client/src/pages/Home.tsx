@@ -768,7 +768,7 @@ export default function Home() {
 
         {/* Report page link */}
         <div className="px-3 pb-3 border-t border-[oklch(0.28_0.015_50)] pt-3">
-          <Link href="/report">
+          <Link href="/">
             <button
               className="w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-all bg-[oklch(0.22_0.02_45)] text-[oklch(0.75_0.08_42)] hover:bg-[oklch(0.26_0.025_45)] hover:text-white"
             >

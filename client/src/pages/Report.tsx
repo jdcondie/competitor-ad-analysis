@@ -10,11 +10,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, Cell,
+  LineChart, Line, Legend, ReferenceLine,
 } from "recharts";
 import {
   swipeAds, angles, topHooks, psychTriggers, reportOverview, angleLandscape, keyTakeaways,
   type SwipeAd,
 } from "@/lib/reportData";
+import {
+  brands, hashtagData, peakTimeData, radarData,
+} from "@/lib/analysisData";
 
 // ─── SIDEBAR ──────────────────────────────────────────────────────────────────
 
@@ -25,6 +29,7 @@ const reportNav = [
   { id: 'angles', label: 'Angle Deep Dives', icon: '🔬' },
   { id: 'hooks', label: 'Top Hooks', icon: '🎣' },
   { id: 'psych-triggers', label: 'Psych Triggers', icon: '🧠' },
+  { id: 'cross-brand', label: 'Cross-Brand Analysis', icon: '◉' },
   { id: 'takeaways', label: 'Key Takeaways', icon: '◆' },
 ];
 
@@ -443,10 +448,10 @@ export default function Report() {
 
         {/* Back to dashboard */}
         <div className="px-3 pb-3 border-t border-[oklch(0.28_0.015_50)] pt-3">
-          <Link href="/">
+          <Link href="/dashboard">
             <button className="w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-all bg-[oklch(0.22_0.02_45)] text-[oklch(0.75_0.08_42)] hover:bg-[oklch(0.26_0.025_45)] hover:text-white">
-              <span className="text-base flex-shrink-0">◀</span>
-              {sidebarOpen && <span className="text-sm truncate font-medium">Back to Dashboard</span>}
+              <span className="text-base flex-shrink-0">📊</span>
+              {sidebarOpen && <span className="text-sm truncate font-medium">Brand Dashboard</span>}
             </button>
           </Link>
         </div>
@@ -669,7 +674,121 @@ export default function Report() {
             </div>
           </Section>
 
-          {/* ── SECTION 11: KEY TAKEAWAYS ── */}
+           {/* ── SECTION 7: CROSS-BRAND ANALYSIS ── */}
+          <Section id="cross-brand">
+            <SectionTitle
+              label="Cross-Brand Analysis"
+              title="All Four Brands — Comparative Intelligence"
+              sub="Multi-dimensional comparison across ad volume, organic reach, social proof, and messaging strategy"
+            />
+
+            {/* Radar chart */}
+            <div className="paper-card rounded-xl p-5 mb-6">
+              <p className="section-label mb-1">Multi-Dimensional Brand Comparison</p>
+              <p className="text-xs text-[oklch(0.52_0.015_60)] mb-4">Scores across six key dimensions: Ad Volume, Creative Testing, Organic Reach, Social Proof, Hashtag Strategy, and Community Building.</p>
+              <ResponsiveContainer width="100%" height={320}>
+                <RadarChart data={radarData}>
+                  <PolarGrid stroke="oklch(0.88 0.01 80)" />
+                  <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: 'oklch(0.35 0.015 50)' }} />
+                  <Radar name="LFA" dataKey="lfa" stroke="#C2714F" fill="#C2714F" fillOpacity={0.15} strokeWidth={2} />
+                  <Radar name="TFL" dataKey="tfl" stroke="#B5546A" fill="#B5546A" fillOpacity={0.15} strokeWidth={2} />
+                  <Radar name="SMC" dataKey="smc" stroke="#4A6FA5" fill="#4A6FA5" fillOpacity={0.15} strokeWidth={2} />
+                  <Radar name="TFM" dataKey="tfm" stroke="#5A8A6A" fill="#5A8A6A" fillOpacity={0.15} strokeWidth={2} />
+                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
+                  <Tooltip content={<CustomTooltip />} />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Peak time comparison */}
+            <div className="paper-card rounded-xl p-5 mb-6">
+              <p className="section-label mb-4">Peak Posting Activity — All Brands (Monthly)</p>
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart
+                  data={['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((month, i) => ({
+                    month,
+                    LFA: peakTimeData.lfa[i].intensity,
+                    TFL: peakTimeData.tfl[i].intensity,
+                    SMC: peakTimeData.smc[i].intensity,
+                    TFM: peakTimeData.tfm[i].intensity,
+                  }))}
+                  margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.9 0.005 80)" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'oklch(0.52 0.015 60)' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: 'oklch(0.52 0.015 60)' }} axisLine={false} tickLine={false} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <ReferenceLine x="Nov" stroke="oklch(0.7 0.01 80)" strokeDasharray="4 4" label={{ value: 'Holiday Peak', fontSize: 10, fill: 'oklch(0.52 0.015 60)' }} />
+                  <Line type="monotone" dataKey="LFA" stroke="#C2714F" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="TFL" stroke="#B5546A" strokeWidth={2} dot={false} />
+                  <Line type="monotone" dataKey="SMC" stroke="#4A6FA5" strokeWidth={2} dot={false} strokeDasharray="4 4" />
+                  <Line type="monotone" dataKey="TFM" stroke="#5A8A6A" strokeWidth={2} dot={false} />
+                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Hashtag comparison */}
+            <div className="paper-card rounded-xl p-5 mb-6">
+              <p className="section-label mb-4">Hashtag Strategy Comparison</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {brands.map(brand => (
+                  <div key={brand.key}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span>{brand.emoji}</span>
+                      <span className="text-sm font-semibold text-[oklch(0.35_0.015_50)]">{brand.shortName}</span>
+                      <span className="text-xs text-[oklch(0.6_0.015_60)]">— {hashtagData[brand.key].length} tags/emojis</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                      {hashtagData[brand.key].slice(0, 6).map(tag => (
+                        <span key={tag.tag} className="text-xs px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: brand.color, opacity: 0.6 + (tag.frequency / 300) }}>
+                          {tag.tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Messaging pillars comparison table */}
+            <div className="paper-card rounded-xl overflow-hidden">
+              <div className="px-5 py-4 border-b border-[oklch(0.88_0.01_80)]">
+                <p className="section-label">Messaging Pillars by Brand</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-[oklch(0.96_0.005_80)]">
+                      <th className="text-left px-4 py-3 text-xs font-semibold text-[oklch(0.52_0.015_60)] uppercase tracking-wide">Dimension</th>
+                      {brands.map(b => (
+                        <th key={b.key} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: b.color }}>{b.shortName}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      { label: 'Primary Emotion', values: ['Wonder & Adventure', 'Nostalgia & Romance', 'Curiosity & Discovery', 'Connection & Warmth'] },
+                      { label: 'Core Hook', values: ['Explorer narrative', '"Lost magic" of mail', 'Couch travel fantasy', 'Care package from friend'] },
+                      { label: 'Anti-Digital Angle', values: ['Screen-free for kids', 'Anti-digital world', 'Airport-free travel', 'Slow down from digital'] },
+                      { label: 'Paid Hashtags', values: ['None (emoji-only)', 'None (emoji-only)', 'N/A (no paid ads)', 'N/A (no paid ads)'] },
+                      { label: 'Social Proof', values: ['Absent', 'Testimonials (named)', 'Absent', 'Community milestones'] },
+                      { label: 'Discount Strategy', values: ['10% Off', '$55–$70 Off', 'None found', 'HOLIDAY20 code'] },
+                    ].map((row, i) => (
+                      <tr key={row.label} className={i % 2 === 0 ? 'bg-white' : 'bg-[oklch(0.985_0.003_80)]'}>
+                        <td className="px-4 py-3 font-medium text-[oklch(0.35_0.015_50)] text-xs">{row.label}</td>
+                        {row.values.map((v, j) => (
+                          <td key={j} className="px-4 py-3 text-xs text-[oklch(0.52_0.015_60)]">{v}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </Section>
+
+          {/* ── SECTION 8: KEY TAKEAWAYS ── */}
           <Section id="takeaways">
             <SectionTitle
               label="Key Takeaways & Category Insights"

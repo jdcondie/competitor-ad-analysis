@@ -10,8 +10,8 @@ import Report from "./pages/Report";
 function Router() {
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/report"} component={Report} />
+      <Route path={"/"} component={Report} />
+      <Route path={"/dashboard"} component={Home} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>
