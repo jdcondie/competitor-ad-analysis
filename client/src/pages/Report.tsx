@@ -682,24 +682,6 @@ export default function Report() {
               sub="Multi-dimensional comparison across ad volume, organic reach, social proof, and messaging strategy"
             />
 
-            {/* Radar chart */}
-            <div className="paper-card rounded-xl p-5 mb-6">
-              <p className="section-label mb-1">Multi-Dimensional Brand Comparison</p>
-              <p className="text-xs text-[oklch(0.52_0.015_60)] mb-4">Scores across six key dimensions: Ad Volume, Creative Testing, Organic Reach, Social Proof, Hashtag Strategy, and Community Building.</p>
-              <ResponsiveContainer width="100%" height={320}>
-                <RadarChart data={radarData}>
-                  <PolarGrid stroke="oklch(0.88 0.01 80)" />
-                  <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: 'oklch(0.35 0.015 50)' }} />
-                  <Radar name="LFA" dataKey="lfa" stroke="#C2714F" fill="#C2714F" fillOpacity={0.15} strokeWidth={2} />
-                  <Radar name="TFL" dataKey="tfl" stroke="#B5546A" fill="#B5546A" fillOpacity={0.15} strokeWidth={2} />
-                  <Radar name="SMC" dataKey="smc" stroke="#4A6FA5" fill="#4A6FA5" fillOpacity={0.15} strokeWidth={2} />
-                  <Radar name="TFM" dataKey="tfm" stroke="#5A8A6A" fill="#5A8A6A" fillOpacity={0.15} strokeWidth={2} />
-                  <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: '12px' }} />
-                  <Tooltip content={<CustomTooltip />} />
-                </RadarChart>
-              </ResponsiveContainer>
-            </div>
-
             {/* Peak time comparison */}
             <div className="paper-card rounded-xl p-5 mb-6">
               <p className="section-label mb-4">Peak Posting Activity — All Brands (Monthly)</p>
