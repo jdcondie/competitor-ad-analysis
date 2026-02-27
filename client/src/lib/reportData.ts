@@ -23,6 +23,8 @@ export interface SwipeAd {
   platforms: string[];
   runningDuration: string;
   discount?: string;
+  thumbnailUrl?: string;
+  isVideo?: boolean;
 }
 
 export interface AngleData {
@@ -87,6 +89,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger', 'Threads'],
     runningDuration: '3+ months',
     discount: '10% Off',
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad1_thumb_96df7a4e.jpg',
+    isVideo: true,
   },
   {
     id: '417849649580093',
@@ -107,6 +111,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger', 'Threads'],
     runningDuration: '3.5 months',
     discount: undefined,
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad2_thumb_d03a43e6.jpg',
+    isVideo: false,
   },
   {
     id: '1152497043722083',
@@ -127,6 +133,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger', 'Threads'],
     runningDuration: '3 months',
     discount: '10% Off',
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad3_thumb_bc122308.jpg',
+    isVideo: true,
   },
   {
     id: '688166740929474',
@@ -147,6 +155,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger', 'Threads'],
     runningDuration: '6 weeks',
     discount: undefined,
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad4_thumb_4aedced8.jpg',
+    isVideo: false,
   },
   {
     id: '821680534124383',
@@ -167,6 +177,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger', 'Threads'],
     runningDuration: '3.5 months',
     discount: '10% Off',
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/lfa_ad5_thumb_90d1de2b.jpg',
+    isVideo: true,
   },
 
   // THE FLOWER LETTERS
@@ -191,6 +203,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger'],
     runningDuration: '9 months (longest campaign)',
     discount: 'Save $20',
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad1_thumb_bb954be9.jpg',
+    isVideo: true,
   },
   {
     id: '827130309894834',
@@ -213,6 +227,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger'],
     runningDuration: '4 weeks',
     discount: 'Save $60 + Free Shipping',
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad2_thumb_8f0a91d6.jpg',
+    isVideo: true,
   },
   {
     id: '1271490417775371',
@@ -234,6 +250,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger', 'Threads'],
     runningDuration: '6 months',
     discount: '30% Off',
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad3_thumb_1e3ef087.jpg',
+    isVideo: true,
   },
   {
     id: '1297176508795742',
@@ -255,6 +273,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger'],
     runningDuration: '6 months',
     discount: undefined,
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad4_thumb_16932894.jpg',
+    isVideo: true,
   },
   {
     id: '2341843932962488',
@@ -276,6 +296,8 @@ export const swipeAds: SwipeAd[] = [
     platforms: ['Facebook', 'Instagram', 'Audience Network', 'Messenger'],
     runningDuration: '4 months',
     discount: undefined,
+    thumbnailUrl: 'https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/tfl_ad5_thumb_659cc414.jpg',
+    isVideo: true,
   },
 ];
 

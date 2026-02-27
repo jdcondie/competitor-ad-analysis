@@ -111,6 +111,29 @@ const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
       </div>
 
       <div className="p-5">
+        {/* Creative Preview */}
+        {ad.thumbnailUrl && (
+          <div className="mb-4 rounded-lg overflow-hidden relative bg-[oklch(0.94_0.008_80)]" style={{ maxHeight: 220 }}>
+            <img
+              src={ad.thumbnailUrl}
+              alt={`${ad.brandName} ad creative`}
+              className="w-full object-cover"
+              style={{ maxHeight: 220, objectPosition: 'top' }}
+            />
+            {ad.isVideo && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
+                  <span className="text-white text-xl ml-1">▶</span>
+                </div>
+              </div>
+            )}
+            <div className="absolute bottom-2 right-2">
+              <span className="text-xs font-medium px-2 py-0.5 rounded-full text-white bg-black/60 backdrop-blur-sm">
+                {ad.isVideo ? '🎬 Video' : ad.format === 'Carousel' ? '⧉ Carousel' : '🖼 Image'}
+              </span>
+            </div>
+          </div>
+        )}
         <div className="mb-3">
           <p className="section-label mb-1">Headline</p>
           <p className="text-sm font-semibold text-[oklch(0.18_0.015_50)]">{ad.headline}</p>
