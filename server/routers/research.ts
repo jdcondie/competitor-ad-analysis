@@ -12,6 +12,7 @@
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
+import { captureAdScreenshots } from "../screenshotService";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -507,7 +508,7 @@ Rules:
             hook: body.split(/[.!?]/)[0]?.trim() || headline,
             cta: (ad.ad_creative_link_captions || [])[0] || "Learn More",
             platforms: ad.publisher_platforms || ["Facebook", "Instagram"],
-            thumbnailUrl: "",
+            thumbnailUrl: ad.ad_snapshot_url || "",
             metaUrl: ad.ad_snapshot_url || `https://www.facebook.com/ads/library/?id=${ad.id}`,
           });
 
@@ -565,7 +566,54 @@ Rules:
         },
       };
 
+      // 6. Capture screenshots for all ads that have a snapshot URL
+      const adsWithSnapshots = allMappedAds
+        .slice(0, 10)
+        .filter((a) => a.metaUrl && a.metaUrl.includes("facebook.com"))
+        .map((a) => ({ id: a.id, snapshotUrl: a.metaUrl }));
+
+      if (adsWithSnapshots.length > 0) {
+        try {
+          console.log(`[Screenshots] Capturing ${adsWithSnapshots.length} ad screenshots...`);
+          const screenshotMap = await captureAdScreenshots(adsWithSnapshots);
+          // Update thumbnailUrl in the mapped ads
+          for (const ad of reportConfig.ads) {
+            if (screenshotMap[ad.id]) {
+              ad.thumbnailUrl = screenshotMap[ad.id] as string;
+            }
+          }
+          console.log(`[Screenshots] Captured ${Object.values(screenshotMap).filter(Boolean).length} screenshots successfully.`);
+        } catch (err) {
+          console.error("[Screenshots] Screenshot capture failed:", err);
+          // Non-fatal — report still generates without thumbnails
+        }
+      }
+
       return { success: true, config: reportConfig, totalAdsAnalyzed: totalRealAds };
+    }),
+
+  /**
+   * Standalone screenshot capture endpoint.
+   * Captures screenshots for a list of ad snapshot URLs and returns CDN URLs.
+   */
+  captureScreenshots: publicProcedure
+    .input(
+      z.object({
+        ads: z.array(
+          z.object({
+            id: z.string(),
+            snapshotUrl: z.string().url(),
+          })
+        ),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const screenshotMap = await captureAdScreenshots(input.ads);
+        return { success: true, screenshots: screenshotMap };
+      } catch (err: any) {
+        return { success: false, screenshots: {}, error: err.message };
+      }
     }),
 
   /**

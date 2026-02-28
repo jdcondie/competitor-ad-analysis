@@ -74,6 +74,8 @@ const SectionTitle = ({ label, title, sub }: { label: string; title: string; sub
 
 const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
   const [expanded, setExpanded] = useState(false);
+  const [imgLoaded, setImgLoaded] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const formatBadgeColor: Record<string, string> = {
     Video: '#4A6FA5',
     Image: '#5A8A6A',
@@ -118,28 +120,65 @@ const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
 
       <div className="p-5">
         {/* Creative Preview */}
-        {ad.thumbnailUrl && (
-          <div className="mb-4 rounded-lg overflow-hidden relative bg-[oklch(0.94_0.008_80)]" style={{ maxHeight: 220 }}>
+        <div className="mb-4 rounded-lg overflow-hidden relative bg-[oklch(0.94_0.008_80)]" style={{ minHeight: 160 }}>
+          {/* Loading skeleton */}
+          {ad.thumbnailUrl && !imgLoaded && !imgError && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 animate-pulse">
+              <div className="w-10 h-10 rounded-full bg-[oklch(0.88_0.01_80)]" />
+              <div className="h-2 w-24 rounded bg-[oklch(0.88_0.01_80)]" />
+              <div className="h-2 w-16 rounded bg-[oklch(0.88_0.01_80)]" />
+              <p className="text-xs text-[oklch(0.65_0.01_60)] mt-1">Loading creative…</p>
+            </div>
+          )}
+          {/* Real screenshot */}
+          {ad.thumbnailUrl && !imgError && (
             <img
               src={ad.thumbnailUrl}
-              alt={`${ad.brandName} ad creative`}
-              className="w-full object-cover"
-              style={{ maxHeight: 220, objectPosition: 'top' }}
+              alt={`${ad.brandName || ad.brand} ad creative`}
+              className={`w-full object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+              style={{ maxHeight: 240, objectPosition: 'top' }}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => { setImgError(true); setImgLoaded(false); }}
             />
-            {ad.isVideo && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
-                  <span className="text-white text-xl ml-1">▶</span>
-                </div>
+          )}
+          {/* Fallback: no thumbnail or image failed */}
+          {(!ad.thumbnailUrl || imgError) && (
+            <div className="flex flex-col items-center justify-center gap-3 py-8 px-4 text-center">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ backgroundColor: `${ad.brandColor}20` }}>
+                {ad.format === 'Video' ? '🎬' : ad.format === 'Carousel' ? '⧉' : '🖼'}
               </div>
-            )}
-            <div className="absolute bottom-2 right-2">
-              <span className="text-xs font-medium px-2 py-0.5 rounded-full text-white bg-black/60 backdrop-blur-sm">
-                {ad.isVideo ? '🎬 Video' : ad.format === 'Carousel' ? '⧉ Carousel' : '🖼 Image'}
-              </span>
+              <p className="text-xs text-[oklch(0.55_0.015_60)] font-medium">{ad.format} Ad Creative</p>
+              {ad.metaUrl && (
+                <a
+                  href={ad.metaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                  style={{ backgroundColor: `${ad.brandColor}15`, color: ad.brandColor }}
+                >
+                  📸 View Ad Creative on Meta ↗
+                </a>
+              )}
             </div>
-          </div>
-        )}
+          )}
+          {/* Format badge overlay (only when image loaded) */}
+          {ad.thumbnailUrl && imgLoaded && !imgError && (
+            <>
+              {ad.isVideo && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center backdrop-blur-sm">
+                    <span className="text-white text-xl ml-1">▶</span>
+                  </div>
+                </div>
+              )}
+              <div className="absolute bottom-2 right-2">
+                <span className="text-xs font-medium px-2 py-0.5 rounded-full text-white bg-black/60 backdrop-blur-sm">
+                  {ad.isVideo ? '🎬 Video' : ad.format === 'Carousel' ? '⧉ Carousel' : '🖼 Image'}
+                </span>
+              </div>
+            </>
+          )}
+        </div>
         <div className="mb-3">
           <p className="section-label mb-1">Headline</p>
           <p className="text-sm font-semibold text-[oklch(0.18_0.015_50)]">{ad.headline}</p>

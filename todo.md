@@ -16,3 +16,12 @@
 - [ ] Add token input step to wizard (Step 0.5 between URL and launch)
 - [ ] Wire snapshot URLs as "View on Meta" links in SwipeFile cards
 - [ ] Add graceful fallback if token is invalid or expired
+
+## SwipeFile Screenshot Capture
+- [ ] Install Playwright and Chromium on server
+- [ ] Build server/screenshotService.ts for ad_snapshot_url capture
+- [ ] Add captureAdScreenshots tRPC endpoint
+- [ ] Wire screenshot capture into generateReport pipeline
+- [ ] Upload screenshots to CDN via storagePut
+- [ ] Update SwipeFile card UI to show real screenshots with loading state
+- [ ] Add fallback placeholder when screenshot fails
