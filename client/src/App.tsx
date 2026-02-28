@@ -8,8 +8,8 @@ import { ReportProvider } from "./contexts/ReportContext";
 import Home from "./pages/Home";
 import Report from "./pages/Report";
 import Wizard from "./pages/Wizard";
-
 function Router() {
+  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
       <Route path={"/"} component={Report} />
