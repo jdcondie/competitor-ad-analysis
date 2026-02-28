@@ -4,9 +4,10 @@
  * Sections: Overview, SwipeFile, Angle Landscape, 5 Angle Metrics, Top Hooks, Psych Triggers, Takeaways
  */
 
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
+import { useReport } from "@/contexts/ReportContext";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, Cell,
@@ -384,12 +385,89 @@ const PsychCard = ({ trigger }: { trigger: typeof psychTriggers[0] }) => {
 export default function Report() {
   const [activeSection, setActiveSection] = useState('overview');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [swipeFilter, setSwipeFilter] = useState<'All' | 'LFA' | 'TFL'>('All');
+  const [swipeFilter, setSwipeFilter] = useState<string>('All');
   const mainRef = useRef<HTMLDivElement>(null);
+  const { config: wizardConfig, isCustomReport, clearConfig } = useReport();
 
-  const filteredAds = swipeFilter === 'All' ? swipeAds : swipeAds.filter(a => a.brand === swipeFilter);
+  // ── Dynamic data: use wizard config when available, else fall back to demo data ──
+  const activeAds = useMemo(() => {
+    if (!isCustomReport || !wizardConfig) return swipeAds;
+    return wizardConfig.ads.map(ad => {
+      const brand = wizardConfig.brands.find(b => b.key === ad.brandKey);
+      return {
+        id: ad.id,
+        brand: ad.brandKey as any,
+        brandName: brand?.name || ad.brandKey,
+        brandColor: brand?.color || '#888',
+        status: ad.status,
+        startDate: ad.startDate,
+        endDate: ad.endDate,
+        format: ad.format,
+        formatIcon: ad.format === 'Video' ? '▶' : ad.format === 'Carousel' ? '⧉' : '🖼',
+        variations: ad.variations,
+        headline: ad.headline,
+        cta: ad.cta,
+        bodyPreview: ad.bodyPreview,
+        fullBody: ad.fullBody,
+        angle: ad.angle,
+        hook: ad.hook,
+        platforms: ad.platforms,
+        runningDuration: ad.startDate && ad.endDate ? `${ad.startDate} – ${ad.endDate}` : ad.startDate ? `Since ${ad.startDate}` : 'Unknown',
+        discount: ad.discount,
+        thumbnailUrl: ad.thumbnailUrl,
+        isVideo: ad.isVideo,
+        metaUrl: ad.metaUrl,
+      } as SwipeAd;
+    });
+  }, [isCustomReport, wizardConfig]);
 
-  const angleBarData = angleLandscape.angles.map(a => ({
+  const activeBrandKeys = useMemo(() => {
+    if (!isCustomReport || !wizardConfig) return ['LFA', 'TFL'];
+    return wizardConfig.brands.map(b => b.key);
+  }, [isCustomReport, wizardConfig]);
+
+  const activeOverview = useMemo(() => {
+    if (!isCustomReport || !wizardConfig) return reportOverview;
+    const totalVariations = wizardConfig.ads.reduce((sum, a) => sum + (a.variations || 1), 0);
+    return {
+      ...reportOverview,
+      date: wizardConfig.reportDate,
+      source: wizardConfig.dataSource,
+      competitorBrands: wizardConfig.brands.map(b => b.name),
+      executiveSummary: wizardConfig.executiveSummary || reportOverview.executiveSummary,
+      keyNumbers: [
+        { value: String(wizardConfig.ads.length), label: 'Ads Analyzed', sub: wizardConfig.brands.map(b => b.key).join(' + ') },
+        { value: String(totalVariations), label: 'Total Variations', sub: 'across all campaigns' },
+        { value: String(wizardConfig.angles.length), label: 'Messaging Angles', sub: 'identified in category' },
+        { value: String(wizardConfig.brands.length), label: 'Brands Analyzed', sub: 'competitor brands' },
+        { value: String(wizardConfig.ads.filter(a => a.status === 'Active').length), label: 'Active Ads', sub: 'still running' },
+        { value: `${Math.round((wizardConfig.ads.filter(a => a.format === 'Video').length / Math.max(wizardConfig.ads.length, 1)) * 100)}%`, label: 'Video Share', sub: 'of all paid creative' },
+      ],
+    };
+  }, [isCustomReport, wizardConfig]);
+
+  const activeAngleLandscape = useMemo(() => {
+    if (!isCustomReport || !wizardConfig) return angleLandscape;
+    return {
+      intro: angleLandscape.intro,
+      angles: wizardConfig.angles.map(a => ({ name: a.title, share: a.share, color: a.color, description: a.description })),
+    };
+  }, [isCustomReport, wizardConfig]);
+
+  const activeTakeaways = useMemo(() => {
+    if (!isCustomReport || !wizardConfig) return keyTakeaways;
+    return wizardConfig.takeaways.map((t, i) => ({
+      number: String(i + 1).padStart(2, '0'),
+      title: t.title,
+      body: t.body,
+      icon: t.icon,
+      color: t.color,
+    }));
+  }, [isCustomReport, wizardConfig]);
+
+  const filteredAds = swipeFilter === 'All' ? activeAds : activeAds.filter(a => a.brand === swipeFilter);
+
+  const angleBarData = activeAngleLandscape.angles.map(a => ({
     name: a.name.split(' ').slice(0, 2).join(' '),
     share: a.share,
     fill: a.color,
@@ -456,10 +534,32 @@ export default function Report() {
           </Link>
         </div>
 
+        {/* New Report / Edit Report buttons */}
+        <div className="px-3 pb-2">
+          <Link href="/wizard">
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-all bg-[#C2714F] text-white hover:bg-[#a85e3e]">
+              <span className="text-base flex-shrink-0">✦</span>
+              {sidebarOpen && <span className="text-sm truncate font-semibold">{isCustomReport ? 'Edit Report' : 'New Report'}</span>}
+            </button>
+          </Link>
+          {isCustomReport && sidebarOpen && (
+            <button
+              onClick={() => clearConfig()}
+              className="w-full mt-1.5 text-xs text-[oklch(0.5_0.01_80)] hover:text-[#e8a090] transition-colors px-3 py-1.5 text-left"
+            >
+              ← Back to demo report
+            </button>
+          )}
+        </div>
+
         {sidebarOpen && (
           <div className="p-4 border-t border-[oklch(0.28_0.015_50)]">
-            <p className="text-xs text-[oklch(0.45_0.01_80)]">Feb 27, 2026</p>
-            <p className="text-xs text-[oklch(0.45_0.01_80)]">LFA + TFL · 10 Ads</p>
+            <p className="text-xs text-[oklch(0.45_0.01_80)]">{isCustomReport && wizardConfig ? wizardConfig.reportDate : 'Feb 27, 2026'}</p>
+            <p className="text-xs text-[oklch(0.45_0.01_80)]">
+              {isCustomReport && wizardConfig
+                ? `${wizardConfig.brands.map(b => b.key).join(' + ')} · ${wizardConfig.ads.length} Ads`
+                : 'LFA + TFL · 10 Ads'}
+            </p>
           </div>
         )}
       </aside>
@@ -474,14 +574,28 @@ export default function Report() {
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-[oklch(0.6_0.015_60)] hidden md:block">2 brands · 10 ads · Meta Ads Library · Feb 2026</span>
+            {isCustomReport && wizardConfig ? (
+              <span className="text-xs text-[oklch(0.6_0.015_60)] hidden md:block">
+                {wizardConfig.brands.length} brands · {wizardConfig.ads.length} ads · {wizardConfig.dataSource}
+              </span>
+            ) : (
+              <span className="text-xs text-[oklch(0.6_0.015_60)] hidden md:block">2 brands · 10 ads · Meta Ads Library · Feb 2026</span>
+            )}
             <div className="flex gap-1">
-              {[{ color: '#C2714F', label: 'LFA', emoji: '🗺' }, { color: '#B5546A', label: 'TFL', emoji: '💌' }].map(b => (
+              {(isCustomReport && wizardConfig
+                ? wizardConfig.brands.map(b => ({ color: b.color, label: b.key, emoji: b.emoji }))
+                : [{ color: '#C2714F', label: 'LFA', emoji: '🗺' }, { color: '#B5546A', label: 'TFL', emoji: '💌' }]
+              ).map(b => (
                 <div key={b.label} className="w-6 h-6 rounded-full text-white text-xs flex items-center justify-center" style={{ backgroundColor: b.color }} title={b.label}>
                   {b.emoji}
                 </div>
               ))}
             </div>
+            <Link href="/wizard">
+              <button className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#C2714F] text-white hover:bg-[#a85e3e] transition-colors">
+                {isCustomReport ? '✎ Edit Report' : '+ New Report'}
+              </button>
+            </Link>
           </div>
         </div>
 
@@ -494,16 +608,21 @@ export default function Report() {
               <div className="bg-gradient-to-br from-[oklch(0.18_0.015_50)] to-[oklch(0.22_0.02_45)] p-8 text-white">
                 <p className="section-label text-[oklch(0.56_0.12_42)] mb-3">Report Overview</p>
                 <h1 className="text-4xl md:text-5xl font-normal mb-3 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
-                  Post Script Society —<br />
-                  <span style={{ color: '#e8a090' }}>Competitor Creative Analysis</span>
+                  {isCustomReport && wizardConfig ? wizardConfig.clientName : 'Post Script Society'} —<br />
+                  <span style={{ color: '#e8a090' }}>{isCustomReport && wizardConfig ? wizardConfig.reportTitle : 'Competitor Creative Analysis'}</span>
                 </h1>
-                <p className="text-[oklch(0.7_0.01_80)] text-sm mb-1">{reportOverview.date} · {reportOverview.source}</p>
+                <p className="text-[oklch(0.7_0.01_80)] text-sm mb-1">{activeOverview.date} · {activeOverview.source}</p>
                 <p className="text-[oklch(0.7_0.01_80)] text-sm">
-                  Competitor brands: <span className="text-white font-medium">Letters From Afar</span> + <span className="text-white font-medium">The Flower Letters</span>
+                  Competitor brands: {activeOverview.competitorBrands.map((name, i) => (
+                    <span key={name}>
+                      <span className="text-white font-medium">{name}</span>
+                      {i < activeOverview.competitorBrands.length - 1 && <span className="text-[oklch(0.6_0.01_80)]"> + </span>}
+                    </span>
+                  ))}
                 </p>
               </div>
               <div className="grid grid-cols-3 md:grid-cols-6 divide-x divide-[oklch(0.88_0.01_80)]">
-                {reportOverview.keyNumbers.map(n => (
+                {activeOverview.keyNumbers.map(n => (
                   <div key={n.label} className="p-4 text-center">
                     <p className="text-2xl font-semibold text-[oklch(0.18_0.015_50)]" style={{ fontFamily: 'var(--font-display)' }}>{n.value}</p>
                     <p className="text-xs text-[oklch(0.52_0.015_60)] mt-0.5 leading-tight">{n.label}</p>
@@ -514,7 +633,7 @@ export default function Report() {
             </div>
             <div className="paper-card rounded-xl p-6">
               <p className="section-label mb-3">Executive Summary</p>
-              {reportOverview.executiveSummary.split('\n\n').map((para, i) => (
+              {activeOverview.executiveSummary.split('\n\n').map((para, i) => (
                 <p key={i} className="text-sm text-[oklch(0.45_0.015_60)] leading-relaxed mb-3 last:mb-0">{para}</p>
               ))}
             </div>
@@ -527,19 +646,24 @@ export default function Report() {
               title="10 Selected Ads from Meta Ads Library"
               sub="5 ads from Letters From Afar + 5 ads from The Flower Letters — mix of Video, Image, Carousel, and DCO formats"
             />
-            <div className="flex gap-2 mb-6">
-              {(['All', 'LFA', 'TFL'] as const).map(f => (
-                <button
-                  key={f}
-                  onClick={() => setSwipeFilter(f)}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                    swipeFilter === f ? 'text-white shadow-sm' : 'bg-[oklch(0.94_0.008_80)] text-[oklch(0.52_0.015_60)] hover:bg-[oklch(0.9_0.01_80)]'
-                  }`}
-                  style={swipeFilter === f ? { backgroundColor: f === 'LFA' ? '#C2714F' : f === 'TFL' ? '#B5546A' : '#2D2D2D' } : {}}
-                >
-                  {f === 'All' ? 'All 10 Ads' : f === 'LFA' ? '🗺 Letters From Afar' : '💌 The Flower Letters'}
-                </button>
-              ))}
+            <div className="flex flex-wrap gap-2 mb-6">
+              {(['All', ...activeBrandKeys] as string[]).map(f => {
+                const brand = isCustomReport && wizardConfig ? wizardConfig.brands.find(b => b.key === f) : null;
+                const label = f === 'All' ? `All ${activeAds.length} Ads` : brand ? `${brand.emoji} ${brand.name}` : f;
+                const color = f === 'All' ? '#2D2D2D' : brand?.color || '#C2714F';
+                return (
+                  <button
+                    key={f}
+                    onClick={() => setSwipeFilter(f)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      swipeFilter === f ? 'text-white shadow-sm' : 'bg-[oklch(0.94_0.008_80)] text-[oklch(0.52_0.015_60)] hover:bg-[oklch(0.9_0.01_80)]'
+                    }`}
+                    style={swipeFilter === f ? { backgroundColor: color } : {}}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               {[
@@ -570,7 +694,7 @@ export default function Report() {
               sub="Five dominant creative angles identified across the mail subscription category"
             />
             <div className="paper-card rounded-xl p-6 mb-6">
-              {angleLandscape.intro.split('\n\n').map((para, i) => (
+              {activeAngleLandscape.intro.split('\n\n').map((para, i) => (
                 <p key={i} className="text-sm text-[oklch(0.45_0.015_60)] leading-relaxed mb-3 last:mb-0">{para}</p>
               ))}
             </div>
@@ -592,7 +716,7 @@ export default function Report() {
               <div className="paper-card rounded-xl p-5">
                 <p className="section-label mb-4">Angle Descriptions</p>
                 <div className="space-y-3">
-                  {angleLandscape.angles.map(a => (
+                  {activeAngleLandscape.angles.map(a => (
                     <div key={a.name} className="flex items-start gap-3">
                       <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ backgroundColor: a.color }} />
                       <div>
@@ -778,7 +902,7 @@ export default function Report() {
               sub="Six actionable findings from the competitor creative analysis"
             />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {keyTakeaways.map((t, i) => (
+              {activeTakeaways.map((t, i) => (
                 <motion.div
                   key={t.number}
                   className="paper-card rounded-xl p-6"
