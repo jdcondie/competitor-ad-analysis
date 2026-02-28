@@ -12,8 +12,8 @@ function Router() {
   // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Report} />
-      <Route path={"/wizard"} component={Wizard} />
+      <Route path={"/"} component={Wizard} />
+      <Route path={"/report"} component={Report} />
       <Route path={"/dashboard"} component={Home} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />

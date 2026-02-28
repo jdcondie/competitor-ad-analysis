@@ -808,7 +808,7 @@ export default function Wizard() {
     };
     setConfig(finalConfig);
     toast.success("Report generated! Redirecting...");
-    setTimeout(() => navigate("/"), 600);
+    setTimeout(() => navigate("/report"), 600);
   };
 
   const stepContent = () => {
@@ -883,7 +883,7 @@ export default function Wizard() {
         </nav>
         <div className="p-4 border-t border-[oklch(0.28_0.015_50)]">
           <button
-            onClick={() => { clearConfig(); navigate("/"); }}
+            onClick={() => { clearConfig(); navigate("/report"); }}
             className="w-full text-xs text-[oklch(0.55_0.01_50)] hover:text-white transition-colors text-left"
           >
             ← Back to Demo Report

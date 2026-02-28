@@ -536,7 +536,7 @@ export default function Report() {
 
         {/* New Report / Edit Report buttons */}
         <div className="px-3 pb-2">
-          <Link href="/wizard">
+          <Link href="/">
             <button className="w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-all bg-[#C2714F] text-white hover:bg-[#a85e3e]">
               <span className="text-base flex-shrink-0">✦</span>
               {sidebarOpen && <span className="text-sm truncate font-semibold">{isCustomReport ? 'Edit Report' : 'New Report'}</span>}
@@ -591,7 +591,7 @@ export default function Report() {
                 </div>
               ))}
             </div>
-            <Link href="/wizard">
+            <Link href="/">
               <button className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#C2714F] text-white hover:bg-[#a85e3e] transition-colors">
                 {isCustomReport ? '✎ Edit Report' : '+ New Report'}
               </button>
