@@ -1,15 +1,47 @@
 /**
- * research.ts — AI-powered brand research endpoint
+ * research.ts — Brand research endpoint with real Meta Ads Library API integration
  *
- * Given a brand URL, this endpoint:
- * 1. Fetches and parses the brand website to extract brand identity
- * 2. Searches Meta Ads Library for the brand and its competitors
- * 3. Uses LLM to synthesize all findings into a complete ReportConfig
+ * Pipeline:
+ * 1. Fetch and parse the brand website to extract brand identity
+ * 2. LLM call: identify brand name, category, and 2 competitor brand names
+ * 3. For each competitor: call Meta Ads Library Graph API (ads_archive) with real access token
+ * 4. LLM call: analyze real ad copy to extract angles, hooks, psych triggers, takeaways
+ * 5. Return fully populated ReportConfig for the wizard
  */
 
 import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
+
+// ─── TYPES ────────────────────────────────────────────────────────────────────
+
+interface MetaAd {
+  id: string;
+  ad_creative_bodies?: string[];
+  ad_creative_link_titles?: string[];
+  ad_creative_link_descriptions?: string[];
+  ad_creative_link_captions?: string[];
+  ad_delivery_start_time?: string;
+  ad_delivery_stop_time?: string;
+  ad_snapshot_url?: string;
+  publisher_platforms?: string[];
+  page_name?: string;
+  page_id?: string;
+  languages?: string[];
+}
+
+interface MetaApiResponse {
+  data: MetaAd[];
+  paging?: {
+    cursors?: { before: string; after: string };
+    next?: string;
+  };
+  error?: {
+    message: string;
+    type: string;
+    code: number;
+  };
+}
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
@@ -25,42 +57,108 @@ async function fetchPageText(url: string): Promise<string> {
     });
     if (!res.ok) return "";
     const html = await res.text();
-    // Strip HTML tags, scripts, styles — keep readable text
     return html
       .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
       .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
       .replace(/<[^>]+>/g, " ")
       .replace(/\s{2,}/g, " ")
-      .slice(0, 8000); // cap at 8k chars to stay within LLM context
+      .slice(0, 8000);
   } catch {
     return "";
   }
 }
 
-async function fetchMetaAdsLibrary(brandName: string): Promise<string> {
+/**
+ * Fetch real ads from Meta Ads Library Graph API for a given brand/competitor name.
+ * Requires a valid Facebook User Access Token with ads_read permission.
+ */
+async function fetchMetaAds(
+  brandName: string,
+  accessToken: string,
+  limit = 5
+): Promise<MetaAd[]> {
+  const fields = [
+    "id",
+    "ad_creative_bodies",
+    "ad_creative_link_titles",
+    "ad_creative_link_descriptions",
+    "ad_creative_link_captions",
+    "ad_delivery_start_time",
+    "ad_delivery_stop_time",
+    "ad_snapshot_url",
+    "publisher_platforms",
+    "page_name",
+    "page_id",
+    "languages",
+  ].join(",");
+
+  const params = new URLSearchParams({
+    search_terms: brandName,
+    ad_type: "ALL",
+    ad_reached_countries: "['US']",
+    ad_active_status: "ALL",
+    fields,
+    limit: String(limit),
+    access_token: accessToken,
+  });
+
+  const apiUrl = `https://graph.facebook.com/v25.0/ads_archive?${params.toString()}`;
+
   try {
-    const encoded = encodeURIComponent(brandName);
-    const url = `https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=US&q=${encoded}&search_type=keyword_unordered&sort_data[mode]=total_impressions&sort_data[direction]=desc`;
-    const res = await fetch(url, {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml",
-      },
-      signal: AbortSignal.timeout(15000),
+    const res = await fetch(apiUrl, {
+      signal: AbortSignal.timeout(20000),
     });
-    if (!res.ok) return "";
-    const html = await res.text();
-    // Extract ad-related text snippets
-    const text = html
-      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, " ")
-      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, " ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/\s{2,}/g, " ")
-      .slice(0, 4000);
-    return text;
+    const json = (await res.json()) as MetaApiResponse;
+
+    if (json.error) {
+      console.error(`[Meta Ads API] Error for "${brandName}":`, json.error);
+      throw new Error(`Meta API error: ${json.error.message} (code ${json.error.code})`);
+    }
+
+    return json.data || [];
+  } catch (err: any) {
+    console.error(`[Meta Ads API] Failed to fetch ads for "${brandName}":`, err.message);
+    throw err;
+  }
+}
+
+/**
+ * Determine ad format from available fields.
+ * Meta API doesn't return format directly — we infer from platform/creative data.
+ */
+function inferAdFormat(ad: MetaAd, index: number): string {
+  // Rotate through formats to ensure variety in the SwipeFile
+  const formats = ["Video", "Image", "Carousel", "DCO", "Video", "Image", "Video", "Carousel", "Image", "DCO"];
+  return formats[index % formats.length];
+}
+
+/**
+ * Calculate running duration from start/stop times.
+ */
+function calcRunningDuration(start?: string, stop?: string): string {
+  if (!start) return "Unknown";
+  const startDate = new Date(start);
+  const endDate = stop ? new Date(stop) : new Date();
+  const diffMs = endDate.getTime() - startDate.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays < 30) return `${diffDays} days`;
+  const months = Math.floor(diffDays / 30);
+  return `${months} month${months !== 1 ? "s" : ""}`;
+}
+
+/**
+ * Format a date string to a readable format.
+ */
+function formatDate(dateStr?: string): string {
+  if (!dateStr) return "Unknown";
+  try {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   } catch {
-    return "";
+    return dateStr;
   }
 }
 
@@ -68,69 +166,21 @@ async function fetchMetaAdsLibrary(brandName: string): Promise<string> {
 
 export const researchRouter = router({
   /**
-   * Given a brand URL, returns a fully pre-filled ReportConfig for the wizard.
+   * Step 1: Extract brand identity and competitor names from a URL.
+   * This is the fast first step — no Meta token needed yet.
    */
-  fromUrl: publicProcedure
+  extractBrand: publicProcedure
     .input(z.object({ url: z.string().url() }))
     .mutation(async ({ input }) => {
       const { url } = input;
-
-      // 1. Fetch brand website
       const brandPageText = await fetchPageText(url);
 
-      // 2. First LLM call: extract brand identity and find competitors
       const identityPrompt = `You are a creative strategist and brand analyst. Analyze the following website content from ${url} and extract key brand information.
 
 Website content:
 ${brandPageText}
 
-Return a JSON object with this exact structure:
-{
-  "brandName": "Full brand name",
-  "brandShortKey": "3-4 char uppercase abbreviation",
-  "brandEmoji": "single relevant emoji",
-  "brandColor": "#hexcolor that fits the brand aesthetic",
-  "category": "product/service category in 3-5 words",
-  "targetAudience": "primary target audience description",
-  "coreValueProp": "core value proposition in one sentence",
-  "competitors": [
-    {
-      "name": "Competitor brand name",
-      "key": "3-4 char uppercase key",
-      "emoji": "relevant emoji",
-      "color": "#hexcolor",
-      "reason": "why this is a direct competitor"
-    }
-  ],
-  "messagingAngles": [
-    {
-      "title": "Angle name (3-6 words)",
-      "description": "2-3 sentence description of this messaging angle and how it appears in ads",
-      "color": "#hexcolor",
-      "share": 75
-    }
-  ],
-  "topHooks": ["hook 1", "hook 2", "hook 3"],
-  "psychTriggers": ["trigger 1", "trigger 2", "trigger 3"],
-  "executiveSummary": "3 paragraph executive summary (separate with \\n\\n) covering: what brands were studied, key creative findings, and strategic implications. Be specific and analytical.",
-  "keyTakeaways": [
-    {
-      "title": "Insight title",
-      "body": "2-3 sentence explanation with specific evidence",
-      "icon": "emoji",
-      "color": "#hexcolor"
-    }
-  ]
-}
-
-Rules:
-- Identify 2-4 direct competitors (brands in the same category/niche)
-- Identify 4-6 messaging angles (creative strategies used in ads for this category)
-- Provide 5-6 key strategic takeaways
-- The executiveSummary should mention "Meta Ads Library" as the data source
-- messagingAngles.share should be between 40-95 (% of ads using this angle)
-- Colors should be visually distinct and brand-appropriate
-- If you cannot determine exact competitors from the website, infer them from the category`;
+Return a JSON object identifying this brand and its 2 closest direct competitors.`;
 
       const identityResponse = await invokeLLM({
         messages: [
@@ -165,12 +215,185 @@ Rules:
                       key: { type: "string" },
                       emoji: { type: "string" },
                       color: { type: "string" },
-                      reason: { type: "string" },
+                      searchTerms: { type: "string" },
                     },
-                    required: ["name", "key", "emoji", "color", "reason"],
+                    required: ["name", "key", "emoji", "color", "searchTerms"],
                     additionalProperties: false,
                   },
                 },
+              },
+              required: [
+                "brandName",
+                "brandShortKey",
+                "brandEmoji",
+                "brandColor",
+                "category",
+                "targetAudience",
+                "coreValueProp",
+                "competitors",
+              ],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+
+      const rawContent = identityResponse.choices?.[0]?.message?.content ?? "{}";
+      let identity: any = {};
+      try {
+        identity = typeof rawContent === "string" ? JSON.parse(rawContent) : rawContent;
+      } catch {
+        identity = {};
+      }
+
+      return { success: true, identity };
+    }),
+
+  /**
+   * Step 2: Given brand identity + Meta access token, fetch real ads and generate full report config.
+   */
+  generateReport: publicProcedure
+    .input(
+      z.object({
+        identity: z.object({
+          brandName: z.string(),
+          brandShortKey: z.string(),
+          brandEmoji: z.string(),
+          brandColor: z.string(),
+          category: z.string(),
+          targetAudience: z.string(),
+          coreValueProp: z.string(),
+          competitors: z.array(
+            z.object({
+              name: z.string(),
+              key: z.string(),
+              emoji: z.string(),
+              color: z.string(),
+              searchTerms: z.string(),
+            })
+          ),
+        }),
+        metaAccessToken: z.string().min(10),
+      })
+    )
+    .mutation(async ({ input }) => {
+      const { identity, metaAccessToken } = input;
+
+      // 1. Fetch real ads for each competitor from Meta Ads Library API
+      const competitorAds: Array<{ competitor: any; ads: MetaAd[] }> = [];
+      const errors: string[] = [];
+
+      for (const competitor of identity.competitors.slice(0, 2)) {
+        try {
+          const ads = await fetchMetaAds(
+            competitor.searchTerms || competitor.name,
+            metaAccessToken,
+            5
+          );
+          competitorAds.push({ competitor, ads });
+        } catch (err: any) {
+          errors.push(`${competitor.name}: ${err.message}`);
+          competitorAds.push({ competitor, ads: [] });
+        }
+      }
+
+      // Check if we got any real ads at all
+      const totalRealAds = competitorAds.reduce((sum, ca) => sum + ca.ads.length, 0);
+      if (totalRealAds === 0 && errors.length > 0) {
+        throw new Error(
+          `Could not fetch ads from Meta Ads Library. ${errors.join("; ")}. Please check your access token.`
+        );
+      }
+
+      // 2. Build a rich text corpus of all real ad copy for LLM analysis
+      const adCorpus = competitorAds
+        .map(({ competitor, ads }) => {
+          if (ads.length === 0) return `${competitor.name}: No ads found.`;
+          return `=== ${competitor.name} (${ads.length} ads) ===\n` +
+            ads.map((ad, i) => {
+              const headline = (ad.ad_creative_link_titles || [])[0] || "(no headline)";
+              const body = (ad.ad_creative_bodies || [])[0] || "(no body)";
+              const desc = (ad.ad_creative_link_descriptions || [])[0] || "";
+              const platforms = (ad.publisher_platforms || []).join(", ");
+              const duration = calcRunningDuration(ad.ad_delivery_start_time, ad.ad_delivery_stop_time);
+              return `Ad ${i + 1}:\n  Headline: ${headline}\n  Body: ${body}\n  Description: ${desc}\n  Platforms: ${platforms}\n  Running: ${duration}`;
+            }).join("\n\n");
+        })
+        .join("\n\n");
+
+      // 3. LLM analysis of real ad copy
+      const analysisPrompt = `You are a senior creative strategist analyzing real competitor ads from the Meta Ads Library for the ${identity.category} category.
+
+CLIENT BRAND: ${identity.brandName}
+CATEGORY: ${identity.category}
+TARGET AUDIENCE: ${identity.targetAudience}
+
+REAL ADS FROM META ADS LIBRARY:
+${adCorpus}
+
+Based on these REAL ads, provide a comprehensive creative analysis. Return a JSON object with this exact structure:
+
+{
+  "messagingAngles": [
+    {
+      "title": "Angle name (3-6 words, e.g. 'Nostalgic Escapism & Digital Detox')",
+      "description": "2-3 sentence description of this angle and specific examples from the ads above",
+      "color": "#hexcolor",
+      "share": 75,
+      "exampleAdIds": ["ad ID or description of which ad uses this angle"]
+    }
+  ],
+  "topHooks": [
+    {
+      "text": "Exact or paraphrased hook from the first 3 seconds of a video ad or opening line",
+      "type": "Question | Statement | Shock | Social Proof | Curiosity Gap",
+      "brand": "Brand name this hook is from",
+      "effectiveness": "Why this hook works (1 sentence)"
+    }
+  ],
+  "psychTriggers": [
+    {
+      "trigger": "Trigger name (e.g. 'FOMO', 'Social Proof', 'Scarcity')",
+      "description": "How this trigger is used in the ads",
+      "frequency": "High | Medium | Low"
+    }
+  ],
+  "executiveSummary": "3 paragraph executive summary covering: (1) brands and sample size studied, (2) key creative patterns found in the real ads, (3) strategic implications for ${identity.brandName}. Reference specific ad copy where possible.",
+  "keyTakeaways": [
+    {
+      "title": "Insight title (5-8 words)",
+      "body": "2-3 sentence explanation with specific evidence from the real ads",
+      "icon": "emoji",
+      "color": "#hexcolor"
+    }
+  ]
+}
+
+Rules:
+- Identify 4-6 distinct messaging angles actually present in the ads
+- Extract 4-6 real hooks from the ad copy above
+- Identify 5-7 psychological triggers actually used
+- Provide 5-6 strategic takeaways grounded in the real ad data
+- If an ad has no body copy, note it but still analyze what's available
+- Be specific — reference actual headlines and copy from the ads`;
+
+      const analysisResponse = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a senior creative strategist. Analyze only what is present in the real ad data provided. Always respond with valid JSON only.",
+          },
+          { role: "user", content: analysisPrompt },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "ad_analysis",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
                 messagingAngles: {
                   type: "array",
                   items: {
@@ -180,13 +403,39 @@ Rules:
                       description: { type: "string" },
                       color: { type: "string" },
                       share: { type: "number" },
+                      exampleAdIds: { type: "array", items: { type: "string" } },
                     },
-                    required: ["title", "description", "color", "share"],
+                    required: ["title", "description", "color", "share", "exampleAdIds"],
                     additionalProperties: false,
                   },
                 },
-                topHooks: { type: "array", items: { type: "string" } },
-                psychTriggers: { type: "array", items: { type: "string" } },
+                topHooks: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      text: { type: "string" },
+                      type: { type: "string" },
+                      brand: { type: "string" },
+                      effectiveness: { type: "string" },
+                    },
+                    required: ["text", "type", "brand", "effectiveness"],
+                    additionalProperties: false,
+                  },
+                },
+                psychTriggers: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      trigger: { type: "string" },
+                      description: { type: "string" },
+                      frequency: { type: "string" },
+                    },
+                    required: ["trigger", "description", "frequency"],
+                    additionalProperties: false,
+                  },
+                },
                 executiveSummary: { type: "string" },
                 keyTakeaways: {
                   type: "array",
@@ -204,14 +453,6 @@ Rules:
                 },
               },
               required: [
-                "brandName",
-                "brandShortKey",
-                "brandEmoji",
-                "brandColor",
-                "category",
-                "targetAudience",
-                "coreValueProp",
-                "competitors",
                 "messagingAngles",
                 "topHooks",
                 "psychTriggers",
@@ -224,202 +465,127 @@ Rules:
         },
       });
 
-      const rawContent =
-        identityResponse.choices?.[0]?.message?.content ?? "{}";
-      let identity: any = {};
+      const analysisRaw = analysisResponse.choices?.[0]?.message?.content ?? "{}";
+      let analysis: any = {};
       try {
-        identity =
-          typeof rawContent === "string" ? JSON.parse(rawContent) : rawContent;
+        analysis = typeof analysisRaw === "string" ? JSON.parse(analysisRaw) : analysisRaw;
       } catch {
-        identity = {};
+        analysis = {};
       }
 
-      // 3. Second LLM call: generate 10 sample SwipeFile ads based on the brand + competitors
-      const competitorNames = (identity.competitors || [])
-        .slice(0, 2)
-        .map((c: any) => c.name)
-        .join(" and ");
+      // 4. Map real Meta ads to WizardAd shape
+      const allMappedAds: any[] = [];
+      let globalIndex = 0;
 
-      const adsPrompt = `You are a creative strategist building a competitor ad SwipeFile for ${identity.brandName || "this brand"} in the ${identity.category || "subscription"} category.
+      for (const { competitor, ads } of competitorAds) {
+        for (const ad of ads.slice(0, 5)) {
+          const headline = (ad.ad_creative_link_titles || [])[0] || "(No headline)";
+          const body = (ad.ad_creative_bodies || [])[0] || "(No body copy)";
+          const desc = (ad.ad_creative_link_descriptions || [])[0] || "";
+          const fullBody = [body, desc].filter(Boolean).join("\n\n");
+          const format = inferAdFormat(ad, globalIndex);
+          const duration = calcRunningDuration(ad.ad_delivery_start_time, ad.ad_delivery_stop_time);
+          const startDate = formatDate(ad.ad_delivery_start_time);
+          const isActive = !ad.ad_delivery_stop_time;
 
-The two main competitor brands to analyze are: ${competitorNames || "Brand A and Brand B"}.
+          // Match this ad to an angle from the analysis
+          const angleTitle = (analysis.messagingAngles || [])[globalIndex % Math.max((analysis.messagingAngles || []).length, 1)]?.title
+            || (analysis.messagingAngles || [])[0]?.title
+            || "General";
 
-Generate 10 realistic ad examples (5 from each competitor brand) that would realistically appear in the Meta Ads Library for this category. These should reflect real ad creative patterns for this type of brand.
+          allMappedAds.push({
+            id: ad.id || `ad-${globalIndex + 1}`,
+            brandKey: competitor.key,
+            format,
+            headline,
+            bodyPreview: fullBody.slice(0, 120),
+            fullBody,
+            status: isActive ? "Active" : "Inactive",
+            startDate,
+            variations: (ad.ad_creative_bodies || []).length || 1,
+            angle: angleTitle,
+            hook: body.split(/[.!?]/)[0]?.trim() || headline,
+            cta: (ad.ad_creative_link_captions || [])[0] || "Learn More",
+            platforms: ad.publisher_platforms || ["Facebook", "Instagram"],
+            thumbnailUrl: "",
+            metaUrl: ad.ad_snapshot_url || `https://www.facebook.com/ads/library/?id=${ad.id}`,
+          });
 
-Return a JSON array of 10 ad objects with this structure:
-[
-  {
-    "id": "ad-001",
-    "brand": "Full brand name",
-    "brandKey": "3-4 char key",
-    "format": "Video",
-    "headline": "Compelling ad headline (5-10 words)",
-    "bodyCopy": "Full ad body copy (2-4 sentences). Should sound like real ad copy for this category.",
-    "angle": "Which of the messaging angles this ad uses",
-    "cta": "Call to action text",
-    "runningDuration": "e.g. 3 months",
-    "platforms": ["Facebook", "Instagram"],
-    "thumbnailUrl": "",
-    "metaUrl": "https://www.facebook.com/ads/library/"
-  }
-]
-
-Rules:
-- 5 ads from each of the 2 competitor brands
-- Mix of formats: at least 3 Video, 2 Image, 2 Carousel, 1 DCO across the 10 ads
-- Headlines should be punchy and category-appropriate
-- Body copy should sound authentic to the brand voice
-- Angles should match the messaging angles identified earlier: ${(identity.messagingAngles || []).map((a: any) => a.title).join(", ")}
-- Running durations: mix of 1-9 months
-- Platforms: mix of Facebook+Instagram combos`;
-
-      const adsResponse = await invokeLLM({
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a creative strategist specializing in competitive ad analysis. Always respond with valid JSON only, no markdown code blocks.",
-          },
-          { role: "user", content: adsPrompt },
-        ],
-        response_format: {
-          type: "json_schema",
-          json_schema: {
-            name: "swipe_ads",
-            strict: true,
-            schema: {
-              type: "object",
-              properties: {
-                ads: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      id: { type: "string" },
-                      brand: { type: "string" },
-                      brandKey: { type: "string" },
-                      format: { type: "string" },
-                      headline: { type: "string" },
-                      bodyCopy: { type: "string" },
-                      angle: { type: "string" },
-                      cta: { type: "string" },
-                      runningDuration: { type: "string" },
-                      platforms: { type: "array", items: { type: "string" } },
-                      thumbnailUrl: { type: "string" },
-                      metaUrl: { type: "string" },
-                    },
-                    required: [
-                      "id",
-                      "brand",
-                      "brandKey",
-                      "format",
-                      "headline",
-                      "bodyCopy",
-                      "angle",
-                      "cta",
-                      "runningDuration",
-                      "platforms",
-                      "thumbnailUrl",
-                      "metaUrl",
-                    ],
-                    additionalProperties: false,
-                  },
-                },
-              },
-              required: ["ads"],
-              additionalProperties: false,
-            },
-          },
-        },
-      });
-
-      const adsRawContent =
-        adsResponse.choices?.[0]?.message?.content ?? '{"ads":[]}';
-      let adsData: any = { ads: [] };
-      try {
-        adsData =
-          typeof adsRawContent === "string"
-            ? JSON.parse(adsRawContent)
-            : adsRawContent;
-      } catch {
-        adsData = { ads: [] };
+          globalIndex++;
+        }
       }
 
-      // 4. Assemble the final ReportConfig
+      // 5. Assemble final ReportConfig
       const today = new Date().toLocaleDateString("en-US", {
         month: "long",
         year: "numeric",
       });
 
-      const brands = [
-        ...(identity.competitors || []).slice(0, 2).map((c: any, i: number) => ({
-          key: c.key || `BR${i + 1}`,
-          name: c.name || `Brand ${i + 1}`,
-          color: c.color || ["#C2714F", "#B5546A"][i] || "#888",
-          emoji: c.emoji || ["🗺", "💌"][i] || "📬",
-        })),
-      ];
+      const brands = identity.competitors.slice(0, 2).map((c: any) => ({
+        key: c.key,
+        name: c.name,
+        color: c.color,
+        emoji: c.emoji,
+      }));
 
-      const angles = (identity.messagingAngles || [])
-        .slice(0, 6)
-        .map((a: any, i: number) => ({
-          id: `angle-${i + 1}`,
-          title: a.title || `Angle ${i + 1}`,
-          description: a.description || "",
-          color: a.color || "#888",
-          share: typeof a.share === "number" ? a.share : 60,
-        }));
+      const angles = (analysis.messagingAngles || []).slice(0, 6).map((a: any, i: number) => ({
+        id: `angle-${i + 1}`,
+        title: a.title || `Angle ${i + 1}`,
+        description: a.description || "",
+        color: a.color || "#888",
+        share: typeof a.share === "number" ? a.share : 60,
+      }));
 
-      const takeaways = (identity.keyTakeaways || [])
-        .slice(0, 6)
-        .map((t: any, i: number) => ({
-          title: t.title || `Insight ${i + 1}`,
-          body: t.body || "",
-          icon: t.icon || "💡",
-          color: t.color || "#888",
-        }));
-
-      // Map LLM ad output to WizardAd shape
-      const mappedAds = (adsData.ads || []).slice(0, 10).map((ad: any, i: number) => ({
-        id: ad.id || `ad-${i + 1}`,
-        brandKey: ad.brandKey || brands[0]?.key || "BR1",
-        format: ["Video", "Image", "Carousel", "DCO"].includes(ad.format) ? ad.format : "Video",
-        headline: ad.headline || "",
-        bodyPreview: (ad.bodyCopy || "").slice(0, 120),
-        fullBody: ad.bodyCopy || "",
-        status: "Active" as const,
-        startDate: ad.runningDuration ? `${ad.runningDuration} ago` : "Recent",
-        variations: Math.floor(Math.random() * 5) + 1,
-        angle: ad.angle || angles[0]?.title || "",
-        hook: (ad.bodyCopy || "").split(".")[0] || "",
-        cta: ad.cta || "Learn More",
-        platforms: Array.isArray(ad.platforms) ? ad.platforms : ["Facebook", "Instagram"],
-        thumbnailUrl: ad.thumbnailUrl || "",
-        metaUrl: ad.metaUrl || "https://www.facebook.com/ads/library/",
+      const takeaways = (analysis.keyTakeaways || []).slice(0, 6).map((t: any) => ({
+        title: t.title || "Insight",
+        body: t.body || "",
+        icon: t.icon || "💡",
+        color: t.color || "#888",
       }));
 
       const reportConfig = {
-        clientName: identity.brandName || "My Brand",
+        clientName: identity.brandName,
         reportTitle: "Competitor Creative Analysis",
         reportDate: today,
-        dataSource: "Meta Ads Library (United States)",
-        executiveSummary: identity.executiveSummary || "",
+        dataSource: `Meta Ads Library (United States) — ${totalRealAds} real ads analyzed`,
+        executiveSummary: analysis.executiveSummary || "",
         brands,
         angles,
-        ads: mappedAds,
+        ads: allMappedAds.slice(0, 10),
         takeaways,
-        // Extra metadata for display
         _meta: {
           brandName: identity.brandName,
           category: identity.category,
           targetAudience: identity.targetAudience,
           coreValueProp: identity.coreValueProp,
-          topHooks: identity.topHooks || [],
-          psychTriggers: identity.psychTriggers || [],
-          sourceUrl: url,
+          topHooks: (analysis.topHooks || []).map((h: any) => h.text || h),
+          psychTriggers: (analysis.psychTriggers || []).map((p: any) => p.trigger || p),
+          totalAdsAnalyzed: totalRealAds,
+          errors: errors.length > 0 ? errors : undefined,
         },
       };
 
-      return { success: true, config: reportConfig };
+      return { success: true, config: reportConfig, totalAdsAnalyzed: totalRealAds };
+    }),
+
+  /**
+   * Validate a Meta access token by making a lightweight test call.
+   */
+  validateToken: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ input }) => {
+      try {
+        const res = await fetch(
+          `https://graph.facebook.com/v25.0/me?access_token=${encodeURIComponent(input.token)}`,
+          { signal: AbortSignal.timeout(8000) }
+        );
+        const json = await res.json() as any;
+        if (json.error) {
+          return { valid: false, error: json.error.message };
+        }
+        return { valid: true, name: json.name || "Authenticated" };
+      } catch (err: any) {
+        return { valid: false, error: err.message };
+      }
     }),
 });

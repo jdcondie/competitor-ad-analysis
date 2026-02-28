@@ -110,52 +110,103 @@ function StepUrl({
   onSkip: () => void;
 }) {
   const [url, setUrl] = useState("");
-  const [phase, setPhase] = useState<"idle" | "loading" | "done" | "error">("idle");
+  const [token, setToken] = useState("");
+  const [showToken, setShowToken] = useState(false);
+  const [phase, setPhase] = useState<"idle" | "extracting" | "extracted" | "generating" | "done" | "error">("idle");
   const [statusMsg, setStatusMsg] = useState("");
+  const [identity, setIdentity] = useState<any>(null);
+  const [tokenValid, setTokenValid] = useState<boolean | null>(null);
+  const [tokenName, setTokenName] = useState("");
 
-  const researchMutation = trpc.research.fromUrl.useMutation({
+  const extractMutation = trpc.research.extractBrand.useMutation({
     onSuccess: (data) => {
-      if (data.success && data.config) {
-        setPhase("done");
-        setStatusMsg("All fields pre-filled! Review and adjust below.");
-        onAutoFill(data.config as Partial<ReportConfig>);
-        toast.success("Report pre-filled from brand URL!");
+      if (data.success && data.identity) {
+        setIdentity(data.identity);
+        setPhase("extracted");
+        setStatusMsg("Brand identified! Now connect Meta Ads Library to fetch real competitor ads.");
+        toast.success(`Brand identified: ${data.identity.brandName}`);
       } else {
         setPhase("error");
-        setStatusMsg("Could not extract data. Try a different URL or fill in manually.");
+        setStatusMsg("Could not identify brand. Try a different URL or fill in manually.");
       }
     },
-    onError: (err) => {
+    onError: (err: any) => {
       setPhase("error");
-      setStatusMsg(err.message || "Something went wrong. Try again or fill in manually.");
+      setStatusMsg(err.message || "Could not fetch brand page. Try again or fill in manually.");
     },
   });
 
-  const handleAnalyze = () => {
+  const validateMutation = trpc.research.validateToken.useMutation({
+    onSuccess: (data) => {
+      if (data.valid) {
+        setTokenValid(true);
+        setTokenName(data.name || "Authenticated");
+        toast.success(`Token valid — connected as ${data.name}`);
+      } else {
+        setTokenValid(false);
+        toast.error(data.error || "Invalid token. Please check and try again.");
+      }
+    },
+    onError: (err: any) => {
+      setTokenValid(false);
+      toast.error(err.message || "Token validation failed.");
+    },
+  });
+
+  const generateMutation = trpc.research.generateReport.useMutation({
+    onSuccess: (data) => {
+      if (data.success && data.config) {
+        setPhase("done");
+        setStatusMsg(`Report generated from ${data.totalAdsAnalyzed} real Meta ads! Review and adjust below.`);
+        onAutoFill(data.config as Partial<ReportConfig>);
+        toast.success(`Report pre-filled from ${data.totalAdsAnalyzed} real Meta Ads Library ads!`);
+      } else {
+        setPhase("error");
+        setStatusMsg("Could not generate report. Try again or fill in manually.");
+      }
+    },
+    onError: (err: any) => {
+      setPhase("error");
+      setStatusMsg(err.message || "Report generation failed. Check your access token and try again.");
+    },
+  });
+
+  const handleExtract = () => {
     if (!url) { toast.error("Please enter a brand URL"); return; }
     let normalized = url.trim();
     if (!normalized.startsWith("http")) normalized = "https://" + normalized;
+    setPhase("extracting");
+    setStatusMsg("Fetching brand website and identifying competitors...");
+    extractMutation.mutate({ url: normalized });
+  };
 
-    setPhase("loading");
-    setStatusMsg("Fetching brand website...");
+  const handleValidateToken = () => {
+    if (!token.trim()) { toast.error("Please enter your Meta access token"); return; }
+    validateMutation.mutate({ token: token.trim() });
+  };
 
-    // Simulate progress messages
-    const messages = [
-      { ms: 1500, msg: "Analyzing brand identity & category..." },
-      { ms: 4000, msg: "Identifying competitor brands..." },
-      { ms: 7000, msg: "Generating messaging angles..." },
-      { ms: 11000, msg: "Building SwipeFile ad examples..." },
-      { ms: 16000, msg: "Synthesizing key takeaways..." },
-      { ms: 22000, msg: "Almost done — finalizing report..." },
+  const handleGenerate = () => {
+    if (!identity) { toast.error("Please extract brand info first"); return; }
+    if (!token.trim()) { toast.error("Please enter your Meta access token"); return; }
+    setPhase("generating");
+    setStatusMsg("Fetching real ads from Meta Ads Library...");
+    const progressMsgs = [
+      { ms: 3000, msg: `Fetching ads for ${identity.competitors?.[0]?.name || "Competitor 1"}...` },
+      { ms: 8000, msg: `Fetching ads for ${identity.competitors?.[1]?.name || "Competitor 2"}...` },
+      { ms: 14000, msg: "Analyzing real ad copy with AI..." },
+      { ms: 20000, msg: "Extracting messaging angles & hooks..." },
+      { ms: 28000, msg: "Synthesizing key takeaways..." },
+      { ms: 36000, msg: "Almost done — building report config..." },
     ];
-    messages.forEach(({ ms, msg }) => {
+    progressMsgs.forEach(({ ms, msg }) => {
       setTimeout(() => {
         if (phase !== "done" && phase !== "error") setStatusMsg(msg);
       }, ms);
     });
-
-    researchMutation.mutate({ url: normalized });
+    generateMutation.mutate({ identity, metaAccessToken: token.trim() });
   };
+
+  const isLoading = phase === "extracting" || phase === "generating";
 
   return (
     <div className="space-y-6">
@@ -165,16 +216,16 @@ function StepUrl({
           <span className="text-3xl">✦</span>
           <div>
             <h2 className="text-xl font-normal leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
-              AI-Powered Auto-Fill
+              AI-Powered Report Generator
             </h2>
-            <p className="text-[oklch(0.7_0.01_80)] text-sm">Paste one URL — get a complete report in ~30 seconds</p>
+            <p className="text-[oklch(0.7_0.01_80)] text-sm">Paste your brand URL + Meta token — get a report built from real competitor ads</p>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
           {[
-            { icon: "🔍", label: "Brand Analysis", desc: "Extracts brand name, category, and value proposition" },
-            { icon: "🏷", label: "Competitor Discovery", desc: "Identifies 2–4 direct competitors in your category" },
-            { icon: "📌", label: "SwipeFile Generation", desc: "Creates 10 realistic ad examples with copy & angles" },
+            { icon: "🔍", label: "Step 1: Brand Analysis", desc: "Paste your URL to identify brand, category & competitors" },
+            { icon: "🔑", label: "Step 2: Connect Meta", desc: "Add your Meta access token to pull real ads from the Ads Library" },
+            { icon: "📊", label: "Step 3: Generate Report", desc: "AI analyzes real ad copy to extract angles, hooks & takeaways" },
           ].map(item => (
             <div key={item.label} className="bg-white/10 rounded-xl p-3">
               <div className="flex items-center gap-2 mb-1">
@@ -187,87 +238,165 @@ function StepUrl({
         </div>
       </div>
 
-      {/* URL input */}
+      {/* PHASE 1: URL input */}
       <Card className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+            phase === "idle" || phase === "extracting" ? "bg-[#C2714F] text-white" :
+            phase === "error" && !identity ? "bg-red-500 text-white" :
+            "bg-green-500 text-white"
+          }`}>1</div>
+          <p className="font-semibold text-sm text-[oklch(0.35_0.015_50)]">Identify Your Brand & Competitors</p>
+          {identity && <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ {identity.brandName}</span>}
+        </div>
         <Label required>Your Brand URL</Label>
         <div className="flex gap-3 mt-1">
           <input
             type="url"
             value={url}
             onChange={e => setUrl(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && phase === "idle" && handleAnalyze()}
+            onKeyDown={e => e.key === "Enter" && phase === "idle" && handleExtract()}
             placeholder="https://yourbrand.com"
-            disabled={phase === "loading"}
+            disabled={isLoading || phase === "extracted" || phase === "done"}
             className="flex-1 px-4 py-3 text-sm rounded-xl border-2 border-[oklch(0.88_0.01_80)] bg-white text-[oklch(0.25_0.015_50)] placeholder:text-[oklch(0.7_0.01_80)] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/30 focus:border-[#C2714F] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono"
           />
           <button
-            onClick={handleAnalyze}
-            disabled={phase === "loading" || !url}
+            onClick={phase === "idle" || phase === "error" ? handleExtract : undefined}
+            disabled={isLoading || phase === "extracted" || phase === "done" || !url}
             className="px-6 py-3 bg-[#C2714F] text-white rounded-xl text-sm font-semibold hover:bg-[#a85e3e] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2 whitespace-nowrap"
           >
-            {phase === "loading" ? (
+            {phase === "extracting" ? (
               <>
                 <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
-                Analyzing...
+                Identifying...
               </>
+            ) : phase === "extracted" || phase === "generating" || phase === "done" ? (
+              <>✓ Brand Identified</>
             ) : (
-              <>✦ Generate Report</>
+              <>🔍 Identify Brand</>
             )}
           </button>
         </div>
-        <p className="text-xs text-[oklch(0.6_0.015_60)] mt-2">
-          Enter your brand's website URL. The AI will research your category, identify competitors, and pre-fill all report sections.
-        </p>
-
-        {/* Status / progress */}
-        <AnimatePresence>
-          {phase !== "idle" && (
-            <motion.div
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              className={`mt-4 rounded-xl px-4 py-3 flex items-center gap-3 text-sm ${
-                phase === "loading" ? "bg-[oklch(0.97_0.005_80)] border border-[oklch(0.88_0.01_80)]" :
-                phase === "done" ? "bg-green-50 border border-green-200 text-green-700" :
-                "bg-red-50 border border-red-200 text-red-600"
-              }`}
-            >
-              {phase === "loading" && (
-                <svg className="animate-spin w-4 h-4 text-[#C2714F] flex-shrink-0" viewBox="0 0 24 24" fill="none">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              )}
-              {phase === "done" && <span className="text-green-600 flex-shrink-0">✓</span>}
-              {phase === "error" && <span className="text-red-500 flex-shrink-0">✕</span>}
-              <span className={phase === "loading" ? "text-[oklch(0.45_0.015_60)]" : ""}>{statusMsg}</span>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {phase === "extracting" && (
+          <p className="text-xs text-[oklch(0.6_0.015_60)] mt-2 flex items-center gap-1">
+            <svg className="animate-spin w-3 h-3 text-[#C2714F]" viewBox="0 0 24 24" fill="none">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            {statusMsg}
+          </p>
+        )}
+        {identity && (
+          <div className="mt-3 bg-green-50 border border-green-200 rounded-xl p-3 text-sm">
+            <p className="font-semibold text-green-700 mb-1">✓ Brand identified: {identity.brandName}</p>
+            <p className="text-green-600 text-xs">Category: {identity.category} · Competitors found: {(identity.competitors || []).map((c: any) => c.name).join(", ")}</p>
+          </div>
+        )}
       </Card>
 
-      {/* What gets auto-filled */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-        {[
-          { icon: "◈", label: "Report Identity", desc: "Brand name, title, executive summary" },
-          { icon: "🏷", label: "Competitor Brands", desc: "2–4 brands with colors & keys" },
-          { icon: "🧭", label: "Messaging Angles", desc: "4–6 creative angles with descriptions" },
-          { icon: "📌", label: "SwipeFile Ads", desc: "10 ad examples with copy & format" },
-          { icon: "◆", label: "Key Takeaways", desc: "5–6 strategic insights" },
-          { icon: "🚀", label: "Ready to Launch", desc: "Review & adjust before publishing" },
-        ].map(item => (
-          <div key={item.label} className="bg-white rounded-xl border border-[oklch(0.88_0.01_80)] p-3 flex items-start gap-3">
-            <span className="text-base flex-shrink-0 mt-0.5">{item.icon}</span>
-            <div>
-              <p className="text-xs font-semibold text-[oklch(0.35_0.015_50)]">{item.label}</p>
-              <p className="text-xs text-[oklch(0.6_0.015_60)] mt-0.5">{item.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* PHASE 2: Meta Access Token */}
+      <AnimatePresence>
+        {(phase === "extracted" || phase === "generating" || phase === "done") && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  phase === "generating" ? "bg-[#C2714F] text-white" :
+                  phase === "done" ? "bg-green-500 text-white" :
+                  "bg-[#C2714F] text-white"
+                }`}>2</div>
+                <p className="font-semibold text-sm text-[oklch(0.35_0.015_50)]">Connect Meta Ads Library</p>
+                {tokenValid && <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Connected as {tokenName}</span>}
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-xs text-amber-700">
+                <p className="font-semibold mb-1">🔑 How to get your Meta Access Token (2 minutes):</p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Go to <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener noreferrer" className="underline">Meta Graph API Explorer</a></li>
+                  <li>Click <strong>Generate Access Token</strong> (top right)</li>
+                  <li>Select permissions: <code className="bg-amber-100 px-1 rounded">ads_read</code> and <code className="bg-amber-100 px-1 rounded">public_profile</code></li>
+                  <li>Copy the token and paste it below</li>
+                </ol>
+                <p className="mt-1 text-amber-600">Note: User tokens expire in ~1 hour. For longer use, generate a long-lived token.</p>
+              </div>
+
+              <Label required>Meta User Access Token</Label>
+              <div className="flex gap-2 mt-1">
+                <div className="relative flex-1">
+                  <input
+                    type={showToken ? "text" : "password"}
+                    value={token}
+                    onChange={e => { setToken(e.target.value); setTokenValid(null); }}
+                    placeholder="EAA..."
+                    disabled={phase === "generating" || phase === "done"}
+                    className="w-full px-4 py-3 text-sm rounded-xl border-2 border-[oklch(0.88_0.01_80)] bg-white text-[oklch(0.25_0.015_50)] placeholder:text-[oklch(0.7_0.01_80)] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/30 focus:border-[#C2714F] transition-all disabled:opacity-50 font-mono pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowToken(s => !s)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.6_0.015_60)] hover:text-[oklch(0.35_0.015_50)] text-xs"
+                  >
+                    {showToken ? "Hide" : "Show"}
+                  </button>
+                </div>
+                <button
+                  onClick={handleValidateToken}
+                  disabled={!token || validateMutation.isPending || phase === "generating" || phase === "done"}
+                  className="px-4 py-3 border-2 border-[oklch(0.88_0.01_80)] rounded-xl text-sm font-medium text-[oklch(0.45_0.015_60)] hover:border-[#C2714F] hover:text-[#C2714F] disabled:opacity-40 transition-all whitespace-nowrap"
+                >
+                  {validateMutation.isPending ? "Checking..." : tokenValid ? "✓ Valid" : "Validate"}
+                </button>
+              </div>
+              {tokenValid === false && (
+                <p className="text-xs text-red-500 mt-1">✕ Invalid token. Please check the token and try again.</p>
+              )}
+
+              {/* Generate button */}
+              <div className="mt-5">
+                <button
+                  onClick={handleGenerate}
+                  disabled={!identity || !token || phase === "generating" || phase === "done"}
+                  className="w-full py-3.5 bg-[#C2714F] text-white rounded-xl text-sm font-semibold hover:bg-[#a85e3e] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+                >
+                  {phase === "generating" ? (
+                    <>
+                      <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      {statusMsg}
+                    </>
+                  ) : phase === "done" ? (
+                    <>✓ Report Generated — Review Below</>
+                  ) : (
+                    <>✦ Fetch Real Ads & Generate Report</>
+                  )}
+                </button>
+                {phase === "generating" && (
+                  <p className="text-xs text-center text-[oklch(0.6_0.015_60)] mt-2">This takes ~30–60 seconds — fetching real ads from Meta then running AI analysis</p>
+                )}
+                {phase === "done" && (
+                  <div className="mt-3 bg-green-50 border border-green-200 rounded-xl p-3 text-sm text-green-700">
+                    <p className="font-semibold">✓ {statusMsg}</p>
+                    <p className="text-xs mt-1">All wizard fields have been pre-filled. Click <strong>Next</strong> to review and adjust, or click <strong>Launch Report</strong> at Step 6.</p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Error display (outside AnimatePresence so it shows even when phase=error) */}
+      {phase === "error" && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-600">
+          <p className="font-semibold">✕ {statusMsg}</p>
+          <p className="text-xs mt-1">Check your access token has <code>ads_read</code> permission, then try again. Or skip to fill in manually.</p>
+        </div>
+      )}
 
       {/* Skip option */}
       <div className="text-center">
