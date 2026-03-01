@@ -114,3 +114,7 @@
 - [x] Parallelize all independent API calls (Meta Ads fetch + LLM analysis)
 - [x] Reduce LLM prompt size / use faster model settings where possible
 - [x] Stream generation progress steps to frontend for perceived speed
+
+## Meta Token Fix
+- [x] Refresh expired META_ACCESS_TOKEN secret
+- [x] Improve wizard error message for token expiry (show actionable guidance)

@@ -161,9 +161,21 @@ function StepUrl({
     },
     onError: (err: any) => {
       setPhase("error");
-      const errMsg = err.message || "Report generation failed. Try again or fill in manually.";
+      const raw = err.message || "";
+      // Detect expired / invalid Meta token and show a clear, actionable message
+      const isTokenError =
+        raw.includes("access token") ||
+        raw.includes("Session has expired") ||
+        raw.includes("code 190") ||
+        raw.includes("server token may have expired");
+      const errMsg = isTokenError
+        ? "The Meta Ads Library token has expired. Please contact the app owner to refresh the token in Settings → Secrets (META_ACCESS_TOKEN)."
+        : raw || "Report generation failed. Try again or fill in manually.";
       setStatusMsg(errMsg);
       onGeneratingChange?.(false, errMsg, []);
+      if (isTokenError) {
+        toast.error("Meta token expired — report cannot be generated until the token is refreshed.", { duration: 8000 });
+      }
     },
   });
 
