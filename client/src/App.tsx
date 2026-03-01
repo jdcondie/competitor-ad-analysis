@@ -7,6 +7,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { ReportProvider } from "./contexts/ReportContext";
 import Landing from "./pages/Landing";
 import Reports from "./pages/Reports";
+import ReportDetail from "./pages/ReportDetail";
 import Wizard from "./pages/Wizard";
 
 function Router() {
@@ -15,6 +16,7 @@ function Router() {
       <Route path={"/"} component={Landing} />
       <Route path={"/wizard"} component={Wizard} />
       <Route path={"/reports"} component={Reports} />
+      <Route path={"/reports/:id"} component={ReportDetail} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

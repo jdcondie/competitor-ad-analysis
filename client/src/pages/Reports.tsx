@@ -97,64 +97,74 @@ const ReportCard = ({ report, index }: { report: ReportSummary; index: number })
   });
 
   return (
-    <motion.div
-      variants={fadeUp}
-      custom={index * 0.06}
-      initial="hidden"
-      animate="visible"
-      className="rounded-2xl border p-6"
-      style={{
-        background: T.white,
-        borderColor: T.border,
-        boxShadow: "0 1px 4px rgba(26,23,20,0.06)",
-      }}
-    >
-      <p
-        className="text-xs font-semibold uppercase tracking-widest mb-2"
-        style={{ color: T.accent }}
+    <Link href={`/reports/${report.id}`}>
+      <motion.div
+        variants={fadeUp}
+        custom={index * 0.06}
+        initial="hidden"
+        animate="visible"
+        className="rounded-2xl border p-6 cursor-pointer group transition-shadow hover:shadow-md"
+        style={{
+          background: T.white,
+          borderColor: T.border,
+          boxShadow: "0 1px 4px rgba(26,23,20,0.06)",
+        }}
       >
-        ✦ {report.category || "Competitor Analysis"}
-      </p>
-      <h3
-        className="text-xl font-bold leading-tight mb-1 truncate"
-        style={{ fontFamily: T.serif, color: T.text, letterSpacing: "-0.02em" }}
-      >
-        {report.brandName}
-      </h3>
-      <p className="text-sm italic mb-4" style={{ color: T.textMuted }}>
-        Competitor Creative Analysis
-      </p>
-      <div className="flex flex-wrap items-center gap-3">
-        <span
-          className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border"
-          style={
-            report.isAiOnly
-              ? { color: "#6B5E52", borderColor: T.border, background: T.bgAlt }
-              : { color: T.accent, borderColor: T.accentBorder, background: T.accentLight }
-          }
+        <p
+          className="text-xs font-semibold uppercase tracking-widest mb-2"
+          style={{ color: T.accent }}
         >
-          {report.isAiOnly ? (
-            <>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 8v4M12 16h.01" />
-              </svg>
-              AI Analysis
-            </>
-          ) : (
-            <>
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <polyline points="20 6 9 17 4 12" />
-              </svg>
-              {report.totalAdsAnalyzed} real ads
-            </>
-          )}
-        </span>
-        <span className="text-xs" style={{ color: T.textFaint }}>
-          {formattedDate} · {formattedTime}
-        </span>
-      </div>
-    </motion.div>
+          ✦ {report.category || "Competitor Analysis"}
+        </p>
+        <h3
+          className="text-xl font-bold leading-tight mb-1 truncate"
+          style={{ fontFamily: T.serif, color: T.text, letterSpacing: "-0.02em" }}
+        >
+          {report.brandName}
+        </h3>
+        <p className="text-sm italic mb-4" style={{ color: T.textMuted }}>
+          Competitor Creative Analysis
+        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            <span
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border"
+              style={
+                report.isAiOnly
+                  ? { color: "#6B5E52", borderColor: T.border, background: T.bgAlt }
+                  : { color: T.accent, borderColor: T.accentBorder, background: T.accentLight }
+              }
+            >
+              {report.isAiOnly ? (
+                <>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <circle cx="12" cy="12" r="10" />
+                    <path d="M12 8v4M12 16h.01" />
+                  </svg>
+                  AI Analysis
+                </>
+              ) : (
+                <>
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  {report.totalAdsAnalyzed} real ads
+                </>
+              )}
+            </span>
+            <span className="text-xs" style={{ color: T.textFaint }}>
+              {formattedDate} · {formattedTime}
+            </span>
+          </div>
+          <span
+            className="text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+            style={{ background: T.accentLight, color: T.accent, border: `1px solid ${T.accentBorder}` }}
+          >
+            View Report →
+          </span>
+        </div>
+      </motion.div>
+    </Link>
   );
 };
 

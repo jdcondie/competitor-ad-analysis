@@ -150,3 +150,9 @@
 - [x] Identify exact step causing 4+ minute hang in server logs
 - [x] Add per-step timeouts to prevent indefinite hangs
 - [x] Add overall mutation timeout (e.g. 60s hard limit)
+
+## Report Detail Page (/reports/:id)
+- [x] Build /reports/:id page with full report rendering (angles, hooks, ads, takeaways, executive summary)
+- [x] Add getReport tRPC procedure to fetch single report by ID
+- [x] Wire /reports cards to link to /reports/:id
+- [x] Add /reports/:id route to App.tsx
