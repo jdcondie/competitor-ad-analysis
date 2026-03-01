@@ -48,13 +48,13 @@ function FaqItem({ q, a }: { q: string; a: string }) {
         </span>
         <span
           className="text-lg leading-none shrink-0 transition-transform"
-          style={{ color: "#9C8E80", transform: open ? "rotate(45deg)" : "none" }}
+          style={{ color: "#5A4E44", transform: open ? "rotate(45deg)" : "none" }}
         >
           +
         </span>
       </button>
       {open && (
-        <div className="pb-5 text-sm leading-relaxed" style={{ color: "#6B5E52" }}>
+        <div className="pb-5 text-sm leading-relaxed" style={{ color: "#4A3F36" }}>
           {a}
         </div>
       )}
@@ -90,7 +90,7 @@ function BrowserFrame({
         <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#C4E0C4" }} />
         <span
           className="ml-2 text-xs font-mono"
-          style={{ color: "#9C8E80" }}
+          style={{ color: "#5A4E44" }}
         >
           {title}
         </span>
@@ -105,7 +105,7 @@ function BrowserFrame({
 function AngleBar({ label, pct, color }: { label: string; pct: number; color: string }) {
   return (
     <div>
-      <div className="flex justify-between text-xs mb-1" style={{ color: "#6B5E52" }}>
+      <div className="flex justify-between text-xs mb-1" style={{ color: "#4A3F36" }}>
         <span>{label}</span>
         <span className="font-semibold" style={{ color }}>{pct}%</span>
       </div>
@@ -130,10 +130,8 @@ export default function Landing() {
 
   return (
     <div
-      className="min-h-screen overflow-x-hidden"
+      className="landing-page min-h-screen overflow-x-hidden"
       style={{
-        background: "#F7F5F0",
-        color: "#1A1714",
         fontFamily: "'DM Sans', system-ui, sans-serif",
       }}
     >
@@ -155,7 +153,7 @@ export default function Landing() {
           </span>
           <span
             className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{ background: "#EDE8E1", color: "#9C8E80" }}
+            style={{ background: "#EDE8E1", color: "#5A4E44" }}
           >
             Beta
           </span>
@@ -198,24 +196,30 @@ export default function Landing() {
 
           {/* Headline */}
           <h1
-            className="text-5xl md:text-7xl font-bold leading-[1.04] mb-5"
+            className="text-5xl md:text-7xl font-bold leading-[1.04] mb-3"
             style={{
               fontFamily: "'DM Serif Display', Georgia, serif",
               letterSpacing: "-0.02em",
               color: "#1A1714",
             }}
           >
-            Bring the intelligence of{" "}
-            <span style={{ color: "#C2714F", fontStyle: "italic" }}>
-              real competitor ads
-            </span>
-            <br />
-            to your creative strategy.
+            Scout the Competition.
           </h1>
 
           <p
+            className="text-2xl md:text-3xl font-semibold mb-5"
+            style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              fontStyle: "italic",
+              color: "#C2714F",
+            }}
+          >
+            Their ads. Your advantage.
+          </p>
+
+          <p
             className="text-lg md:text-xl max-w-xl mx-auto leading-relaxed mb-8"
-            style={{ color: "#6B5E52" }}
+            style={{ color: "#4A3F36" }}
           >
             Paste your brand URL and get a full competitor ad report — built from real ads running right now in the Meta Ads Library.
           </p>
@@ -230,7 +234,7 @@ export default function Landing() {
                 Scout the Competition →
               </button>
             </Link>
-            <span className="text-sm" style={{ color: "#9C8E80" }}>
+            <span className="text-sm" style={{ color: "#5A4E44" }}>
               No account required · Free to try
             </span>
           </div>
@@ -256,7 +260,7 @@ export default function Landing() {
               <button
                 type="submit"
                 className="px-5 py-3 rounded-xl text-sm font-semibold border transition-all hover:bg-stone-50 whitespace-nowrap"
-                style={{ borderColor: "#D4C9BC", background: "#fff", color: "#6B5E52" }}
+                style={{ borderColor: "#D4C9BC", background: "#fff", color: "#4A3F36" }}
               >
                 Get Early Access
               </button>
@@ -287,14 +291,14 @@ export default function Landing() {
               className="rounded-xl shadow-lg px-4 py-3 text-left border"
               style={{ background: "#fff", borderColor: "#E5E0D8" }}
             >
-              <p className="text-xs mb-1" style={{ color: "#9C8E80" }}>Ads analyzed</p>
+              <p className="text-xs mb-1" style={{ color: "#5A4E44" }}>Ads analyzed</p>
               <p
                 className="text-3xl font-bold"
                 style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: "#C2714F" }}
               >
                 93
               </p>
-              <p className="text-xs" style={{ color: "#9C8E80" }}>variations tracked</p>
+              <p className="text-xs" style={{ color: "#5A4E44" }}>variations tracked</p>
             </div>
           </div>
           <div
@@ -305,14 +309,14 @@ export default function Landing() {
               className="rounded-xl shadow-lg px-4 py-3 text-left border"
               style={{ background: "#fff", borderColor: "#E5E0D8" }}
             >
-              <p className="text-xs mb-1" style={{ color: "#9C8E80" }}>Angles identified</p>
+              <p className="text-xs mb-1" style={{ color: "#5A4E44" }}>Angles identified</p>
               <p
                 className="text-3xl font-bold"
                 style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: "#1A1714" }}
               >
                 5
               </p>
-              <p className="text-xs" style={{ color: "#9C8E80" }}>in this category</p>
+              <p className="text-xs" style={{ color: "#5A4E44" }}>in this category</p>
             </div>
           </div>
 
@@ -337,11 +341,11 @@ export default function Landing() {
       >
         <p
           className="text-center text-xs font-semibold uppercase tracking-widest mb-5"
-          style={{ color: "#9C8E80" }}
+          style={{ color: "#5A4E44" }}
         >
           Built for teams at
         </p>
-        <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-medium" style={{ color: "#9C8E80" }}>
+        <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-medium" style={{ color: "#5A4E44" }}>
           {["DTC Brands", "Creative Agencies", "Media Buyers", "Brand Strategists", "Growth Teams", "Freelance Strategists"].map(
             (name) => (
               <span key={name} className="opacity-70 hover:opacity-100 transition-opacity">
@@ -375,7 +379,7 @@ export default function Landing() {
           </h2>
           <p
             className="text-lg leading-relaxed max-w-2xl mx-auto mb-12"
-            style={{ color: "#6B5E52" }}
+            style={{ color: "#4A3F36" }}
           >
             Your competitors are running ads right now. Some are bombing. Some are crushing it. Scout tells you which is which — and why.
           </p>
@@ -408,7 +412,7 @@ export default function Landing() {
               >
                 {s.value}
               </span>
-              <span className="text-xs text-center leading-tight" style={{ color: "#9C8E80" }}>
+              <span className="text-xs text-center leading-tight" style={{ color: "#5A4E44" }}>
                 {s.label}
               </span>
             </motion.div>
@@ -469,7 +473,7 @@ export default function Landing() {
               >
                 Agentic brand analysis for your most critical strategies.
               </h3>
-              <p className="leading-relaxed" style={{ color: "#6B5E52" }}>
+              <p className="leading-relaxed" style={{ color: "#4A3F36" }}>
                 Paste your URL. Scout identifies your brand, category, and the competitors worth watching — automatically. No spreadsheets, no manual research.
               </p>
             </motion.div>
@@ -517,7 +521,7 @@ export default function Landing() {
               >
                 Conversational insights from your competitor ads.
               </h3>
-              <p className="leading-relaxed" style={{ color: "#6B5E52" }}>
+              <p className="leading-relaxed" style={{ color: "#4A3F36" }}>
                 Scout pulls real ads from the Meta Ads Library and breaks down the angles, hooks, psychological triggers, and takeaways behind what's actually running — not what ran last year.
               </p>
             </motion.div>
@@ -565,7 +569,7 @@ export default function Landing() {
               >
                 Beautiful site apps, dashboards and data — exactly when you want to share them.
               </h3>
-              <p className="leading-relaxed" style={{ color: "#6B5E52" }}>
+              <p className="leading-relaxed" style={{ color: "#4A3F36" }}>
                 Your report comes pre-filled and ready to act on. Adjust angles, swap ads, rewrite takeaways — then share or download. Every section is editable.
               </p>
             </motion.div>
@@ -582,7 +586,7 @@ export default function Landing() {
                 className="absolute top-0 left-0 w-64 rounded-xl border shadow-lg p-4"
                 style={{ background: "#fff", borderColor: "#E5E0D8", transform: "rotate(-1.5deg)" }}
               >
-                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#9C8E80" }}>
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#5A4E44" }}>
                   Messaging Angles
                 </p>
                 <div className="space-y-2">
@@ -603,7 +607,7 @@ export default function Landing() {
                 className="absolute top-8 right-0 w-60 rounded-xl border shadow-lg p-4"
                 style={{ background: "#fff", borderColor: "#E5E0D8", transform: "rotate(1.2deg)" }}
               >
-                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#9C8E80" }}>
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#5A4E44" }}>
                   Key Takeaways
                 </p>
                 <div className="space-y-2.5">
@@ -614,7 +618,7 @@ export default function Landing() {
                   ].map((t, i) => (
                     <div key={i} className="flex items-start gap-2">
                       <span className="text-sm shrink-0">{t.icon}</span>
-                      <p className="text-xs leading-snug" style={{ color: "#6B5E52" }}>{t.text}</p>
+                      <p className="text-xs leading-snug" style={{ color: "#4A3F36" }}>{t.text}</p>
                     </div>
                   ))}
                 </div>
@@ -630,13 +634,13 @@ export default function Landing() {
                 className="absolute bottom-0 left-8 w-72 rounded-xl border shadow-lg p-4"
                 style={{ background: "#fff", borderColor: "#E5E0D8", transform: "rotate(0.5deg)" }}
               >
-                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#9C8E80" }}>
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#5A4E44" }}>
                   Cross-Brand Comparison
                 </p>
                 <table className="w-full text-xs">
                   <thead>
                     <tr style={{ borderBottom: "1px solid #F0EDE8" }}>
-                      <th className="text-left pb-2 font-medium" style={{ color: "#9C8E80" }}>Dimension</th>
+                      <th className="text-left pb-2 font-medium" style={{ color: "#5A4E44" }}>Dimension</th>
                       <th className="text-left pb-2 font-semibold" style={{ color: "#C2714F" }}>LFA</th>
                       <th className="text-left pb-2 font-semibold" style={{ color: "#B5546A" }}>TFL</th>
                     </tr>
@@ -648,7 +652,7 @@ export default function Landing() {
                       ["Discount", "10% off", "$30–70 off"],
                     ].map(([dim, lfa, tfl]) => (
                       <tr key={dim} style={{ borderBottom: "1px solid #F7F5F0" }}>
-                        <td className="py-1.5" style={{ color: "#9C8E80" }}>{dim}</td>
+                        <td className="py-1.5" style={{ color: "#5A4E44" }}>{dim}</td>
                         <td className="py-1.5" style={{ color: "#1A1714" }}>{lfa}</td>
                         <td className="py-1.5" style={{ color: "#1A1714" }}>{tfl}</td>
                       </tr>
@@ -725,7 +729,7 @@ export default function Landing() {
                     <span key={i} className="text-sm" style={{ color: "#C2714F" }}>★</span>
                   ))}
                 </div>
-                <p className="text-sm leading-relaxed mb-5 italic" style={{ color: "#6B5E52" }}>
+                <p className="text-sm leading-relaxed mb-5 italic" style={{ color: "#4A3F36" }}>
                   "{t.quote}"
                 </p>
                 <div className="flex items-center gap-3">
@@ -737,7 +741,7 @@ export default function Landing() {
                   </div>
                   <div>
                     <p className="text-xs font-semibold" style={{ color: "#1A1714" }}>{t.name}</p>
-                    <p className="text-xs" style={{ color: "#9C8E80" }}>{t.role}</p>
+                    <p className="text-xs" style={{ color: "#5A4E44" }}>{t.role}</p>
                   </div>
                 </div>
               </motion.div>
@@ -808,7 +812,7 @@ export default function Landing() {
               >
                 <div className="flex items-center gap-3 mb-4">
                   <span className="text-2xl">{s.icon}</span>
-                  <span className="text-xs font-bold font-mono" style={{ color: "#D4C9BC" }}>
+                  <span className="text-xs font-bold font-mono" style={{ color: "#9C8E80" }}>
                     {s.step}
                   </span>
                 </div>
@@ -818,7 +822,7 @@ export default function Landing() {
                 >
                   {s.title}
                 </h3>
-                <p className="text-sm leading-relaxed" style={{ color: "#6B5E52" }}>
+                <p className="text-sm leading-relaxed" style={{ color: "#4A3F36" }}>
                   {s.body}
                 </p>
               </motion.div>
@@ -841,7 +845,7 @@ export default function Landing() {
                 Scout the Competition →
               </button>
             </Link>
-            <p className="text-xs mt-3" style={{ color: "#9C8E80" }}>
+            <p className="text-xs mt-3" style={{ color: "#5A4E44" }}>
               No account required · Free to try
             </p>
           </motion.div>
@@ -920,7 +924,7 @@ export default function Landing() {
           >
             Ready to scout the competition?
           </h2>
-          <p className="mb-8" style={{ color: "#6B5E52" }}>
+          <p className="mb-8" style={{ color: "#4A3F36" }}>
             Paste your URL. Get your report. No account required.
           </p>
           <Link href="/wizard">
@@ -946,11 +950,11 @@ export default function Landing() {
           >
             Scout
           </span>
-          <span className="text-sm" style={{ color: "#9C8E80" }}>
+          <span className="text-sm" style={{ color: "#5A4E44" }}>
             · Competitive intelligence for creative strategists
           </span>
         </div>
-        <div className="flex items-center gap-6 text-sm" style={{ color: "#9C8E80" }}>
+        <div className="flex items-center gap-6 text-sm" style={{ color: "#5A4E44" }}>
           <Link href="/wizard">
             <span className="hover:text-stone-700 transition-colors cursor-pointer">Get Started</span>
           </Link>

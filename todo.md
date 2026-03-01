@@ -71,3 +71,8 @@
 - [x] Process video (trim, compress, optimize for web)
 - [x] Upload to CDN
 - [x] Embed looping autoplay video in hero section of Landing.tsx
+
+## Landing Page Copy & Contrast Fix
+- [x] Restore original "Scout the Competition" headline and sub-tagline copy
+- [x] Fix all font color contrast issues on off-white background
+- [x] Audit every text color value in Landing.tsx for legibility
