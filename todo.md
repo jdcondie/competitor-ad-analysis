@@ -140,3 +140,8 @@
 - [x] Delete Report.tsx
 - [x] Update wizard to redirect to /reports after generation
 - [x] Clean up any remaining imports/references to Report.tsx
+
+## Fix Report Generation Overlay Stall
+- [x] Shorten overlay step durations to match actual ~15-25s pipeline
+- [x] Add "done" prop to overlay so it jumps to 100% when mutation resolves
+- [x] Shorten wizard progress message timings to match

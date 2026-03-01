@@ -6,20 +6,25 @@
  *  - Pulsing Scout logo mark
  *  - Cycling status messages synced to real server progress
  *  - Subtle noise + radial glow background
+ *  - "done" prop: immediately jumps to 100% and shows completion state
  */
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // ─── STEP DEFINITIONS ─────────────────────────────────────────────────────────
-
+// Timings tuned to match the actual server pipeline (~15-25s total):
+//   - Step 1 (brand extract): ~3s
+//   - Step 2 (Meta Ads fetch, parallel): ~8s
+//   - Step 3 (LLM analysis): ~10s
+//   - Steps 4-6: assembly, save, return
 const STEPS = [
-  { id: 1, label: "Identifying brand & competitors", durationMs: 5000 },
-  { id: 2, label: "Fetching ads from Meta Ads Library", durationMs: 14000 },
-  { id: 3, label: "Analysing ad copy with AI", durationMs: 10000 },
-  { id: 4, label: "Extracting angles & hooks", durationMs: 8000 },
-  { id: 5, label: "Synthesising key takeaways", durationMs: 8000 },
-  { id: 6, label: "Building report", durationMs: 5000 },
+  { id: 1, label: "Identifying brand & competitors", durationMs: 3000 },
+  { id: 2, label: "Fetching ads from Meta Ads Library", durationMs: 8000 },
+  { id: 3, label: "Analysing ad copy with AI", durationMs: 9000 },
+  { id: 4, label: "Extracting angles & hooks", durationMs: 4000 },
+  { id: 5, label: "Synthesising key takeaways", durationMs: 3000 },
+  { id: 6, label: "Building report", durationMs: 2000 },
 ];
 
 // ─── ANIMATED STEP ROW ────────────────────────────────────────────────────────
@@ -118,9 +123,15 @@ interface Props {
   statusMsg?: string;
   /** Competitor names to personalise step labels */
   competitors?: string[];
+  /**
+   * When true, immediately jumps all steps to "done" and shows 100% progress.
+   * Set this as soon as the mutation resolves successfully so the overlay
+   * doesn't appear frozen on the last step while waiting to be hidden.
+   */
+  done?: boolean;
 }
 
-export default function ReportGeneratingOverlay({ visible, statusMsg, competitors }: Props) {
+export default function ReportGeneratingOverlay({ visible, statusMsg, competitors, done }: Props) {
   const [activeStep, setActiveStep] = useState(0);
   const [elapsed, setElapsed] = useState(0);
 
@@ -152,6 +163,13 @@ export default function ReportGeneratingOverlay({ visible, statusMsg, competitor
     };
   }, [visible]);
 
+  // When done=true, immediately jump to the last step so all steps show "done"
+  useEffect(() => {
+    if (done) {
+      setActiveStep(STEPS.length); // all steps become "done"
+    }
+  }, [done]);
+
   // Build personalised step labels if competitor names are available
   const steps = STEPS.map((s, i) => {
     if (i === 1 && competitors && competitors.length > 0) {
@@ -165,6 +183,11 @@ export default function ReportGeneratingOverlay({ visible, statusMsg, competitor
   const elapsedStr = minutes > 0
     ? `${minutes}m ${seconds}s`
     : `${seconds}s`;
+
+  // Progress bar: 100% when done, otherwise based on activeStep
+  const progressPct = done
+    ? 100
+    : Math.min(((activeStep + 1) / steps.length) * 100, 95);
 
   return (
     <AnimatePresence>
@@ -181,7 +204,7 @@ export default function ReportGeneratingOverlay({ visible, statusMsg, competitor
           {/* Ambient glow */}
           <div
             className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] rounded-full blur-[100px] pointer-events-none"
-            style={{ background: "oklch(0.55 0.12 55 / 0.1)" }}
+            style={{ background: done ? "oklch(0.55 0.18 145 / 0.12)" : "oklch(0.55 0.12 55 / 0.1)" }}
           />
 
           {/* Card */}
@@ -202,10 +225,16 @@ export default function ReportGeneratingOverlay({ visible, statusMsg, competitor
               {/* Pulsing Scout icon */}
               <div className="relative">
                 <motion.div
-                  animate={{ scale: [1, 1.08, 1], opacity: [0.6, 1, 0.6] }}
-                  transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+                  animate={done
+                    ? { scale: 1, opacity: 1 }
+                    : { scale: [1, 1.08, 1], opacity: [0.6, 1, 0.6] }
+                  }
+                  transition={done
+                    ? { duration: 0.3 }
+                    : { duration: 2.5, repeat: Infinity, ease: "easeInOut" }
+                  }
                   className="absolute inset-0 rounded-2xl blur-md"
-                  style={{ background: "oklch(0.72 0.15 55 / 0.3)" }}
+                  style={{ background: done ? "oklch(0.72 0.18 145 / 0.4)" : "oklch(0.72 0.15 55 / 0.3)" }}
                 />
                 <div
                   className="relative w-14 h-14 rounded-2xl flex items-center justify-center text-2xl"
@@ -214,7 +243,7 @@ export default function ReportGeneratingOverlay({ visible, statusMsg, competitor
                     border: "1px solid oklch(0.25 0.05 55)",
                   }}
                 >
-                  ✦
+                  {done ? "✓" : "✦"}
                 </div>
               </div>
 
@@ -223,10 +252,13 @@ export default function ReportGeneratingOverlay({ visible, statusMsg, competitor
                   className="text-xl font-bold leading-tight mb-1"
                   style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: "oklch(0.97 0 0)" }}
                 >
-                  Scouting the Competition
+                  {done ? "Report Ready" : "Scouting the Competition"}
                 </h2>
                 <p className="text-sm" style={{ color: "oklch(0.45 0 0)" }}>
-                  Pulling real ads from Meta Ads Library and running AI analysis
+                  {done
+                    ? "Redirecting you to your report…"
+                    : "Pulling real ads from Meta Ads Library and running AI analysis"
+                  }
                 </p>
               </div>
             </div>
@@ -250,11 +282,13 @@ export default function ReportGeneratingOverlay({ visible, statusMsg, competitor
               >
                 <motion.div
                   className="h-full rounded-full"
-                  style={{ background: "linear-gradient(90deg, #C2714F, oklch(0.78 0.18 60))" }}
-                  animate={{
-                    width: `${Math.min(((activeStep + 1) / steps.length) * 100, 95)}%`,
+                  style={{
+                    background: done
+                      ? "linear-gradient(90deg, oklch(0.72 0.15 145), oklch(0.78 0.18 145))"
+                      : "linear-gradient(90deg, #C2714F, oklch(0.78 0.18 60))",
                   }}
-                  transition={{ duration: 0.8, ease: "easeOut" }}
+                  animate={{ width: `${progressPct}%` }}
+                  transition={{ duration: done ? 0.4 : 0.8, ease: "easeOut" }}
                 />
               </div>
 
@@ -262,15 +296,15 @@ export default function ReportGeneratingOverlay({ visible, statusMsg, competitor
                 {/* Live status message */}
                 <AnimatePresence mode="wait">
                   <motion.p
-                    key={statusMsg}
+                    key={done ? "done" : statusMsg}
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.3 }}
                     className="text-xs"
-                    style={{ color: "oklch(0.42 0 0)" }}
+                    style={{ color: done ? "oklch(0.72 0.15 145)" : "oklch(0.42 0 0)" }}
                   >
-                    {statusMsg || "Starting…"}
+                    {done ? "✓ Complete" : (statusMsg || "Starting…")}
                   </motion.p>
                 </AnimatePresence>
 
@@ -283,7 +317,7 @@ export default function ReportGeneratingOverlay({ visible, statusMsg, competitor
 
             {/* Footer note */}
             <p className="text-xs text-center" style={{ color: "oklch(0.3 0 0)" }}>
-              This usually takes 30–60 seconds
+              {done ? "All done!" : "This usually takes 15–30 seconds"}
             </p>
           </motion.div>
         </motion.div>

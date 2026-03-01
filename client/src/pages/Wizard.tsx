@@ -118,7 +118,7 @@ function StepUrl({
 }: {
   onAutoFill: (config: Partial<ReportConfig>) => void;
   onSkip: () => void;
-  onGeneratingChange?: (isGenerating: boolean, statusMsg: string, competitors: string[]) => void;
+  onGeneratingChange?: (isGenerating: boolean, statusMsg: string, competitors: string[], done?: boolean) => void;
 }) {
   const [url, setUrl] = useState("");
   const [phase, setPhase] = useState<"idle" | "extracting" | "extracted" | "generating" | "done" | "error">("idle");
@@ -152,7 +152,7 @@ function StepUrl({
           ? `AI analysis complete! Report generated using category research (Meta Ads Library API access pending). Review and adjust below.`
           : `Report generated from ${data.totalAdsAnalyzed} real Meta ads! Review and adjust below.`;
         setStatusMsg(doneMsg);
-        onGeneratingChange?.(false, doneMsg, []);
+        onGeneratingChange?.(false, doneMsg, [], true); // done=true: overlay jumps to 100%
         const savedReportId = (data as any).savedReportId;
         onAutoFill({ ...(data.config as Partial<ReportConfig>), _savedReportId: savedReportId } as any);
         if (isAiOnly) {
@@ -856,11 +856,23 @@ export default function Wizard() {
 
   // Generating overlay state
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isGeneratingDone, setIsGeneratingDone] = useState(false);
   const [generatingStatus, setGeneratingStatus] = useState("");
   const [generatingCompetitors, setGeneratingCompetitors] = useState<string[]>([]);
 
-  const handleGeneratingChange = (generating: boolean, statusMsg: string, competitors: string[]) => {
-    setIsGenerating(generating);
+  const handleGeneratingChange = (generating: boolean, statusMsg: string, competitors: string[], done?: boolean) => {
+    if (done) {
+      // Mark overlay as done (jumps to 100%) before hiding it
+      setIsGeneratingDone(true);
+      // Hide overlay after a short delay so user sees the "done" state
+      setTimeout(() => {
+        setIsGenerating(false);
+        setIsGeneratingDone(false);
+      }, 800);
+    } else {
+      setIsGenerating(generating);
+      if (!generating) setIsGeneratingDone(false);
+    }
     setGeneratingStatus(statusMsg);
     if (competitors.length > 0) setGeneratingCompetitors(competitors);
   };
@@ -950,6 +962,7 @@ export default function Wizard() {
         visible={isGenerating}
         statusMsg={generatingStatus}
         competitors={generatingCompetitors}
+        done={isGeneratingDone}
       />
       {/* Left sidebar */}
       <aside className="w-64 flex-shrink-0 flex-col hidden md:flex" style={{ background: '#ffffff', borderRight: '1px solid #E5E0D8' }}>
