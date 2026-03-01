@@ -153,7 +153,8 @@ function StepUrl({
           : `Report generated from ${data.totalAdsAnalyzed} real Meta ads! Review and adjust below.`;
         setStatusMsg(doneMsg);
         onGeneratingChange?.(false, doneMsg, []);
-        onAutoFill(data.config as Partial<ReportConfig>);
+        const savedReportId = (data as any).savedReportId;
+        onAutoFill({ ...(data.config as Partial<ReportConfig>), _savedReportId: savedReportId } as any);
         if (isAiOnly) {
           toast("Report generated using AI analysis — Meta Ads Library API access requires identity verification at facebook.com/ads/library/api", {
             duration: 10000,
@@ -915,7 +916,9 @@ export default function Wizard() {
     };
     setConfig(finalConfig);
     toast.success("Report generated! Redirecting...");
-    setTimeout(() => navigate("/report"), 600);
+    // Use savedReportId from context if available (set by StepUrl auto-generation)
+    const savedId = (formData as any)._savedReportId;
+    setTimeout(() => navigate(savedId ? `/report/${savedId}` : "/report"), 600);
   };
 
   const stepContent = () => {

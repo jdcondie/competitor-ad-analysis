@@ -123,3 +123,14 @@
 - [x] Diagnose ads_archive permission requirements
 - [x] Fix API call to use correct endpoint / parameters for the token type
 - [x] Improve error message for permission errors (code 10)
+
+## Report History Feature
+- [x] Add reports table to drizzle schema (id, userId, brandName, category, config JSON, createdAt)
+- [x] Push DB migration
+- [x] Add saveReport procedure (protected, saves config to DB after generation)
+- [x] Add listReports procedure (protected, returns user's reports)
+- [x] Add getReport procedure (protected, returns single report by ID)
+- [x] Build Reports History page (list of user's reports with brand name, date, category)
+- [x] Update Report detail page to load config from DB by report ID
+- [x] Wire wizard to save report to DB on successful generation and redirect to /report/:id
+- [x] Update App.tsx routing for /reports and /report/:id

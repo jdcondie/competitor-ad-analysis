@@ -25,4 +25,23 @@ export const users = mysqlTable("users", {
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
 
-// TODO: Add your tables here
+// Reports table — stores each generated competitor analysis report per user
+export const reports = mysqlTable("reports", {
+  id: int("id").autoincrement().primaryKey(),
+  /** FK to users.id — the user who generated this report */
+  userId: int("userId").notNull(),
+  /** Brand name the report was generated for */
+  brandName: varchar("brandName", { length: 255 }).notNull(),
+  /** Product/service category */
+  category: varchar("category", { length: 255 }).notNull().default(""),
+  /** Full ReportConfig JSON blob */
+  config: text("config").notNull(),
+  /** Whether the report was generated with real Meta Ads data or AI-only */
+  isAiOnly: int("isAiOnly").notNull().default(0),
+  /** Number of real ads analyzed (0 for AI-only reports) */
+  totalAdsAnalyzed: int("totalAdsAnalyzed").notNull().default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+
+export type Report = typeof reports.$inferSelect;
+export type InsertReport = typeof reports.$inferInsert;

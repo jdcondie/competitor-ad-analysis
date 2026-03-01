@@ -10,10 +10,11 @@
  */
 
 import { z } from "zod";
-import { publicProcedure, router } from "../_core/trpc";
+import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
 import { captureAdScreenshots } from "../screenshotService";
 import { ENV } from "../_core/env";
+import { saveReport, listReportsByUser, getReportById } from "../db";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -277,7 +278,7 @@ ${trimmedText}`;
         }),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { identity } = input;
       const metaAccessToken = ENV.metaAccessToken;
       if (!metaAccessToken) {
@@ -569,14 +570,68 @@ Return JSON with: messagingAngles (4-5, each with title/description/color/share/
         });
       }
 
+      // 7. Save report to DB if user is authenticated
+      let savedReportId: number | null = null;
+      if (ctx.user?.id) {
+        try {
+          savedReportId = await saveReport({
+            userId: ctx.user.id,
+            brandName: identity.brandName,
+            category: identity.category,
+            config: JSON.stringify(reportConfig),
+            isAiOnly: hasRealAds ? 0 : 1,
+            totalAdsAnalyzed: totalRealAds,
+          });
+        } catch (err) {
+          // Non-fatal: report still returned even if save fails
+          console.error("[Reports] Failed to save report to DB:", err);
+        }
+      }
+
       return {
         success: true,
         config: reportConfig,
         totalAdsAnalyzed: totalRealAds,
         isAiOnly: !hasRealAds,
+        savedReportId,
         metaApiNote: !hasRealAds
           ? "Meta Ads Library API access requires identity verification at facebook.com/ads/library/api. Report generated using AI analysis of known category patterns instead."
           : undefined,
+      };
+    }),
+
+  /**
+   * List all reports for the currently authenticated user.
+   */
+  listReports: protectedProcedure.query(async ({ ctx }) => {
+    const rows = await listReportsByUser(ctx.user.id);
+    return rows.map((r) => ({
+      id: r.id,
+      brandName: r.brandName,
+      category: r.category,
+      isAiOnly: r.isAiOnly === 1,
+      totalAdsAnalyzed: r.totalAdsAnalyzed,
+      createdAt: r.createdAt,
+    }));
+  }),
+
+  /**
+   * Get a single report by ID. Only accessible to the report's owner.
+   */
+  getReport: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const row = await getReportById(input.id);
+      if (!row) throw new Error("Report not found");
+      if (row.userId !== ctx.user.id) throw new Error("Access denied");
+      return {
+        id: row.id,
+        brandName: row.brandName,
+        category: row.category,
+        isAiOnly: row.isAiOnly === 1,
+        totalAdsAnalyzed: row.totalAdsAnalyzed,
+        createdAt: row.createdAt,
+        config: JSON.parse(row.config),
       };
     }),
 

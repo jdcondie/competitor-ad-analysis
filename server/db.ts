@@ -89,4 +89,43 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ─── REPORT QUERIES ──────────────────────────────────────────────────────────
+
+import { reports, InsertReport } from "../drizzle/schema";
+import { desc } from "drizzle-orm";
+
+/** Save a newly generated report to the database. Returns the inserted row ID. */
+export async function saveReport(data: InsertReport): Promise<number | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot save report: database not available");
+    return null;
+  }
+  try {
+    const result = await db.insert(reports).values(data);
+    // MySQL insertId is in result[0].insertId
+    return (result as any)[0]?.insertId ?? null;
+  } catch (error) {
+    console.error("[Database] Failed to save report:", error);
+    throw error;
+  }
+}
+
+/** List all reports for a given user, newest first. */
+export async function listReportsByUser(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(reports)
+    .where(eq(reports.userId, userId))
+    .orderBy(desc(reports.createdAt));
+}
+
+/** Get a single report by ID. Returns undefined if not found. */
+export async function getReportById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(reports).where(eq(reports.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}

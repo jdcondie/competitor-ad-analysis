@@ -7,10 +7,11 @@
  * Layout: Scout nav bar + full-width scrollable content (no sidebar)
  */
 
-import { useState, useRef, useMemo, useCallback } from "react";
-import { Link } from "wouter";
+import { useState, useRef, useMemo, useCallback, useEffect } from "react";
+import { Link, useRoute } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useReport } from "@/contexts/ReportContext";
+import { trpc } from "@/lib/trpc";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   RadarChart, Radar, PolarGrid, PolarAngleAxis, Cell,
@@ -649,7 +650,23 @@ const PsychCard = ({ trigger }: { trigger: typeof psychTriggers[0] }) => {
 // ─── MAIN REPORT PAGE ─────────────────────────────────────────────────────────
 export default function Report() {
   const [swipeFilter, setSwipeFilter] = useState<string>("All");
-  const { config: wizardConfig, isCustomReport, clearConfig } = useReport();
+  const { config: wizardConfig, isCustomReport, clearConfig, setConfig } = useReport();
+
+  // Support /report/:id route — load config from DB when an ID is present
+  const [matchWithId, params] = useRoute("/report/:id");
+  const reportId = matchWithId && params?.id ? parseInt(params.id, 10) : null;
+
+  const { data: dbReport, isLoading: dbLoading } = trpc.research.getReport.useQuery(
+    { id: reportId! },
+    { enabled: !!reportId && !isNaN(reportId!) }
+  );
+
+  // When DB report loads, hydrate the context so all existing data-binding works
+  useEffect(() => {
+    if (dbReport?.config) {
+      setConfig(dbReport.config as any);
+    }
+  }, [dbReport, setConfig]);
 
   // ── Dynamic data: use wizard config when available, else fall back to demo data ──
   const activeAds = useMemo(() => {
@@ -768,6 +785,25 @@ export default function Report() {
     });
   }, []);
 
+  // Show loading skeleton while fetching DB report
+  if (reportId && dbLoading) {
+    return (
+      <div className="landing-page min-h-screen" style={{ background: T.bg, fontFamily: T.sans }}>
+        <nav className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4" style={{ background: "rgba(247,245,240,0.92)", backdropFilter: "blur(12px)", borderBottom: `1px solid ${T.border}` }}>
+          <span className="text-lg font-bold" style={{ fontFamily: T.serif }}>Scout</span>
+        </nav>
+        <div className="max-w-5xl mx-auto px-6 md:px-12 py-16 space-y-6 animate-pulse">
+          <div className="h-4 w-32 rounded" style={{ background: T.border }} />
+          <div className="h-10 w-80 rounded" style={{ background: T.border }} />
+          <div className="h-6 w-56 rounded" style={{ background: T.bgAlt }} />
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-8">
+            {[1,2,3,4,5,6].map(i => <div key={i} className="h-24 rounded-2xl" style={{ background: T.white, border: `1px solid ${T.border}` }} />)}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="landing-page min-h-screen"
@@ -810,15 +846,14 @@ export default function Report() {
               {wizardConfig.brands.length} brands · {wizardConfig.ads.length} ads
             </span>
           )}
-          {isCustomReport && (
+          <Link href="/reports">
             <button
-              onClick={() => clearConfig()}
-              className="text-xs transition-colors"
+              className="hidden sm:flex items-center gap-1.5 text-xs transition-colors hover:text-[#C2714F]"
               style={{ color: T.textMuted }}
             >
-              ← Demo report
+              ← My Reports
             </button>
-          )}
+          </Link>
           {/* Share Report button */}
           <button
             onClick={handleShare}
