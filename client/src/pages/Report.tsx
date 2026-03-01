@@ -39,7 +39,7 @@ const reportNav = [
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-[oklch(0.14_0_0)] border border-[oklch(0.22_0_0)] rounded-lg p-3 shadow-xl text-sm">        <p className="font-semibold text-white mb-1">{label}</p>      {payload.map((entry: any, i: number) => (
+      <div className="bg-white border border-[#D4C9BC] rounded-lg p-3 shadow-xl text-sm">        <p className="font-semibold mb-1" style={{ color: '#1A1714' }}>{label}</p>      {payload.map((entry: any, i: number) => (
           <p key={i} style={{ color: entry.color || entry.fill }} className="text-xs">
             {entry.name}: <span className="font-semibold">{entry.value}</span>
           </p>
@@ -60,11 +60,11 @@ const Section = ({ id, children }: { id: string; children: React.ReactNode }) =>
 
 const SectionTitle = ({ label, title, sub }: { label: string; title: string; sub?: string }) => (
   <div className="mb-6">
-    <p className="section-label mb-2" style={{ color: 'oklch(0.72 0.15 55)' }}>{label}</p>
-    <h2 className="text-3xl font-bold leading-tight" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.97 0 0)', letterSpacing: '-0.03em' }}>
+    <p className="section-label mb-2" style={{ color: '#C2714F' }}>{label}</p>
+    <h2 className="text-3xl font-bold leading-tight" style={{ fontFamily: 'var(--font-display)', color: '#1A1714', letterSpacing: '-0.03em' }}>
       {title}
     </h2>
-    {sub && <p className="text-sm mt-1" style={{ color: 'oklch(0.45 0 0)' }}>{sub}</p>}
+    {sub && <p className="text-sm mt-1" style={{ color: '#6B5E52' }}>{sub}</p>}
   </div>
 );
 
@@ -88,7 +88,7 @@ const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
       transition={{ duration: 0.35, delay: index * 0.05 }}
       viewport={{ once: true }}
     >
-      <div className="px-5 py-4 border-b border-[oklch(0.18_0_0)]" style={{ borderLeftColor: ad.brandColor, borderLeftWidth: 4 }}>
+      <div className="px-5 py-4 border-b border-[#E5E0D8]" style={{ borderLeftColor: ad.brandColor, borderLeftWidth: 4 }}>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -101,24 +101,24 @@ const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
               <span
                 className="text-xs font-medium px-2 py-0.5 rounded-full"
                 style={ad.status === 'Active'
-                  ? { background: 'oklch(0.72 0.15 145 / 0.12)', color: 'oklch(0.72 0.15 145)' }
-                  : { background: 'oklch(0.18 0 0)', color: 'oklch(0.5 0 0)' }}
+                  ? { background: '#E8F5EE', color: '#2D7A4F' }
+                  : { background: '#E5E0D8', color: '#6B5E52' }}
               >
                 <span
                   className="inline-block w-1.5 h-1.5 rounded-full mr-1"
-                  style={{ background: ad.status === 'Active' ? 'oklch(0.72 0.15 145)' : 'oklch(0.4 0 0)' }}
+                  style={{ background: ad.status === 'Active' ? '#2D7A4F' : '#7A6A5E' }}
                 />
                 {ad.status}
               </span>
               {ad.discount && (
-                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: 'oklch(0.72 0.15 55 / 0.12)', color: 'oklch(0.72 0.15 55)' }}>{ad.discount}</span>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full" style={{ background: '#FDF5F0', color: '#C2714F' }}>{ad.discount}</span>
               )}
             </div>
-            <p className="text-xs text-[oklch(0.5_0_0)]">
+            <p className="text-xs text-[#6B5E52]">
               {ad.startDate}{ad.endDate ? ` → ${ad.endDate}` : ''} · {ad.variations} variation{ad.variations !== 1 ? 's' : ''} · {ad.runningDuration}
             </p>
           </div>
-          <span className="text-xs font-bold text-[oklch(0.55_0_0)]" style={{ fontFamily: 'var(--font-display)' }}>
+          <span className="text-xs font-bold text-[#5A4E44]" style={{ fontFamily: 'var(--font-display)' }}>
             #{String(index + 1).padStart(2, '0')}
           </span>
         </div>
@@ -126,14 +126,14 @@ const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
 
       <div className="p-5">
         {/* Creative Preview */}
-        <div className="mb-4 rounded-lg overflow-hidden relative bg-[oklch(0.14_0_0)]" style={{ minHeight: 160 }}>
+        <div className="mb-4 rounded-lg overflow-hidden relative bg-[#F0EDE8]" style={{ minHeight: 160 }}>
           {/* Loading skeleton */}
           {ad.thumbnailUrl && !imgLoaded && !imgError && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 animate-pulse">
-              <div className="w-10 h-10 rounded-full" style={{ background: 'oklch(0.2 0 0)' }} />
-              <div className="h-2 w-24 rounded" style={{ background: 'oklch(0.2 0 0)' }} />
-              <div className="h-2 w-16 rounded" style={{ background: 'oklch(0.2 0 0)' }} />
-              <p className="text-xs text-[oklch(0.45_0_0)] mt-1">Loading creative…</p>
+              <div className="w-10 h-10 rounded-full" style={{ background: '#D4C9BC' }} />
+              <div className="h-2 w-24 rounded" style={{ background: '#D4C9BC' }} />
+              <div className="h-2 w-16 rounded" style={{ background: '#D4C9BC' }} />
+              <p className="text-xs text-[#6B5E52] mt-1">Loading creative…</p>
             </div>
           )}
           {/* Real screenshot */}
@@ -153,7 +153,7 @@ const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
               <div className="w-12 h-12 rounded-full flex items-center justify-center text-2xl" style={{ backgroundColor: `${ad.brandColor}20` }}>
                 {ad.format === 'Video' ? '🎬' : ad.format === 'Carousel' ? '⧉' : '🖼'}
               </div>
-              <p className="text-xs text-[oklch(0.55_0.015_60)] font-medium">{ad.format} Ad Creative</p>
+              <p className="text-xs text-[#5A4E44] font-medium">{ad.format} Ad Creative</p>
               {ad.metaUrl && (
                 <a
                   href={ad.metaUrl}
@@ -187,11 +187,11 @@ const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
         </div>
         <div className="mb-3">
           <p className="section-label mb-1">Headline</p>
-          <p className="text-sm font-semibold text-[oklch(0.97_0_0)]">{ad.headline}</p>
+          <p className="text-sm font-semibold text-[#1A1714]">{ad.headline}</p>
         </div>
         <div className="mb-3">
           <p className="section-label mb-1">Body Copy</p>
-          <p className="text-sm text-[oklch(0.7_0_0)] leading-relaxed italic">
+          <p className="text-sm text-[#3A3028] leading-relaxed italic">
             "{expanded ? ad.fullBody : ad.bodyPreview}"
           </p>
           {ad.fullBody !== ad.bodyPreview && (
@@ -200,24 +200,24 @@ const AdCard = ({ ad, index }: { ad: SwipeAd; index: number }) => {
             </button>
           )}
         </div>
-        <div className="grid grid-cols-3 gap-3 pt-3 border-t border-[oklch(0.18_0_0)]">
+        <div className="grid grid-cols-3 gap-3 pt-3 border-t border-[#E5E0D8]">
           <div>
             <p className="section-label mb-0.5">Angle</p>
-            <p className="text-xs text-[oklch(0.85_0_0)] font-medium">{ad.angle}</p>
+            <p className="text-xs text-[#1A1714] font-medium">{ad.angle}</p>
           </div>
           <div>
             <p className="section-label mb-0.5">CTA</p>
-            <p className="text-xs text-[oklch(0.85_0_0)] font-medium">{ad.cta}</p>
+            <p className="text-xs text-[#1A1714] font-medium">{ad.cta}</p>
           </div>
           <div>
             <p className="section-label mb-0.5">Hook Type</p>
-            <p className="text-xs text-[oklch(0.85_0_0)] font-medium leading-tight">{ad.hook.split(' — ')[0]}</p>
+            <p className="text-xs text-[#1A1714] font-medium leading-tight">{ad.hook.split(' — ')[0]}</p>
           </div>
         </div>
         <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
           <div className="flex flex-wrap gap-1">
             {ad.platforms.map(p => (
-              <span key={p} className="text-xs px-1.5 py-0.5 bg-[oklch(0.14_0_0)] text-[oklch(0.55_0_0)] rounded">{p}</span>
+              <span key={p} className="text-xs px-1.5 py-0.5 bg-[#F0EDE8] text-[#5A4E44] rounded">{p}</span>
             ))}
           </div>
           {ad.metaUrl && (
@@ -262,7 +262,7 @@ const AngleCard = ({ angle }: { angle: typeof angles[0] }) => {
   return (
     <div className="paper-card rounded-xl overflow-hidden mb-4">
       <button
-        className="w-full text-left px-6 py-5 flex items-start justify-between gap-4 transition-colors hover:bg-[oklch(0.14_0_0)]"
+        className="w-full text-left px-6 py-5 flex items-start justify-between gap-4 transition-colors hover:bg-[#F0EDE8]"
         onClick={() => setOpen(!open)}
         style={{ borderLeftColor: angle.color, borderLeftWidth: 4 }}
       >
@@ -270,11 +270,11 @@ const AngleCard = ({ angle }: { angle: typeof angles[0] }) => {
           <span className="text-2xl mt-0.5">{angle.icon}</span>
           <div>
             <p className="section-label mb-1" style={{ color: angle.color }}>{angle.primaryBrand}</p>
-            <h3 className="text-xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.97 0 0)', letterSpacing: '-0.02em' }}>{angle.title}</h3>
-            <p className="text-sm mt-0.5 italic" style={{ color: 'oklch(0.45 0 0)' }}>{angle.subtitle}</p>
+            <h3 className="text-xl font-bold" style={{ fontFamily: 'var(--font-display)', color: '#1A1714', letterSpacing: '-0.02em' }}>{angle.title}</h3>
+            <p className="text-sm mt-0.5 italic" style={{ color: '#6B5E52' }}>{angle.subtitle}</p>
           </div>
         </div>
-          <span className="text-lg mt-1 flex-shrink-0" style={{ color: 'oklch(0.35 0 0)' }}>{open ? '▲' : '▼'}</span>
+          <span className="text-lg mt-1 flex-shrink-0" style={{ color: '#9C8E80' }}>{open ? '▲' : '▼'}</span>
       </button>
 
       <AnimatePresence>
@@ -286,14 +286,14 @@ const AngleCard = ({ angle }: { angle: typeof angles[0] }) => {
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="px-6 pb-6" style={{ borderTop: '1px solid oklch(0.18 0 0)' }}>
-              <p className="text-sm leading-relaxed mt-4 mb-5" style={{ color: 'oklch(0.6 0 0)' }}>{angle.description}</p>
+            <div className="px-6 pb-6" style={{ borderTop: '1px solid #E5E0D8' }}>
+              <p className="text-sm leading-relaxed mt-4 mb-5" style={{ color: '#5A4E44' }}>{angle.description}</p>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
                 {angle.metrics.map(m => (
-                  <div key={m.label} className="rounded-lg p-3" style={{ background: 'oklch(0.13 0 0)', border: '1px solid oklch(0.18 0 0)' }}>
+                  <div key={m.label} className="rounded-lg p-3" style={{ background: '#F7F5F0', border: '1px solid #E5E0D8' }}>
                     <p className="section-label mb-1">{m.label}</p>
                     <p className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)', color: angle.color, letterSpacing: '-0.02em' }}>{m.value}</p>
-                    {m.sub && <p className="text-xs mt-0.5" style={{ color: 'oklch(0.42 0 0)' }}>{m.sub}</p>}
+                    {m.sub && <p className="text-xs mt-0.5" style={{ color: '#7A6A5E' }}>{m.sub}</p>}
                   </div>
                 ))}
               </div>
@@ -303,7 +303,7 @@ const AngleCard = ({ angle }: { angle: typeof angles[0] }) => {
                   {angle.examples.map((ex, i) => (
                     <div key={i} className="flex gap-3 items-start">
                       <span className="text-xs font-bold px-1.5 py-0.5 rounded text-white flex-shrink-0 mt-0.5" style={{ backgroundColor: ex.color }}>{ex.brand}</span>
-                      <p className="text-sm italic leading-relaxed" style={{ color: 'oklch(0.6 0 0)' }}>"{ex.copy}"</p>
+                      <p className="text-sm italic leading-relaxed" style={{ color: '#5A4E44' }}>"{ex.copy}"</p>
                     </div>
                   ))}
                 </div>
@@ -313,13 +313,13 @@ const AngleCard = ({ angle }: { angle: typeof angles[0] }) => {
                   <p className="section-label mb-3">Related SwipeFile Ads</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {relatedAds.map(ad => (
-                      <div key={ad.id} className="rounded-lg p-3 text-xs" style={{ background: 'oklch(0.13 0 0)', border: `1px solid oklch(0.18 0 0)`, borderLeft: `3px solid ${ad.brandColor}` }}>
+                      <div key={ad.id} className="rounded-lg p-3 text-xs" style={{ background: '#F7F5F0', border: `1px solid #E5E0D8`, borderLeft: `3px solid ${ad.brandColor}` }}>
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold" style={{ color: ad.brandColor }}>{ad.brand}</span>
-                          <span style={{ color: 'oklch(0.45 0 0)' }}>{ad.format} · {ad.variations} variations</span>
+                          <span style={{ color: '#6B5E52' }}>{ad.format} · {ad.variations} variations</span>
                         </div>
-                        <p className="font-medium" style={{ color: 'oklch(0.85 0 0)' }}>{ad.headline}</p>
-                        <p className="mt-0.5" style={{ color: 'oklch(0.45 0 0)' }}>{ad.startDate} · {ad.runningDuration}</p>
+                        <p className="font-medium" style={{ color: '#1A1714' }}>{ad.headline}</p>
+                        <p className="mt-0.5" style={{ color: '#6B5E52' }}>{ad.startDate} · {ad.runningDuration}</p>
                       </div>
                     ))}
                   </div>
@@ -344,7 +344,7 @@ const HookCard = ({ hook }: { hook: typeof topHooks[0] }) => {
   };
   return (
     <motion.div
-        className="paper-card rounded-xl p-5 hover:border-[oklch(0.25_0_0)] transition-colors"
+        className="paper-card rounded-xl p-5 hover:border-[#C8BEB4] transition-colors"
       initial={{ opacity: 0, x: -16 }}
       whileInView={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.35, delay: hook.rank * 0.06 }}
@@ -357,17 +357,17 @@ const HookCard = ({ hook }: { hook: typeof topHooks[0] }) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-2">
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: hook.brandColor }}>{hook.brand}</span>
-            <span className="text-xs text-[oklch(0.55_0_0)] font-medium">{hook.hookType}</span>
+            <span className="text-xs text-[#5A4E44] font-medium">{hook.hookType}</span>
             <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white ml-auto" style={{ backgroundColor: stopRateColor[hook.estimatedStopRate] || '#888' }}>
               {hook.estimatedStopRate} Stop Rate
             </span>
           </div>
-          <blockquote className="text-base font-bold mb-2 leading-snug" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.97 0 0)', letterSpacing: '-0.02em' }}>
+          <blockquote className="text-base font-bold mb-2 leading-snug" style={{ fontFamily: 'var(--font-display)', color: '#1A1714', letterSpacing: '-0.02em' }}>
             {hook.openingLine}
           </blockquote>
-          <p className="text-xs mb-1" style={{ color: 'oklch(0.55 0 0)' }}><span className="font-semibold" style={{ color: 'oklch(0.72 0.15 55)' }}>Technique:</span> {hook.technique}</p>
-          <p className="text-xs leading-relaxed" style={{ color: 'oklch(0.6 0 0)' }}>{hook.whyItWorks}</p>
-          <p className="text-xs mt-2" style={{ color: 'oklch(0.4 0 0)' }}>Format: {hook.adFormat}</p>
+          <p className="text-xs mb-1" style={{ color: '#5A4E44' }}><span className="font-semibold" style={{ color: '#C2714F' }}>Technique:</span> {hook.technique}</p>
+          <p className="text-xs leading-relaxed" style={{ color: '#5A4E44' }}>{hook.whyItWorks}</p>
+          <p className="text-xs mt-2" style={{ color: '#7A6A5E' }}>Format: {hook.adFormat}</p>
         </div>
       </div>
     </motion.div>
@@ -395,10 +395,10 @@ const PsychCard = ({ trigger }: { trigger: typeof psychTriggers[0] }) => {
         <span className="text-2xl">{trigger.icon}</span>
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <h4 className="font-semibold" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.97 0 0)', letterSpacing: '-0.01em' }}>{trigger.trigger}</h4>
+            <h4 className="font-semibold" style={{ fontFamily: 'var(--font-display)', color: '#1A1714', letterSpacing: '-0.01em' }}>{trigger.trigger}</h4>
             <span className="text-xs px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: categoryColors[trigger.category] }}>{trigger.category}</span>
           </div>
-          <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: 'oklch(0.18 0 0)' }}>
+          <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: '#E5E0D8' }}>
             <motion.div
               className="h-full rounded-full"
               style={{ backgroundColor: categoryColors[trigger.category] }}
@@ -408,17 +408,17 @@ const PsychCard = ({ trigger }: { trigger: typeof psychTriggers[0] }) => {
               viewport={{ once: true }}
             />
           </div>
-          <p className="text-xs leading-relaxed mb-3" style={{ color: 'oklch(0.6 0 0)' }}>{trigger.description}</p>
+          <p className="text-xs leading-relaxed mb-3" style={{ color: '#5A4E44' }}>{trigger.description}</p>
         </div>
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3" style={{ borderTop: '1px solid oklch(0.18 0 0)' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-3" style={{ borderTop: '1px solid #E5E0D8' }}>
         <div>
           <p className="section-label mb-1 text-[#C2714F]">LFA Example</p>
-          <p className="text-xs italic leading-relaxed" style={{ color: 'oklch(0.6 0 0)' }}>"{trigger.lfaExample}"</p>
+          <p className="text-xs italic leading-relaxed" style={{ color: '#5A4E44' }}>"{trigger.lfaExample}"</p>
         </div>
         <div>
           <p className="section-label mb-1 text-[#B5546A]">TFL Example</p>
-          <p className="text-xs italic leading-relaxed" style={{ color: 'oklch(0.6 0 0)' }}>"{trigger.tflExample}"</p>
+          <p className="text-xs italic leading-relaxed" style={{ color: '#5A4E44' }}>"{trigger.tflExample}"</p>
         </div>
       </div>
     </motion.div>
@@ -533,18 +533,18 @@ export default function Report() {
   };
 
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'oklch(0.08 0 0)' }}>
+    <div className="landing-page flex h-screen overflow-hidden" style={{ background: '#F7F5F0' }}>
       {/* Sidebar */}
-      <aside className={`flex-shrink-0 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-14'} flex flex-col overflow-hidden`} style={{ background: 'oklch(0.06 0 0)', borderRight: '1px solid oklch(0.15 0 0)' }}>
+      <aside className={`flex-shrink-0 transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-14'} flex flex-col overflow-hidden`} style={{ background: '#ffffff', borderRight: '1px solid #E5E0D8' }}>
         {/* Sidebar header */}
-        <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid oklch(0.15 0 0)' }}>
+        <div className="p-4 flex items-center justify-between" style={{ borderBottom: '1px solid #E5E0D8' }}>
           {sidebarOpen && (
             <div>
-              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: 'oklch(0.72 0.15 55)' }}>Creative Report</p>
-              <p className="text-sm font-semibold mt-0.5" style={{ color: 'oklch(0.97 0 0)', letterSpacing: '-0.01em' }}>Competitor Analysis</p>
+              <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#C2714F' }}>Creative Report</p>
+              <p className="text-sm font-semibold mt-0.5" style={{ color: '#1A1714', letterSpacing: '-0.01em' }}>Competitor Analysis</p>
             </div>
           )}
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="hover:text-white transition-colors p-1 rounded" style={{ color: 'oklch(0.4 0 0)' }}>
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="hover:text-[#1A1714] transition-colors p-1 rounded" style={{ color: '#7A6A5E' }}>
             {sidebarOpen ? '◀' : '▶'}
           </button>
         </div>
@@ -557,21 +557,21 @@ export default function Report() {
               <button
                 key={section.id}
                 onClick={() => scrollToSection(section.id)}
-              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all ${isActive ? 'text-white' : 'hover:text-white'}`}
-              style={isActive ? { background: 'oklch(0.14 0 0)', color: 'white' } : { color: 'oklch(0.5 0 0)' }}
+              className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-all`}
+              style={isActive ? { background: '#F0EDE8', color: '#1A1714', fontWeight: 600 } : { color: '#6B5E52' }}
               >
                 <span className="text-base flex-shrink-0">{section.icon}</span>
                 {sidebarOpen && <span className="text-sm truncate">{section.label}</span>}
-                {sidebarOpen && isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: 'oklch(0.72 0.15 55)' }} />}
+                {sidebarOpen && isActive && <span className="ml-auto w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#C2714F' }} />}
               </button>
             );
           })}
         </nav>
 
         {/* Back to dashboard */}
-        <div className="px-3 pb-3 pt-3" style={{ borderTop: '1px solid oklch(0.15 0 0)' }}>
+        <div className="px-3 pb-3 pt-3" style={{ borderTop: '1px solid #E5E0D8' }}>
           <Link href="/dashboard">
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-all hover:text-white" style={{ background: 'oklch(0.13 0 0)', color: 'oklch(0.6 0 0)', border: '1px solid oklch(0.18 0 0)' }}>
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-all hover:bg-[#E5E0D8]" style={{ background: '#F7F5F0', color: '#5A4E44', border: '1px solid #E5E0D8' }}>
               <span className="text-base flex-shrink-0">📊</span>
               {sidebarOpen && <span className="text-sm truncate font-medium">Brand Dashboard</span>}
             </button>
@@ -581,7 +581,7 @@ export default function Report() {
         {/* New Report / Edit Report buttons */}
         <div className="px-3 pb-2">
           <Link href="/wizard">
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-all text-white" style={{ background: 'oklch(0.72 0.15 55)', color: 'oklch(0.08 0 0)', fontWeight: 600 }}>
+            <button className="w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-all text-white" style={{ background: '#C2714F', color: '#F7F5F0', fontWeight: 600 }}>
               <span className="text-base flex-shrink-0">✦</span>
               {sidebarOpen && <span className="text-sm truncate font-semibold">{isCustomReport ? 'Edit Report' : 'New Report'}</span>}
             </button>
@@ -589,7 +589,7 @@ export default function Report() {
           {isCustomReport && sidebarOpen && (
             <button
               onClick={() => clearConfig()}
-              className="w-full mt-1.5 text-xs text-[oklch(0.5_0.01_80)] hover:text-[#e8a090] transition-colors px-3 py-1.5 text-left"
+              className="w-full mt-1.5 text-xs text-[#6B5E52] hover:text-[#e8a090] transition-colors px-3 py-1.5 text-left"
             >
               ← Back to demo report
             </button>
@@ -597,9 +597,9 @@ export default function Report() {
         </div>
 
         {sidebarOpen && (
-          <div className="p-4 border-t border-[oklch(0.28_0.015_50)]">
-            <p className="text-xs text-[oklch(0.45_0.01_80)]">{isCustomReport && wizardConfig ? wizardConfig.reportDate : 'Feb 27, 2026'}</p>
-            <p className="text-xs text-[oklch(0.45_0.01_80)]">
+          <div className="p-4 border-t border-[#D4C9BC]">
+            <p className="text-xs text-[#6B5E52]">{isCustomReport && wizardConfig ? wizardConfig.reportDate : 'Feb 27, 2026'}</p>
+            <p className="text-xs text-[#6B5E52]">
               {isCustomReport && wizardConfig
                 ? `${wizardConfig.brands.map(b => b.key).join(' + ')} · ${wizardConfig.ads.length} Ads`
                 : 'LFA + TFL · 10 Ads'}
@@ -611,19 +611,19 @@ export default function Report() {
       {/* Main content */}
       <main ref={mainRef} className="flex-1 overflow-y-auto custom-scroll">
         {/* Top bar */}
-        <div className="sticky top-0 z-10 px-6 py-3 flex items-center justify-between" style={{ background: 'oklch(0.08 0 0 / 0.9)', backdropFilter: 'blur(12px)', borderBottom: '1px solid oklch(0.15 0 0)' }}>
+        <div className="sticky top-0 z-10 px-6 py-3 flex items-center justify-between" style={{ background: 'rgba(247,245,240,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #E5E0D8' }}>
           <div>
-            <h1 className="text-base font-semibold" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.97 0 0)', letterSpacing: '-0.02em' }}>
+            <h1 className="text-base font-semibold" style={{ fontFamily: 'var(--font-display)', color: '#1A1714', letterSpacing: '-0.02em' }}>
               Creative Intelligence Report
             </h1>
           </div>
           <div className="flex items-center gap-3">
             {isCustomReport && wizardConfig ? (
-              <span className="text-xs text-[oklch(0.5_0_0)] hidden md:block">
+              <span className="text-xs text-[#6B5E52] hidden md:block">
                 {wizardConfig.brands.length} brands · {wizardConfig.ads.length} ads · {wizardConfig.dataSource}
               </span>
             ) : (
-              <span className="text-xs text-[oklch(0.5_0_0)] hidden md:block">2 brands · 10 ads · Meta Ads Library · Feb 2026</span>
+              <span className="text-xs text-[#6B5E52] hidden md:block">2 brands · 10 ads · Meta Ads Library · Feb 2026</span>
             )}
             <div className="flex gap-1">
               {(isCustomReport && wizardConfig
@@ -636,7 +636,7 @@ export default function Report() {
               ))}
             </div>
             <Link href="/wizard">
-              <button className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors" style={{ background: 'oklch(0.72 0.15 55)', color: 'oklch(0.08 0 0)' }}>
+              <button className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors" style={{ background: '#C2714F', color: '#F7F5F0' }}>
                 {isCustomReport ? '✎ Edit Report' : '+ New Report'}
               </button>
             </Link>
@@ -649,36 +649,36 @@ export default function Report() {
           {/* ── SECTION 1: REPORT OVERVIEW ── */}
           <Section id="overview">
             <div className="paper-card rounded-xl overflow-hidden mb-6">
-              <div className="p-8 text-white" style={{ background: 'linear-gradient(135deg, oklch(0.10 0 0) 0%, oklch(0.13 0.02 50) 100%)', borderBottom: '1px solid oklch(0.18 0 0)' }}>
-                <p className="section-label mb-3" style={{ color: 'oklch(0.72 0.15 55)' }}>Report Overview</p>
+              <div className="p-8" style={{ background: 'linear-gradient(135deg, #F0EDE8 0%, #EAE4DC 100%)', borderBottom: '1px solid #E5E0D8', color: '#1A1714' }}>
+                <p className="section-label mb-3" style={{ color: '#C2714F' }}>Report Overview</p>
                 <h1 className="text-4xl md:text-5xl font-normal mb-3 leading-tight" style={{ fontFamily: 'var(--font-display)' }}>
                   {isCustomReport && wizardConfig ? wizardConfig.clientName : 'Post Script Society'} —<br />
-                  <span style={{ color: '#e8a090' }}>{isCustomReport && wizardConfig ? wizardConfig.reportTitle : 'Competitor Creative Analysis'}</span>
+                  <span style={{ color: '#C2714F' }}>{isCustomReport && wizardConfig ? wizardConfig.reportTitle : 'Competitor Creative Analysis'}</span>
                 </h1>
-                <p className="text-sm mb-1" style={{ color: 'oklch(0.45 0 0)' }}>{activeOverview.date} · {activeOverview.source}</p>
-                <p className="text-[oklch(0.5_0_0)] text-sm">
+                <p className="text-sm mb-1" style={{ color: '#6B5E52' }}>{activeOverview.date} · {activeOverview.source}</p>
+                <p className="text-[#6B5E52] text-sm">
                   Competitor brands: {activeOverview.competitorBrands.map((name, i) => (
                     <span key={name}>
-                      <span className="text-white font-medium">{name}</span>
-                      {i < activeOverview.competitorBrands.length - 1 && <span className="text-[oklch(0.5_0_0)]"> + </span>}
+                      <span className="font-medium" style={{ color: '#1A1714' }}>{name}</span>
+                      {i < activeOverview.competitorBrands.length - 1 && <span className="text-[#6B5E52]"> + </span>}
                     </span>
                   ))}
                 </p>
               </div>
-                  <div className="grid grid-cols-3 md:grid-cols-6" style={{ borderTop: '1px solid oklch(0.18 0 0)' }}>
+                  <div className="grid grid-cols-3 md:grid-cols-6" style={{ borderTop: '1px solid #E5E0D8' }}>
                 {activeOverview.keyNumbers.map(n => (
-                  <div key={n.label} className="p-4 text-center" style={{ borderRight: '1px solid oklch(0.18 0 0)' }}>
-                    <p className="text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.97 0 0)', letterSpacing: '-0.03em' }}>{n.value}</p>
-                    <p className="text-xs mt-0.5 leading-tight" style={{ color: 'oklch(0.45 0 0)' }}>{n.label}</p>
-                    {n.sub && <p className="text-xs text-[oklch(0.5_0_0)] mt-0.5">{n.sub}</p>}
+                  <div key={n.label} className="p-4 text-center" style={{ borderRight: '1px solid #E5E0D8' }}>
+                    <p className="text-2xl font-bold" style={{ fontFamily: 'var(--font-display)', color: '#1A1714', letterSpacing: '-0.03em' }}>{n.value}</p>
+                    <p className="text-xs mt-0.5 leading-tight" style={{ color: '#6B5E52' }}>{n.label}</p>
+                    {n.sub && <p className="text-xs text-[#6B5E52] mt-0.5">{n.sub}</p>}
                   </div>
                 ))}
               </div>
             </div>
             <div className="paper-card rounded-xl p-6">
-              <p className="section-label mb-3" style={{ color: 'oklch(0.72 0.15 55)' }}>Executive Summary</p>
+              <p className="section-label mb-3" style={{ color: '#C2714F' }}>Executive Summary</p>
               {activeOverview.executiveSummary.split('\n\n').map((para, i) => (
-                <p key={i} className="text-sm leading-relaxed mb-3 last:mb-0" style={{ color: 'oklch(0.6 0 0)' }}>{para}</p>
+                <p key={i} className="text-sm leading-relaxed mb-3 last:mb-0" style={{ color: '#5A4E44' }}>{para}</p>
               ))}
             </div>
           </Section>
@@ -700,9 +700,9 @@ export default function Report() {
                     key={f}
                     onClick={() => setSwipeFilter(f)}
                     className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
-                      swipeFilter === f ? 'text-white shadow-sm' : 'bg-[oklch(0.14_0_0)] text-[oklch(0.55_0_0)] hover:bg-[oklch(0.17_0_0)]'
+                      swipeFilter === f ? 'text-white shadow-sm' : 'bg-[#F0EDE8] text-[#5A4E44] hover:bg-[#E5E0D8]'
                     }`}
-                    style={swipeFilter === f ? { backgroundColor: color, color: 'oklch(0.08 0 0)' } : { background: 'oklch(0.14 0 0)', color: 'oklch(0.5 0 0)', border: '1px solid oklch(0.22 0 0)' }}
+                    style={swipeFilter === f ? { backgroundColor: color, color: '#F7F5F0' } : { background: '#F0EDE8', color: '#6B5E52', border: '1px solid #D4C9BC' }}
                   >
                     {label}
                   </button>
@@ -719,7 +719,7 @@ export default function Report() {
                 <div key={s.label} className="paper-card rounded-xl p-4">
                   <p className="section-label mb-1">{s.label}</p>
                   <p className="text-2xl font-semibold" style={{ fontFamily: 'var(--font-display)', color: s.color }}>{s.value}</p>
-                  <p className="text-xs text-[oklch(0.5_0_0)] mt-0.5">{s.sub}</p>
+                  <p className="text-xs text-[#6B5E52] mt-0.5">{s.sub}</p>
                 </div>
               ))}
             </div>
@@ -739,7 +739,7 @@ export default function Report() {
             />
             <div className="paper-card rounded-xl p-6 mb-6">
               {activeAngleLandscape.intro.split('\n\n').map((para, i) => (
-                <p key={i} className="text-sm text-[oklch(0.7_0_0)] leading-relaxed mb-3 last:mb-0">{para}</p>
+                <p key={i} className="text-sm text-[#3A3028] leading-relaxed mb-3 last:mb-0">{para}</p>
               ))}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -747,9 +747,9 @@ export default function Report() {
                 <p className="section-label mb-4">Angle Prevalence (% of ads using angle)</p>
                 <ResponsiveContainer width="100%" height={220}>
                   <BarChart data={angleBarData} layout="vertical" margin={{ top: 0, right: 20, left: 10, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="oklch(0.18 0 0)" />
-                    <XAxis type="number" tick={{ fontSize: 11, fill: 'oklch(0.52 0.015 60)' }} axisLine={false} tickLine={false} domain={[0, 100]} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: 'oklch(0.35 0.015 50)' }} axisLine={false} tickLine={false} width={90} />
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E5E0D8" />
+                    <XAxis type="number" tick={{ fontSize: 11, fill: '#5A4E44' }} axisLine={false} tickLine={false} domain={[0, 100]} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: '#6B5E52' }} axisLine={false} tickLine={false} width={90} />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar dataKey="share" name="% of Ads" radius={[0, 3, 3, 0]}>
                       {angleBarData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.fill} />)}
@@ -764,8 +764,8 @@ export default function Report() {
                     <div key={a.name} className="flex items-start gap-3">
                       <div className="w-2 h-2 rounded-full flex-shrink-0 mt-1.5" style={{ backgroundColor: a.color }} />
                       <div>
-                        <p className="text-sm font-medium text-[oklch(0.97_0_0)]">{a.name}</p>
-                        <p className="text-xs text-[oklch(0.5_0_0)]">{a.description}</p>
+                        <p className="text-sm font-medium text-[#1A1714]">{a.name}</p>
+                        <p className="text-xs text-[#6B5E52]">{a.description}</p>
                       </div>
                     </div>
                   ))}
@@ -792,7 +792,7 @@ export default function Report() {
               sub="Analysis of the opening hook techniques used across video ads in the SwipeFile"
             />
             <div className="paper-card rounded-xl p-5 mb-6">
-              <p className="text-sm text-[oklch(0.7_0_0)] leading-relaxed">
+              <p className="text-sm text-[#3A3028] leading-relaxed">
                 In a social feed where the average viewer decides whether to stop scrolling within 1.7 seconds, the opening hook is the single most important creative element. The analysis below ranks the six most effective hooks identified in the SwipeFile by estimated scroll-stop rate, technique type, and psychological mechanism.
               </p>
             </div>
@@ -809,10 +809,10 @@ export default function Report() {
                   { type: 'Aspirational Scene', count: 1, color: '#5A8A6A', brands: 'LFA' },
                   { type: 'Visual Curiosity', count: 1, color: '#8B6FA5', brands: 'LFA' },
                 ].map(h => (
-                  <div key={h.type} className="bg-[oklch(0.13_0_0)] rounded-lg p-3">
+                  <div key={h.type} className="bg-[#F7F5F0] rounded-lg p-3">
                     <p className="text-lg font-semibold" style={{ fontFamily: 'var(--font-display)', color: h.color }}>{h.count}</p>
-                    <p className="text-xs font-medium text-[oklch(0.85_0_0)] mt-0.5">{h.type}</p>
-                    <p className="text-xs text-[oklch(0.5_0_0)]">{h.brands}</p>
+                    <p className="text-xs font-medium text-[#1A1714] mt-0.5">{h.type}</p>
+                    <p className="text-xs text-[#6B5E52]">{h.brands}</p>
                   </div>
                 ))}
               </div>
@@ -830,8 +830,8 @@ export default function Report() {
               <p className="section-label mb-4">Trigger Strength Across Category</p>
               <ResponsiveContainer width="100%" height={280}>
                 <RadarChart data={radarData}>
-                  <PolarGrid stroke="oklch(0.18 0 0)" />
-                  <PolarAngleAxis dataKey="trigger" tick={{ fontSize: 11, fill: 'oklch(0.35 0.015 50)' }} />
+                  <PolarGrid stroke="#E5E0D8" />
+                  <PolarAngleAxis dataKey="trigger" tick={{ fontSize: 11, fill: '#6B5E52' }} />
                   <Radar name="Strength" dataKey="strength" stroke="#C2714F" fill="#C2714F" fillOpacity={0.2} strokeWidth={2} />
                   <Tooltip content={<CustomTooltip />} />
                 </RadarChart>
@@ -864,11 +864,11 @@ export default function Report() {
                   }))}
                   margin={{ top: 5, right: 20, left: -20, bottom: 5 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(0.18 0 0)" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: 'oklch(0.52 0.015 60)' }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fontSize: 11, fill: 'oklch(0.52 0.015 60)' }} axisLine={false} tickLine={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#E5E0D8" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#5A4E44' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 11, fill: '#5A4E44' }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
-                  <ReferenceLine x="Nov" stroke="oklch(0.35 0 0)" strokeDasharray="4 4" label={{ value: 'Holiday Peak', fontSize: 10, fill: 'oklch(0.45 0 0)' }} />
+                  <ReferenceLine x="Nov" stroke="#9C8E80" strokeDasharray="4 4" label={{ value: 'Holiday Peak', fontSize: 10, fill: '#6B5E52' }} />
                   <Line type="monotone" dataKey="LFA" stroke="#C2714F" strokeWidth={2} dot={false} />
                   <Line type="monotone" dataKey="TFL" stroke="#B5546A" strokeWidth={2} dot={false} />
                   <Line type="monotone" dataKey="SMC" stroke="#4A6FA5" strokeWidth={2} dot={false} strokeDasharray="4 4" />
@@ -886,8 +886,8 @@ export default function Report() {
                   <div key={brand.key}>
                     <div className="flex items-center gap-2 mb-3">
                       <span>{brand.emoji}</span>
-                      <span className="text-sm font-semibold text-[oklch(0.85_0_0)]">{brand.shortName}</span>
-                      <span className="text-xs text-[oklch(0.5_0_0)]">— {hashtagData[brand.key].length} tags/emojis</span>
+                      <span className="text-sm font-semibold text-[#1A1714]">{brand.shortName}</span>
+                      <span className="text-xs text-[#6B5E52]">— {hashtagData[brand.key].length} tags/emojis</span>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
                       {hashtagData[brand.key].slice(0, 6).map(tag => (
@@ -903,14 +903,14 @@ export default function Report() {
 
             {/* Messaging pillars comparison table */}
             <div className="paper-card rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-[oklch(0.18_0_0)]">
+              <div className="px-5 py-4 border-b border-[#E5E0D8]">
                 <p className="section-label">Messaging Pillars by Brand</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr style={{ background: 'oklch(0.13 0 0)' }}>
-                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.45 0 0)' }}>Dimension</th>
+                    <tr style={{ background: '#F7F5F0' }}>
+                      <th className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: '#6B5E52' }}>Dimension</th>
                       {brands.map(b => (
                         <th key={b.key} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: b.color }}>{b.shortName}</th>
                       ))}
@@ -925,10 +925,10 @@ export default function Report() {
                       { label: 'Social Proof', values: ['Absent', 'Testimonials (named)', 'Absent', 'Community milestones'] },
                       { label: 'Discount Strategy', values: ['10% Off', '$55–$70 Off', 'None found', 'HOLIDAY20 code'] },
                     ].map((row, i) => (
-                      <tr key={row.label} style={{ background: i % 2 === 0 ? 'oklch(0.1 0 0)' : 'oklch(0.12 0 0)' }}>
-                        <td className="px-4 py-3 font-medium text-[oklch(0.85_0_0)] text-xs">{row.label}</td>
+                      <tr key={row.label} style={{ background: i % 2 === 0 ? '#F7F5F0' : '#F0EDE8' }}>
+                        <td className="px-4 py-3 font-medium text-[#1A1714] text-xs">{row.label}</td>
                         {row.values.map((v, j) => (
-                          <td key={j} className="px-4 py-3 text-xs text-[oklch(0.55_0_0)]">{v}</td>
+                          <td key={j} className="px-4 py-3 text-xs text-[#5A4E44]">{v}</td>
                         ))}
                       </tr>
                     ))}
@@ -958,14 +958,14 @@ export default function Report() {
                 >
                   <div className="flex items-start gap-4">
                     <div>
-                      <span className="text-3xl block mb-2" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.3 0 0)' }}>{t.number}</span>
+                      <span className="text-3xl block mb-2" style={{ fontFamily: 'var(--font-display)', color: '#C2714F' }}>{t.number}</span>
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <span className="text-lg">{t.icon}</span>
-                        <h3 className="text-base font-medium text-[oklch(0.97_0_0)]" style={{ fontFamily: 'var(--font-display)' }}>{t.title}</h3>
+                        <h3 className="text-base font-medium text-[#1A1714]" style={{ fontFamily: 'var(--font-display)' }}>{t.title}</h3>
                       </div>
-                      <p className="text-sm text-[oklch(0.7_0_0)] leading-relaxed">{t.body}</p>
+                      <p className="text-sm text-[#3A3028] leading-relaxed">{t.body}</p>
                     </div>
                   </div>
                 </motion.div>
@@ -974,15 +974,15 @@ export default function Report() {
 
             {/* Final comparison table */}
             <div className="paper-card rounded-xl overflow-hidden">
-              <div className="px-5 py-4 border-b border-[oklch(0.18_0_0)]">
+              <div className="px-5 py-4 border-b border-[#E5E0D8]">
                 <p className="section-label">LFA vs. TFL — Strategic Comparison</p>
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                      <tr style={{ background: 'oklch(0.13 0 0)' }}>
+                      <tr style={{ background: '#F7F5F0' }}>
                       {['Dimension', '🗺 Letters From Afar', '💌 The Flower Letters'].map(h => (
-                        <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: 'oklch(0.45 0 0)' }}>{h}</th>
+                        <th key={h} className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wide" style={{ color: '#6B5E52' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -997,10 +997,10 @@ export default function Report() {
                       ['Paid Media Maturity', 'Established, consistent', 'Advanced, DCO-ready'],
                       ['Ad Formats Used', 'Video, Image, Carousel', 'Video (dominant), DCO'],
                     ].map(([dim, lfa, tfl], i) => (
-                      <tr key={dim} style={{ background: i % 2 === 0 ? 'oklch(0.1 0 0)' : 'oklch(0.12 0 0)' }}>
-                        <td className="px-4 py-3 font-medium text-[oklch(0.85_0_0)] text-xs">{dim}</td>
-                        <td className="px-4 py-3 text-xs text-[oklch(0.55_0_0)]">{lfa}</td>
-                        <td className="px-4 py-3 text-xs text-[oklch(0.55_0_0)]">{tfl}</td>
+                      <tr key={dim} style={{ background: i % 2 === 0 ? '#F7F5F0' : '#F0EDE8' }}>
+                        <td className="px-4 py-3 font-medium text-[#1A1714] text-xs">{dim}</td>
+                        <td className="px-4 py-3 text-xs text-[#5A4E44]">{lfa}</td>
+                        <td className="px-4 py-3 text-xs text-[#5A4E44]">{tfl}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -1008,7 +1008,7 @@ export default function Report() {
               </div>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-[oklch(0.18_0_0)] text-center text-xs text-[oklch(0.5_0_0)]">
+            <div className="mt-8 pt-6 border-t border-[#E5E0D8] text-center text-xs text-[#6B5E52]">
               <p>Analysis conducted February 27, 2026 · Data sourced from Meta Ads Library (US) · 10 ads analyzed across 2 competitor brands</p>
               <p className="mt-1">All ad copy reproduced for competitive analysis purposes only</p>
             </div>

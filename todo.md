@@ -76,3 +76,9 @@
 - [x] Restore original "Scout the Competition" headline and sub-tagline copy
 - [x] Fix all font color contrast issues on off-white background
 - [x] Audit every text color value in Landing.tsx for legibility
+
+## Light Theme Retheme & Illustrated Landing Cards
+- [x] Retheme Wizard.tsx to light editorial style (off-white bg, dark text, terracotta accents)
+- [x] Retheme Report.tsx to light editorial style (off-white bg, dark text, terracotta accents)
+- [x] Replace landing page product screenshots with illustrated SVG feature preview cards
+- [x] Add zoom-in detail cards for specific features (angles bar chart, hooks list, swipefile card, comparison table)

@@ -116,6 +116,160 @@ function AngleBar({ label, pct, color }: { label: string; pct: number; color: st
   );
 }
 
+// ─── WIZARD MOCKUP ──────────────────────────────────────────────────────────────
+
+const MOCK_COMPETITORS = [
+  { emoji: '\u{1F338}', name: 'The Flower Letters', color: '#B5546A' },
+  { emoji: '\u{1F40C}', name: 'Snail Mail Chronicles', color: '#5A8A6A' },
+  { emoji: '\u{1F33F}', name: 'Tiny Farmers Market', color: '#6B8A3A' },
+];
+
+function WizardMockup() {
+  return (
+    <div style={{ background: '#F7F5F0', padding: '28px 24px', fontFamily: "'DM Sans', sans-serif" }}>
+      {/* Progress bar */}
+      <div className="flex items-center gap-2 mb-6">
+        {['Brand URL', 'Identity', 'Competitors', 'Angles', 'Ads', 'Takeaways'].map((label, i) => (
+          <div key={label} className="flex items-center gap-2">
+            <div
+              className="flex items-center justify-center rounded-full text-xs font-bold"
+              style={{
+                width: 22, height: 22, flexShrink: 0,
+                background: i === 0 ? '#C2714F' : i < 1 ? '#E8D5C8' : '#E5E0D8',
+                color: i === 0 ? '#fff' : '#9C8E80',
+                fontSize: 10,
+              }}
+            >
+              {i < 0 ? '✓' : i + 1}
+            </div>
+            {i < 5 && <div style={{ width: 16, height: 2, background: i < 0 ? '#C2714F' : '#E5E0D8', borderRadius: 2 }} />}
+          </div>
+        ))}
+      </div>
+
+      {/* Step heading */}
+      <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', color: '#C2714F', textTransform: 'uppercase', marginBottom: 4 }}>Step 1 — Scout Your Brand</p>
+      <p style={{ fontSize: 18, fontWeight: 700, color: '#1A1714', fontFamily: "'DM Serif Display', Georgia, serif", marginBottom: 4, letterSpacing: '-0.02em' }}>What's your brand URL?</p>
+      <p style={{ fontSize: 12, color: '#6B5E52', marginBottom: 16 }}>Paste your website URL and Scout will identify your brand, category, and top competitors.</p>
+
+      {/* URL input */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+        <div style={{ flex: 1, background: '#fff', border: '2px solid #C2714F', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#1A1714', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ color: '#9C8E80', fontSize: 12 }}>🔗</span>
+          <span style={{ color: '#1A1714' }}>postscriptsociety.com</span>
+          <span style={{ marginLeft: 'auto', width: 2, height: 16, background: '#C2714F', borderRadius: 1, animation: 'blink 1s step-end infinite' }} />
+        </div>
+        <div style={{ background: '#C2714F', color: '#fff', borderRadius: 10, padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Scout →</div>
+      </div>
+
+      {/* Detected brand card */}
+      <div style={{ background: '#fff', border: '1px solid #E5E0D8', borderRadius: 12, padding: '14px 16px', marginBottom: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
+          <div style={{ width: 36, height: 36, borderRadius: 8, background: '#F0EDE8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>✉️</div>
+          <div>
+            <p style={{ fontSize: 13, fontWeight: 700, color: '#1A1714', margin: 0 }}>Post Script Society</p>
+            <p style={{ fontSize: 11, color: '#6B5E52', margin: 0 }}>Mail subscription · DTC · Gifting</p>
+          </div>
+          <div style={{ marginLeft: 'auto', background: '#E8F5EE', color: '#2D7A4F', borderRadius: 6, padding: '3px 8px', fontSize: 10, fontWeight: 700 }}>✓ Identified</div>
+        </div>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {['Nostalgic Gifting', 'Subscription Box', 'Pen Pal Culture'].map(tag => (
+            <span key={tag} style={{ background: '#FBF5F1', border: '1px solid #E8D5C8', borderRadius: 6, padding: '3px 8px', fontSize: 10, color: '#C2714F', fontWeight: 600 }}>{tag}</span>
+          ))}
+        </div>
+      </div>
+
+      {/* Competitors found */}
+      <div style={{ background: '#FBF5F1', border: '1px solid #E8D5C8', borderRadius: 10, padding: '10px 14px' }}>
+        <p style={{ fontSize: 10, fontWeight: 700, color: '#C2714F', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Competitors Found</p>
+        <div style={{ display: 'flex', gap: 8 }}>
+          {MOCK_COMPETITORS.map(c => (
+            <div key={c.name} style={{ flex: 1, background: '#fff', border: `1px solid ${c.color}30`, borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+              <div style={{ fontSize: 16, marginBottom: 3 }}>{c.emoji}</div>
+              <p style={{ fontSize: 9, fontWeight: 700, color: c.color, lineHeight: 1.3, margin: 0 }}>{c.name}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── REPORT MOCKUP ───────────────────────────────────────────────────────────
+
+const MOCK_ADS = [
+  { brand: 'LFA', color: '#C2714F', emoji: 'Map', headline: 'Letters from the edge of the world', format: 'Video' },
+  { brand: 'TFL', color: '#B5546A', emoji: 'Mail', headline: "Send a letter. Make someone's day.", format: 'Image' },
+];
+
+function ReportMockup() {
+  return (
+    <div style={{ background: '#F7F5F0', fontFamily: "'DM Sans', sans-serif", display: 'flex', height: 420 }}>
+      {/* Sidebar */}
+      <div style={{ width: 140, background: '#fff', borderRight: '1px solid #E5E0D8', padding: '16px 0', flexShrink: 0 }}>
+        <div style={{ padding: '0 12px 12px', borderBottom: '1px solid #E5E0D8', marginBottom: 8 }}>
+          <p style={{ fontSize: 9, fontWeight: 700, color: '#C2714F', textTransform: 'uppercase', letterSpacing: '0.07em', margin: 0 }}>Creative Report</p>
+          <p style={{ fontSize: 11, fontWeight: 700, color: '#1A1714', margin: '2px 0 0' }}>Competitor Analysis</p>
+        </div>
+        {['◈ Report Overview', '📌 SwipeFile', '🧭 Angle Landscape', '🔬 Angle Deep Dives', '🎣 Top Hooks', '🧠 Psych Triggers', '◉ Cross-Brand', '◆ Key Takeaways'].map((item, i) => (
+          <div key={item} style={{ padding: '6px 12px', background: i === 0 ? '#F0EDE8' : 'transparent', fontSize: 10, color: i === 0 ? '#1A1714' : '#6B5E52', fontWeight: i === 0 ? 700 : 400, display: 'flex', alignItems: 'center', gap: 4 }}>
+            {item}
+          </div>
+        ))}
+      </div>
+
+      {/* Main */}
+      <div style={{ flex: 1, overflow: 'hidden', padding: '16px 20px' }}>
+        {/* Header */}
+        <div style={{ background: 'linear-gradient(135deg, #F0EDE8, #EAE4DC)', borderRadius: 12, padding: '16px 20px', marginBottom: 14, border: '1px solid #E5E0D8' }}>
+          <p style={{ fontSize: 9, fontWeight: 700, color: '#C2714F', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 4 }}>Report Overview</p>
+          <p style={{ fontSize: 18, fontWeight: 700, color: '#1A1714', fontFamily: "'DM Serif Display', Georgia, serif", letterSpacing: '-0.02em', marginBottom: 2 }}>Post Script Society —</p>
+          <p style={{ fontSize: 14, color: '#C2714F', fontStyle: 'italic', fontFamily: "'DM Serif Display', Georgia, serif", marginBottom: 8 }}>Competitor Creative Analysis</p>
+          <div style={{ display: 'flex', gap: 16 }}>
+            {[['12', 'Ads'], ['5', 'Angles'], ['3', 'Brands'], ['93', 'Variations']].map(([val, label]) => (
+              <div key={label}>
+                <p style={{ fontSize: 16, fontWeight: 800, color: '#1A1714', fontFamily: "'DM Serif Display', Georgia, serif", margin: 0 }}>{val}</p>
+                <p style={{ fontSize: 9, color: '#6B5E52', margin: 0 }}>{label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Angle bars */}
+        <div style={{ background: '#fff', border: '1px solid #E5E0D8', borderRadius: 10, padding: '12px 14px', marginBottom: 10 }}>
+          <p style={{ fontSize: 9, fontWeight: 700, color: '#C2714F', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>Messaging Angles</p>
+          {[['Nostalgic Escapism', 80, '#C2714F'], ['Gift Positioning', 65, '#B5546A'], ['Curiosity Gap', 50, '#4A6FA5'], ['Identity & Belonging', 45, '#5A8A6A'], ['Social Proof', 30, '#8B6FA5']].map(([label, pct, color]) => (
+            <div key={String(label)} style={{ marginBottom: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#4A3F36', marginBottom: 2 }}>
+                <span>{label}</span><span style={{ fontWeight: 700, color: String(color) }}>{pct}%</span>
+              </div>
+              <div style={{ height: 4, background: '#F0EDE8', borderRadius: 2, overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: String(color), borderRadius: 2 }} />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Ad cards row */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {MOCK_ADS.map(ad => (
+            <div key={ad.brand} style={{ flex: 1, background: '#fff', border: '1px solid #E5E0D8', borderRadius: 8, overflow: 'hidden' }}>
+              <div style={{ borderLeft: `3px solid ${ad.color}`, padding: '8px 10px' }}>
+                <div style={{ display: 'flex', gap: 4, marginBottom: 4 }}>
+                  <span style={{ background: ad.color, color: '#fff', borderRadius: 4, padding: '1px 5px', fontSize: 8, fontWeight: 700 }}>{ad.brand}</span>
+                  <span style={{ background: '#E5E0D8', color: '#5A4E44', borderRadius: 4, padding: '1px 5px', fontSize: 8 }}>{ad.format}</span>
+                </div>
+                <p style={{ fontSize: 9, fontWeight: 600, color: '#1A1714', lineHeight: 1.3, margin: 0 }}>{ad.headline}</p>
+              </div>
+              <div style={{ background: `${ad.color}10`, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>{ad.emoji}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function Landing() {
@@ -487,11 +641,7 @@ export default function Landing() {
               style={{ transform: "rotate(0.8deg)" }}
             >
               <BrowserFrame title="scout.app/wizard">
-                <img
-                  src={WIZARD_SCREENSHOT}
-                  alt="Scout wizard — brand URL step"
-                  className="w-full h-auto"
-                />
+                <WizardMockup />
               </BrowserFrame>
             </motion.div>
           </div>
@@ -535,11 +685,7 @@ export default function Landing() {
               style={{ transform: "rotate(-0.6deg)" }}
             >
               <BrowserFrame title="scout.app/report">
-                <img
-                  src={REPORT_SCREENSHOT}
-                  alt="Scout competitor ad report"
-                  className="w-full h-auto"
-                />
+                <ReportMockup />
               </BrowserFrame>
             </motion.div>
           </div>

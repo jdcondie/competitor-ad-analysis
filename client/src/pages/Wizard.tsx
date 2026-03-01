@@ -38,8 +38,8 @@ const PLATFORM_OPTIONS = ["Facebook", "Instagram", "Audience Network", "Messenge
 // ─── SHARED UI PRIMITIVES ─────────────────────────────────────────────────────
 
 const Label = ({ children, required }: { children: React.ReactNode; required?: boolean }) => (
-  <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'oklch(0.55 0 0)', letterSpacing: '0.08em' }}>
-    {children} {required && <span style={{ color: 'oklch(0.72 0.15 55)' }}>*</span>}
+  <label className="block text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: '#5A4E44', letterSpacing: '0.08em' }}>
+    {children} {required && <span style={{ color: '#C2714F' }}>*</span>}
   </label>
 );
 
@@ -51,7 +51,8 @@ const Input = ({ value, onChange, placeholder, type = "text", className = "" }: 
     value={value}
     onChange={e => onChange(e.target.value)}
     placeholder={placeholder}
-    className={`w-full px-3 py-2 text-sm rounded-lg border border-[oklch(0.22_0_0)] bg-[oklch(0.11_0_0)] text-white placeholder:text-[oklch(0.7_0.01_80)] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/30 focus:border-[#C2714F] transition-all ${className}`}
+    className={`w-full px-3 py-2 text-sm rounded-lg border bg-white text-[#1A1714] placeholder:text-[#9C8E80] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/20 focus:border-[#C2714F] transition-all ${className}`}
+    style={{ borderColor: '#D4C9BC' }}
   />
 );
 
@@ -63,7 +64,8 @@ const Textarea = ({ value, onChange, placeholder, rows = 4 }: {
     onChange={e => onChange(e.target.value)}
     placeholder={placeholder}
     rows={rows}
-    className="w-full px-3 py-2 text-sm rounded-lg border border-[oklch(0.22_0_0)] bg-[oklch(0.11_0_0)] text-white placeholder:text-[oklch(0.7_0.01_80)] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/30 focus:border-[#C2714F] transition-all resize-none"
+    className="w-full px-3 py-2 text-sm rounded-lg border bg-white text-[#1A1714] placeholder:text-[#9C8E80] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/20 focus:border-[#C2714F] transition-all resize-none"
+    style={{ borderColor: '#D4C9BC' }}
   />
 );
 
@@ -73,14 +75,15 @@ const Select = ({ value, onChange, options }: {
   <select
     value={value}
     onChange={e => onChange(e.target.value)}
-    className="w-full px-3 py-2 text-sm rounded-lg border border-[oklch(0.22_0_0)] bg-[oklch(0.11_0_0)] text-white focus:outline-none focus:ring-2 focus:ring-[#C2714F]/30 focus:border-[#C2714F] transition-all"
+    className="w-full px-3 py-2 text-sm rounded-lg border bg-white text-[#1A1714] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/20 focus:border-[#C2714F] transition-all"
+    style={{ borderColor: '#D4C9BC' }}
   >
     {options.map(o => <option key={o} value={o}>{o}</option>)}
   </select>
 );
 
 const Card = ({ children, className = "" }: { children: React.ReactNode; className?: string }) => (
-  <div className={`rounded-xl ${className}`} style={{ background: 'oklch(0.11 0 0)', border: '1px solid oklch(0.18 0 0)' }}>
+  <div className={`rounded-xl ${className}`} style={{ background: '#ffffff', border: '1px solid #E5E0D8', boxShadow: '0 1px 4px rgba(26,23,20,0.06)' }}>
     {children}
   </div>
 );
@@ -91,13 +94,13 @@ const Btn = ({ onClick, children, variant = "primary", disabled = false, classNa
   const base = "px-4 py-2 rounded-lg text-sm font-medium transition-all focus:outline-none";
   const variants = {
     primary: "text-white disabled:opacity-40",
-    ghost: "hover:text-white",
+    ghost: "hover:bg-[#F0EDE8]",
     danger: "text-red-400 hover:text-red-300",
   };
   const styles: Record<string, React.CSSProperties> = {
-    primary: { background: 'oklch(0.72 0.15 55)', color: 'oklch(0.08 0 0)' },
-    ghost: { border: '1px solid oklch(0.22 0 0)', color: 'oklch(0.5 0 0)' },
-    danger: { color: 'oklch(0.65 0.18 25)' },
+    primary: { background: '#C2714F', color: '#ffffff' },
+    ghost: { border: '1px solid #D4C9BC', color: '#5A4E44' },
+    danger: { color: '#B5546A' },
   };
   return (
     <button onClick={onClick} disabled={disabled} className={`${base} ${variants[variant]} ${className}`} style={styles[variant]}>
@@ -202,14 +205,14 @@ function StepUrl({
   return (
     <div className="space-y-6">
       {/* Hero explainer */}
-      <div className="rounded-2xl p-7 text-white" style={{ background: 'linear-gradient(135deg, oklch(0.14 0 0), oklch(0.18 0.03 55))' }}>
+      <div className="rounded-2xl p-7" style={{ background: 'linear-gradient(135deg, #F0EDE8, #EDE8E0)', color: '#1A1714' }}>
         <div className="flex items-center gap-3 mb-4">
           <span className="text-3xl">✦</span>
           <div>
             <h2 className="text-xl font-bold leading-tight" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
               AI-Powered Report Generator
             </h2>
-            <p className="text-sm" style={{ color: 'oklch(0.55 0 0)' }}>Paste your brand URL — get a report built from real competitor ads in the Meta Ads Library</p>
+            <p className="text-sm" style={{ color: '#5A4E44' }}>Paste your brand URL — get a report built from real competitor ads in the Meta Ads Library</p>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
@@ -218,12 +221,12 @@ function StepUrl({
             { icon: "📊", label: "Step 2: Generate Report", desc: "AI fetches real ads from Meta Ads Library and extracts angles, hooks & takeaways" },
             { icon: "✦", label: "Step 3: Review & Launch", desc: "Review the pre-filled report, adjust as needed, and launch" },
           ].map(item => (
-            <div key={item.label} className="rounded-xl p-3" style={{ background: 'oklch(0.1 0 0 / 0.6)' }}>
+            <div key={item.label} className="rounded-xl p-3" style={{ background: '#F7F5F0' }}>
               <div className="flex items-center gap-2 mb-1">
                 <span>{item.icon}</span>
                 <span className="font-medium text-sm">{item.label}</span>
               </div>
-              <p className="text-xs leading-relaxed" style={{ color: 'oklch(0.55 0 0)' }}>{item.desc}</p>
+              <p className="text-xs leading-relaxed" style={{ color: '#5A4E44' }}>{item.desc}</p>
             </div>
           ))}
         </div>
@@ -237,8 +240,8 @@ function StepUrl({
             phase === "error" && !identity ? "bg-red-500 text-white" :
             "bg-green-500 text-white"
           }`}>1</div>
-          <p className="font-semibold text-sm" style={{ color: 'oklch(0.85 0 0)' }}>Identify Your Brand & Competitors</p>
-          {identity && <span className="text-xs px-2 py-0.5 rounded-full" style={{ color: 'oklch(0.72 0.15 145)', background: 'oklch(0.72 0.15 145 / 0.12)' }}>✓ {identity.brandName}</span>}
+          <p className="font-semibold text-sm" style={{ color: '#1A1714' }}>Identify Your Brand & Competitors</p>
+          {identity && <span className="text-xs px-2 py-0.5 rounded-full" style={{ color: '#2D7A4F', background: '#E8F5EE' }}>✓ {identity.brandName}</span>}
         </div>
         <Label required>Your Brand URL</Label>
         <div className="flex gap-3 mt-1">
@@ -249,7 +252,7 @@ function StepUrl({
             onKeyDown={e => e.key === "Enter" && phase === "idle" && handleExtract()}
             placeholder="https://yourbrand.com"
             disabled={isLoading || phase === "extracted" || phase === "done"}
-            className="flex-1 px-4 py-3 text-sm rounded-xl border-2 border-[oklch(0.22_0_0)] bg-[oklch(0.11_0_0)] text-white placeholder:text-[oklch(0.7_0.01_80)] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/30 focus:border-[#C2714F] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono"
+            className="flex-1 px-4 py-3 text-sm rounded-xl border-2 border-[#E5E0D8] bg-white text-[#1A1714] placeholder:text-[#9C8E80] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/30 focus:border-[#C2714F] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono"
           />
           <button
             onClick={phase === "idle" || phase === "error" ? handleExtract : undefined}
@@ -272,7 +275,7 @@ function StepUrl({
           </button>
         </div>
         {phase === "extracting" && (
-          <p className="text-xs mt-2 flex items-center gap-1" style={{ color: 'oklch(0.5 0 0)' }}>
+          <p className="text-xs mt-2 flex items-center gap-1" style={{ color: '#5A4E44' }}>
             <svg className="animate-spin w-3 h-3 text-[#C2714F]" viewBox="0 0 24 24" fill="none">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -281,9 +284,9 @@ function StepUrl({
           </p>
         )}
         {identity && (
-          <div className="mt-3 rounded-xl p-3 text-sm" style={{ background: 'oklch(0.72 0.15 145 / 0.08)', border: '1px solid oklch(0.72 0.15 145 / 0.2)' }}>
-            <p className="font-semibold mb-1" style={{ color: 'oklch(0.72 0.15 145)' }}>✓ Brand identified: {identity.brandName}</p>
-            <p className="text-xs" style={{ color: 'oklch(0.6 0.08 145)' }}>Category: {identity.category} · Competitors found: {(identity.competitors || []).map((c: any) => c.name).join(", ")}</p>
+          <div className="mt-3 rounded-xl p-3 text-sm" style={{ background: '#F0FAF5', border: '1px solid #A8D5B8' }}>
+            <p className="font-semibold mb-1" style={{ color: '#2D7A4F' }}>✓ Brand identified: {identity.brandName}</p>
+            <p className="text-xs" style={{ color: '#3D8A5F' }}>Category: {identity.category} · Competitors found: {(identity.competitors || []).map((c: any) => c.name).join(", ")}</p>
           </div>
         )}
       </Card>
@@ -297,7 +300,7 @@ function StepUrl({
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                   phase === "done" ? "bg-green-500 text-white" : "bg-[#C2714F] text-white"
                 }`}>2</div>
-                <p className="font-semibold text-sm" style={{ color: 'oklch(0.85 0 0)' }}>Fetch Real Ads & Generate Report</p>
+                <p className="font-semibold text-sm" style={{ color: '#1A1714' }}>Fetch Real Ads & Generate Report</p>
               </div>
 
               <button
@@ -320,12 +323,12 @@ function StepUrl({
                 )}
               </button>
               {phase === "generating" && (
-                <p className="text-xs text-center mt-2" style={{ color: 'oklch(0.45 0 0)' }}>This takes ~30–60 seconds — fetching real ads from Meta Ads Library then running AI analysis</p>
+                <p className="text-xs text-center mt-2" style={{ color: '#6B5E52' }}>This takes ~30–60 seconds — fetching real ads from Meta Ads Library then running AI analysis</p>
               )}
               {phase === "done" && (
-                <div className="mt-3 rounded-xl p-3 text-sm" style={{ background: 'oklch(0.72 0.15 145 / 0.08)', border: '1px solid oklch(0.72 0.15 145 / 0.2)' }}>
-                  <p className="font-semibold" style={{ color: 'oklch(0.72 0.15 145)' }}>✓ {statusMsg}</p>
-                  <p className="text-xs mt-1" style={{ color: 'oklch(0.6 0.08 145)' }}>All wizard fields have been pre-filled. Click <strong>Next</strong> to review and adjust, or click <strong>Launch Report</strong> at Step 6.</p>
+                <div className="mt-3 rounded-xl p-3 text-sm" style={{ background: '#F0FAF5', border: '1px solid #A8D5B8' }}>
+                  <p className="font-semibold" style={{ color: '#2D7A4F' }}>✓ {statusMsg}</p>
+                  <p className="text-xs mt-1" style={{ color: '#3D8A5F' }}>All wizard fields have been pre-filled. Click <strong>Next</strong> to review and adjust, or click <strong>Launch Report</strong> at Step 6.</p>
                 </div>
               )}
             </Card>
@@ -335,9 +338,9 @@ function StepUrl({
 
       {/* Error display (outside AnimatePresence so it shows even when phase=error) */}
       {phase === "error" && (
-        <div className="rounded-xl p-4 text-sm" style={{ background: 'oklch(0.65 0.18 25 / 0.08)', border: '1px solid oklch(0.65 0.18 25 / 0.25)', color: 'oklch(0.65 0.18 25)' }}>
+        <div className="rounded-xl p-4 text-sm" style={{ background: '#FDF5F3', border: '1px solid #E8B4A8', color: '#B5546A' }}>
           <p className="font-semibold">✕ {statusMsg}</p>
-          <p className="text-xs mt-1" style={{ color: 'oklch(0.55 0.12 25)' }}>Try again or skip to fill in manually.</p>
+          <p className="text-xs mt-1" style={{ color: '#C2614F' }}>Try again or skip to fill in manually.</p>
         </div>
       )}
 
@@ -345,7 +348,7 @@ function StepUrl({
       <div className="text-center">
         <button
           onClick={onSkip}
-          className="text-sm hover:text-white transition-colors underline underline-offset-4" style={{ color: 'oklch(0.4 0 0)' }}
+          className="text-sm hover:text-stone-900 transition-colors underline underline-offset-4" style={{ color: '#6B5E52' }}
         >
           Skip auto-fill — I'll enter everything manually →
         </button>
@@ -366,7 +369,7 @@ function StepIdentity({ data, onChange }: {
         <div>
           <Label required>Client / Brand Name</Label>
           <Input value={data.clientName} onChange={v => onChange("clientName", v)} placeholder="e.g. Post Script Society" />
-          <p className="text-xs text-[oklch(0.6_0.015_60)] mt-1">Your brand or client name — appears in the report hero</p>
+          <p className="text-xs mt-1" style={{ color: '#6B5E52' }}>Your brand or client name — appears in the report hero</p>
         </div>
         <div>
           <Label required>Report Title</Label>
@@ -389,7 +392,7 @@ function StepIdentity({ data, onChange }: {
           rows={6}
           placeholder="Write a 2–3 paragraph overview of the analysis. What brands were studied? What were the key findings? What does this category compete on?"
         />
-        <p className="text-xs text-[oklch(0.6_0.015_60)] mt-1">Appears in the Report Overview section. Separate paragraphs with a blank line.</p>
+        <p className="text-xs mt-1" style={{ color: '#6B5E52' }}>Appears in the Report Overview section. Separate paragraphs with a blank line.</p>
       </div>
     </div>
   );
@@ -422,11 +425,11 @@ function StepBrands({ brands, onChange }: {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Add the competitor brands you analyzed. Each brand gets its own color and identifier used throughout the report.</p>
+      <p className="text-sm" style={{ color: '#6B5E52' }}>Add the competitor brands you analyzed. Each brand gets its own color and identifier used throughout the report.</p>
       {brands.map((brand, i) => (
         <Card key={i} className="p-4">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.85 0 0)' }}>Brand {i + 1}</span>
+            <span className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)', color: '#1A1714' }}>Brand {i + 1}</span>
             {brands.length > 1 && <Btn variant="danger" onClick={() => removeBrand(i)}>Remove</Btn>}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -449,7 +452,7 @@ function StepBrands({ brands, onChange }: {
                   type="color"
                   value={brand.color}
                   onChange={e => updateBrand(i, "color", e.target.value)}
-                  className="w-10 h-9 rounded border border-[oklch(0.22_0_0)] cursor-pointer"
+                  className="w-10 h-9 rounded border border-[#E5E0D8] cursor-pointer"
                 />
                 <Input value={brand.color} onChange={v => updateBrand(i, "color", v)} placeholder="#C2714F" className="font-mono" />
               </div>
@@ -460,7 +463,7 @@ function StepBrands({ brands, onChange }: {
       {brands.length < 4 && (
         <button
           onClick={addBrand}
-          className="w-full py-3 rounded-xl text-sm transition-all" style={{ border: '2px dashed oklch(0.22 0 0)', color: 'oklch(0.4 0 0)' }}
+          className="w-full py-3 rounded-xl text-sm transition-all" style={{ border: '2px dashed #D4C9BC', color: '#6B5E52' }}
         >
           + Add Competitor Brand
         </button>
@@ -497,13 +500,13 @@ function StepAngles({ angles, onChange }: {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Define the creative messaging angles being tested in this category. These appear in the Angle Landscape and Angle Deep Dives sections.</p>
+      <p className="text-sm" style={{ color: '#6B5E52' }}>Define the creative messaging angles being tested in this category. These appear in the Angle Landscape and Angle Deep Dives sections.</p>
       {angles.map((angle, i) => (
         <Card key={angle.id} className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: angle.color }} />
-              <span className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.85 0 0)' }}>
+              <span className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)', color: '#1A1714' }}>
                 Angle {i + 1}
               </span>
             </div>
@@ -525,7 +528,7 @@ function StepAngles({ angles, onChange }: {
                   onChange={e => update(i, "share", parseInt(e.target.value))}
                   className="flex-1 accent-[#C2714F]"
                 />
-                <span className="text-sm font-semibold w-10 text-right" style={{ color: 'oklch(0.85 0 0)' }}>{angle.share}%</span>
+                <span className="text-sm font-semibold w-10 text-right" style={{ color: '#1A1714' }}>{angle.share}%</span>
               </div>
             </div>
           </div>
@@ -543,7 +546,7 @@ function StepAngles({ angles, onChange }: {
       {angles.length < 6 && (
         <button
           onClick={addAngle}
-          className="w-full py-3 rounded-xl text-sm transition-all" style={{ border: '2px dashed oklch(0.22 0 0)', color: 'oklch(0.4 0 0)' }}
+          className="w-full py-3 rounded-xl text-sm transition-all" style={{ border: '2px dashed #D4C9BC', color: '#6B5E52' }}
         >
           + Add Messaging Angle
         </button>
@@ -601,20 +604,20 @@ function StepAds({ ads, brands, angles, onChange }: {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Add up to 10 ads from the Meta Ads Library. Mix formats: Video, Image, Carousel, DCO.</p>
-        <span className="text-xs px-2 py-1 rounded-full" style={{ color: 'oklch(0.5 0 0)', background: 'oklch(0.14 0 0)' }}>{ads.length}/10 ads</span>
+        <p className="text-sm" style={{ color: '#6B5E52' }}>Add up to 10 ads from the Meta Ads Library. Mix formats: Video, Image, Carousel, DCO.</p>
+        <span className="text-xs px-2 py-1 rounded-full" style={{ color: '#5A4E44', background: '#F0EDE8' }}>{ads.length}/10 ads</span>
       </div>
       {ads.map((ad, i) => {
         const brandColor = brands.find(b => b.key === ad.brandKey)?.color || "#888";
         return (
           <Card key={ad.id} className="overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid oklch(0.18 0 0)', borderLeft: `3px solid ${brandColor}` }}>
+            <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: '1px solid #E5E0D8', borderLeft: `3px solid ${brandColor}` }}>
               <div className="flex items-center gap-3">
-                <span className="text-xs font-bold" style={{ color: 'oklch(0.45 0 0)' }}>#{String(i + 1).padStart(2, "0")}</span>
+                <span className="text-xs font-bold" style={{ color: '#6B5E52' }}>#{String(i + 1).padStart(2, "0")}</span>
                 <span className="text-xs font-semibold px-2 py-0.5 rounded-full text-white" style={{ backgroundColor: brandColor }}>
                   {ad.brandKey || "?"}
                 </span>
-                <span className="text-xs" style={{ color: 'oklch(0.5 0 0)' }}>{ad.format}</span>
+                <span className="text-xs" style={{ color: '#5A4E44' }}>{ad.format}</span>
               </div>
               <Btn variant="danger" onClick={() => remove(i)}>Remove</Btn>
             </div>
@@ -679,7 +682,7 @@ function StepAds({ ads, brands, angles, onChange }: {
                       className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
                         (ad.platforms || []).includes(p) ? "text-white" : ""
                       }`}
-                      style={(ad.platforms || []).includes(p) ? { backgroundColor: brandColor } : { border: '1px solid oklch(0.22 0 0)', color: 'oklch(0.5 0 0)' }}
+                      style={(ad.platforms || []).includes(p) ? { backgroundColor: brandColor } : { border: '1px solid #E5E0D8', color: '#5A4E44' }}
 
                     >
                       {p}
@@ -694,7 +697,7 @@ function StepAds({ ads, brands, angles, onChange }: {
       {ads.length < 10 && (
         <button
           onClick={addAd}
-          className="w-full py-3 rounded-xl text-sm transition-all" style={{ border: '2px dashed oklch(0.22 0 0)', color: 'oklch(0.4 0 0)' }}
+          className="w-full py-3 rounded-xl text-sm transition-all" style={{ border: '2px dashed #D4C9BC', color: '#6B5E52' }}
         >
           + Add Ad to SwipeFile
         </button>
@@ -727,13 +730,13 @@ function StepTakeaways({ takeaways, onChange }: {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm" style={{ color: 'oklch(0.45 0 0)' }}>Add up to 6 strategic insights for creative strategists working in this category.</p>
+      <p className="text-sm" style={{ color: '#6B5E52' }}>Add up to 6 strategic insights for creative strategists working in this category.</p>
       {takeaways.map((t, i) => (
         <Card key={i} className="p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: t.color }} />
-              <span className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)', color: 'oklch(0.85 0 0)' }}>
+              <span className="text-sm font-semibold" style={{ fontFamily: 'var(--font-display)', color: '#1A1714' }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
             </div>
@@ -756,7 +759,7 @@ function StepTakeaways({ takeaways, onChange }: {
         </Card>
       ))}
       {takeaways.length < 6 && (
-        <button onClick={add} className="w-full py-3 rounded-xl text-sm transition-all" style={{ border: '2px dashed oklch(0.22 0 0)', color: 'oklch(0.4 0 0)' }}>
+        <button onClick={add} className="w-full py-3 rounded-xl text-sm transition-all" style={{ border: '2px dashed #D4C9BC', color: '#6B5E52' }}>
           + Add Key Takeaway
         </button>
       )}
@@ -785,33 +788,33 @@ function StepReview({ config }: { config: Partial<ReportConfig> }) {
         <div className="space-y-2">
           {checks.map(c => (
             <div key={c.label} className="flex items-center gap-3">
-              <span className="text-sm" style={{ color: c.ok ? 'oklch(0.72 0.15 145)' : 'oklch(0.4 0 0)' }}>
+              <span className="text-sm" style={{ color: c.ok ? '#2D7A4F' : '#9C8E80' }}>
                 {c.ok ? "✓" : "○"}
               </span>
-              <span className="text-sm" style={{ color: c.ok ? 'oklch(0.85 0 0)' : 'oklch(0.45 0 0)' }}>{c.label}</span>
+              <span className="text-sm" style={{ color: c.ok ? '#1A1714' : '#6B5E52' }}>{c.label}</span>
             </div>
           ))}
         </div>
         {!allGood && (
-          <p className="text-xs mt-3 px-3 py-2 rounded-lg" style={{ color: 'oklch(0.72 0.15 55)', background: 'oklch(0.72 0.15 55 / 0.08)', border: '1px solid oklch(0.72 0.15 55 / 0.2)' }}>Complete the required items above before launching. You can still launch and fill in details later.</p>
+          <p className="text-xs mt-3 px-3 py-2 rounded-lg" style={{ color: '#C2714F', background: '#FDF5F0', border: '1px solid #E8C4B0' }}>Complete the required items above before launching. You can still launch and fill in details later.</p>
         )}
       </Card>
 
       <Card className="p-5">
         <p className="section-label mb-3">Report Summary</p>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-          <div><span style={{ color: 'oklch(0.45 0 0)' }}>Client:</span> <span className="font-medium" style={{ color: 'oklch(0.85 0 0)' }}>{config.clientName || "—"}</span></div>
-          <div><span style={{ color: 'oklch(0.45 0 0)' }}>Brands:</span> <span className="font-medium" style={{ color: 'oklch(0.85 0 0)' }}>{config.brands?.length ?? 0}</span></div>
-          <div><span style={{ color: 'oklch(0.45 0 0)' }}>Angles:</span> <span className="font-medium" style={{ color: 'oklch(0.85 0 0)' }}>{config.angles?.length ?? 0}</span></div>
-          <div><span style={{ color: 'oklch(0.45 0 0)' }}>Ads:</span> <span className="font-medium" style={{ color: 'oklch(0.85 0 0)' }}>{config.ads?.length ?? 0}</span></div>
-          <div><span style={{ color: 'oklch(0.45 0 0)' }}>Takeaways:</span> <span className="font-medium" style={{ color: 'oklch(0.85 0 0)' }}>{config.takeaways?.length ?? 0}</span></div>
-          <div><span style={{ color: 'oklch(0.45 0 0)' }}>Date:</span> <span className="font-medium" style={{ color: 'oklch(0.85 0 0)' }}>{config.reportDate || "—"}</span></div>
+          <div><span style={{ color: '#6B5E52' }}>Client:</span> <span className="font-medium" style={{ color: '#1A1714' }}>{config.clientName || "—"}</span></div>
+          <div><span style={{ color: '#6B5E52' }}>Brands:</span> <span className="font-medium" style={{ color: '#1A1714' }}>{config.brands?.length ?? 0}</span></div>
+          <div><span style={{ color: '#6B5E52' }}>Angles:</span> <span className="font-medium" style={{ color: '#1A1714' }}>{config.angles?.length ?? 0}</span></div>
+          <div><span style={{ color: '#6B5E52' }}>Ads:</span> <span className="font-medium" style={{ color: '#1A1714' }}>{config.ads?.length ?? 0}</span></div>
+          <div><span style={{ color: '#6B5E52' }}>Takeaways:</span> <span className="font-medium" style={{ color: '#1A1714' }}>{config.takeaways?.length ?? 0}</span></div>
+          <div><span style={{ color: '#6B5E52' }}>Date:</span> <span className="font-medium" style={{ color: '#1A1714' }}>{config.reportDate || "—"}</span></div>
         </div>
       </Card>
 
-      <div className="rounded-xl p-4" style={{ background: 'oklch(0.13 0 0)', border: '1px solid oklch(0.22 0 0)' }}>
-        <p className="text-sm" style={{ color: 'oklch(0.55 0 0)' }}>
-          <strong style={{ color: 'oklch(0.75 0 0)' }}>How this works:</strong> Your report configuration is saved to your browser. Click <strong>Launch Report</strong> to generate the full interactive report using your data. You can always return to this wizard to edit any section.
+      <div className="rounded-xl p-4" style={{ background: '#F7F5F0', border: '1px solid #E5E0D8' }}>
+        <p className="text-sm" style={{ color: '#5A4E44' }}>
+          <strong style={{ color: '#1A1714' }}>How this works:</strong> Your report configuration is saved to your browser. Click <strong>Launch Report</strong> to generate the full interactive report using your data. You can always return to this wizard to edit any section.
         </p>
       </div>
     </div>
@@ -916,7 +919,7 @@ export default function Wizard() {
   const totalSteps = STEPS.length + 1; // +1 for step 0
 
   return (
-    <div className="min-h-screen flex" style={{ background: 'oklch(0.08 0 0)' }}>
+    <div className="landing-page min-h-screen flex" style={{ background: '#F7F5F0', color: '#1A1714' }}>
       {/* Full-screen loading overlay during report generation */}
       <ReportGeneratingOverlay
         visible={isGenerating}
@@ -924,22 +927,22 @@ export default function Wizard() {
         competitors={generatingCompetitors}
       />
       {/* Left sidebar */}
-      <aside className="w-64 flex-shrink-0 text-white flex-col hidden md:flex" style={{ background: 'oklch(0.06 0 0)', borderRight: '1px solid oklch(0.15 0 0)' }}>
-        <div className="p-5" style={{ borderBottom: '1px solid oklch(0.15 0 0)' }}>
-          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: 'oklch(0.72 0.15 55)' }}>New Report</p>
-          <p className="text-base font-bold leading-tight" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>Setup Wizard</p>
+      <aside className="w-64 flex-shrink-0 flex-col hidden md:flex" style={{ background: '#ffffff', borderRight: '1px solid #E5E0D8' }}>
+        <div className="p-5" style={{ borderBottom: '1px solid #E5E0D8' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: '#C2714F' }}>New Report</p>
+          <p className="text-base font-bold leading-tight" style={{ fontFamily: 'var(--font-display)', color: '#1A1714', letterSpacing: '-0.02em' }}>Setup Wizard</p>
         </div>
         <nav className="flex-1 p-3 space-y-1">
           {/* Step 0 */}
           <button
             onClick={() => setStep(0)}
             className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all`}
-            style={step === 0 ? { background: 'oklch(0.14 0 0)', color: 'white' } : step > 0 ? { color: 'oklch(0.55 0 0)' } : { color: 'oklch(0.35 0 0)' }}
+            style={step === 0 ? { background: '#F0EDE8', color: '#1A1714' } : step > 0 ? { color: '#5A4E44' } : { color: '#9C8E80' }}
           >
             <span className="text-sm flex-shrink-0 mt-0.5">{step > 0 ? "✓" : "✦"}</span>
             <div>
               <p className="text-sm font-medium leading-tight">Brand URL</p>
-              <p className="text-xs opacity-60 mt-0.5 leading-tight">
+              <p className="text-xs mt-0.5 leading-tight" style={{ color: '#9C8E80' }}>
                 {autoFilled ? "Auto-filled ✓" : "AI auto-fill from URL"}
               </p>
             </div>
@@ -950,20 +953,20 @@ export default function Wizard() {
               key={s.id}
               onClick={() => s.id < step && setStep(s.id)}
               className={`w-full flex items-start gap-3 px-3 py-2.5 rounded-lg text-left transition-all`}
-              style={step === s.id ? { background: 'oklch(0.14 0 0)', color: 'white' } : s.id < step ? { color: 'oklch(0.55 0 0)' } : { color: 'oklch(0.32 0 0)' }}
+              style={step === s.id ? { background: '#F0EDE8', color: '#1A1714' } : s.id < step ? { color: '#5A4E44' } : { color: '#9C8E80' }}
             >
               <span className="text-sm flex-shrink-0 mt-0.5">{s.id < step ? "✓" : s.icon}</span>
               <div>
                 <p className="text-sm font-medium leading-tight">{s.label}</p>
-                <p className="text-xs opacity-60 mt-0.5 leading-tight">{s.desc}</p>
+                <p className="text-xs mt-0.5 leading-tight" style={{ color: '#9C8E80' }}>{s.desc}</p>
               </div>
             </button>
           ))}
         </nav>
-        <div className="p-4" style={{ borderTop: '1px solid oklch(0.15 0 0)' }}>
+        <div className="p-4" style={{ borderTop: '1px solid #E5E0D8' }}>
           <button
             onClick={() => { clearConfig(); navigate("/report"); }}
-            className="w-full text-xs hover:text-white transition-colors text-left" style={{ color: 'oklch(0.4 0 0)' }}
+            className="w-full text-xs transition-colors text-left" style={{ color: '#9C8E80' }}
           >
             ← Back to Demo Report
           </button>
@@ -973,24 +976,24 @@ export default function Wizard() {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="px-6 py-4 flex items-center justify-between flex-shrink-0" style={{ background: 'oklch(0.08 0 0 / 0.9)', backdropFilter: 'blur(12px)', borderBottom: '1px solid oklch(0.15 0 0)' }}>
+        <header className="px-6 py-4 flex items-center justify-between flex-shrink-0" style={{ background: 'rgba(247,245,240,0.95)', backdropFilter: 'blur(12px)', borderBottom: '1px solid #E5E0D8' }}>
           <div>
-            <p className="text-xs uppercase tracking-wide font-semibold" style={{ color: 'oklch(0.72 0.15 55)' }}>
+            <p className="text-xs uppercase tracking-wide font-semibold" style={{ color: '#C2714F' }}>
               {step === 0 ? "Step 0 of 6" : `Step ${step} of ${STEPS.length}`}
             </p>
-            <h1 className="text-lg font-bold text-white" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+            <h1 className="text-lg font-bold" style={{ fontFamily: 'var(--font-display)', color: '#1A1714', letterSpacing: '-0.02em' }}>
               {currentStepLabel}
             </h1>
           </div>
           {/* Progress bar */}
           <div className="flex items-center gap-3">
-              <div className="w-32 h-1.5 rounded-full overflow-hidden" style={{ background: 'oklch(0.18 0 0)' }}>
+              <div className="w-32 h-1.5 rounded-full overflow-hidden" style={{ background: '#E5E0D8' }}>
               <div
                 className="h-full bg-[#C2714F] rounded-full transition-all duration-500"
                 style={{ width: `${(step / totalSteps) * 100}%` }}
               />
             </div>
-              <span className="text-xs" style={{ color: 'oklch(0.45 0 0)' }}>{Math.round((step / totalSteps) * 100)}%</span>
+              <span className="text-xs" style={{ color: '#5A4E44' }}>{Math.round((step / totalSteps) * 100)}%</span>
           </div>
         </header>
 
@@ -1012,7 +1015,7 @@ export default function Wizard() {
         </main>
 
         {/* Bottom nav */}
-        <footer className="px-6 py-4 flex items-center justify-between flex-shrink-0" style={{ background: 'oklch(0.08 0 0)', borderTop: '1px solid oklch(0.15 0 0)' }}>
+        <footer className="px-6 py-4 flex items-center justify-between flex-shrink-0" style={{ background: '#ffffff', borderTop: '1px solid #E5E0D8' }}>
           <Btn variant="ghost" onClick={() => step > 0 && setStep(s => s - 1)} disabled={step === 0}>
             ← Back
           </Btn>
@@ -1024,7 +1027,7 @@ export default function Wizard() {
                 className="h-1.5 rounded-full transition-all"
                 style={{
                   width: step === i ? '1.5rem' : '0.5rem',
-                  background: step === i ? 'oklch(0.72 0.15 55)' : i < step ? 'oklch(0.72 0.15 55 / 0.35)' : 'oklch(0.2 0 0)'
+                  background: step === i ? '#C2714F' : i < step ? '#C2714F66' : '#E5E0D8'
                 }}
               />
             ))}
