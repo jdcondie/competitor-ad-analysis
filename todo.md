@@ -88,3 +88,8 @@
 - [x] Add sequential brand identity card population after URL types
 - [x] Add sequential competitor card population after brand identity appears
 - [x] Loop the animation continuously
+
+## Hero Journey Animation
+- [x] Remove hero video embed
+- [x] Build HeroJourneyMockup: URL typing → brand ID → competitors → loading → report
+- [x] Replace video with animated mockup in hero section
