@@ -14,6 +14,8 @@ import { motion } from "framer-motion";
 
 const REPORT_SCREENSHOT =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/scout-report-screenshot_9c8b1eef.webp";
+const DEMO_VIDEO =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/scout-demo_9d17cbe9.mp4";
 const WIZARD_SCREENSHOT =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/scout-wizard-screenshot_a0513b04.webp";
 
@@ -314,11 +316,15 @@ export default function Landing() {
             </div>
           </div>
 
-          <BrowserFrame title="scout.app/report">
-            <img
-              src={REPORT_SCREENSHOT}
-              alt="Scout competitor ad report"
-              className="w-full h-auto"
+          <BrowserFrame title="scout.app — live demo">
+            <video
+              src={DEMO_VIDEO}
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-auto block"
+              style={{ maxHeight: "480px", objectFit: "cover", objectPosition: "top" }}
             />
           </BrowserFrame>
         </motion.div>

@@ -65,3 +65,9 @@
 - [x] Redesign Landing.tsx: light/off-white theme, serif headings, scattered product screenshots
 - [x] Add multi-section layout: Hero, Features with screenshots, Social proof, How It Works, FAQ, Footer
 - [x] Update index.css global theme tokens to support light theme on landing page
+
+## Hero Demo Video
+- [x] Record screen capture of wizard → loading overlay → report flow
+- [x] Process video (trim, compress, optimize for web)
+- [x] Upload to CDN
+- [x] Embed looping autoplay video in hero section of Landing.tsx
