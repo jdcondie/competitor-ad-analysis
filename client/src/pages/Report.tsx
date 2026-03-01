@@ -580,7 +580,7 @@ export default function Report() {
 
         {/* New Report / Edit Report buttons */}
         <div className="px-3 pb-2">
-          <Link href="/">
+          <Link href="/wizard">
             <button className="w-full flex items-center gap-3 px-3 py-2.5 text-left rounded-lg transition-all text-white" style={{ background: 'oklch(0.72 0.15 55)', color: 'oklch(0.08 0 0)', fontWeight: 600 }}>
               <span className="text-base flex-shrink-0">✦</span>
               {sidebarOpen && <span className="text-sm truncate font-semibold">{isCustomReport ? 'Edit Report' : 'New Report'}</span>}
@@ -635,7 +635,7 @@ export default function Report() {
                 </div>
               ))}
             </div>
-            <Link href="/">
+            <Link href="/wizard">
               <button className="px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors" style={{ background: 'oklch(0.72 0.15 55)', color: 'oklch(0.08 0 0)' }}>
                 {isCustomReport ? '✎ Edit Report' : '+ New Report'}
               </button>

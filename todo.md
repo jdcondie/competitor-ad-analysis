@@ -42,3 +42,9 @@
 - [x] Update server research router to use server-side token (env var) instead of user-provided token
 - [x] Remove token from tRPC procedure inputs
 - [x] Verify report generation works end-to-end without user entering a token
+
+## Scout Landing Page
+- [x] Build Scout landing page component (Hero, Problem, How It Works sections)
+- [x] Wire landing page as root route (/) in App.tsx
+- [x] Move wizard to /wizard route
+- [x] Verify navigation from landing page CTA to wizard works
