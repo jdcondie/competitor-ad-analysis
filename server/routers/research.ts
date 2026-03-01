@@ -364,7 +364,11 @@ Return JSON with ALL of these fields:
 - platformBreakdown: array of {platform, adCount, share (%), color (hex)} for Facebook/Instagram/Messenger/Audience Network
 - brandComparison: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, topFormat, ctaStyle, toneOfVoice}
 - categoryContext: 2 sentences on the broader ${identity.category} advertising landscape
-- opportunityGaps: 3-4 gaps, each with title, description (2 sentences), priority (High/Medium/Low)`
+- opportunityGaps: 3-4 gaps, each with title, description (2 sentences), priority (High/Medium/Low)
+- brandProfiles: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength (1 sentence), whatsWorking (array of 3-4 specific bullet strings), whatsNotWorking (array of 2-3 specific bullet strings)}
+- adVolumeTimeline: array of 6 monthly data points {month (e.g. "Oct 2025"), [brandKey]: number} — realistic estimated ad counts per brand per month
+- strategicRecommendations: 4-5 recommendations, each with {title, rationale (2-3 sentences), action (specific 1-sentence action), priority (High/Medium/Low), effort (Low/Medium/High), impact (Low/Medium/High), icon (emoji)}
+- executiveSummaryBullets: 4-5 bullets, each with {label (e.g. "Key Finding"), text (1-2 sentences), icon (emoji), color (hex)}`
         : `You are a senior creative strategist producing a premium competitor ad intelligence report for ${identity.brandName}.
 
 COMPETITORS TO ANALYZE: ${competitorNames}
@@ -384,7 +388,11 @@ Return JSON with ALL of these fields:
 - platformBreakdown: array of {platform, adCount, share (%), color (hex)} for Facebook/Instagram/Messenger/Audience Network
 - brandComparison: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, topFormat, ctaStyle, toneOfVoice}
 - categoryContext: 2 sentences on the broader ${identity.category} advertising landscape
-- opportunityGaps: 3-4 gaps, each with title, description (2 sentences), priority (High/Medium/Low)`;
+- opportunityGaps: 3-4 gaps, each with title, description (2 sentences), priority (High/Medium/Low)
+- brandProfiles: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength (1 sentence), whatsWorking (array of 3-4 specific bullet strings), whatsNotWorking (array of 2-3 specific bullet strings)}
+- adVolumeTimeline: array of 6 monthly data points {month (e.g. "Oct 2025"), [brandKey]: number} — realistic estimated ad counts per brand per month
+- strategicRecommendations: 4-5 recommendations, each with {title, rationale (2-3 sentences), action (specific 1-sentence action), priority (High/Medium/Low), effort (Low/Medium/High), impact (Low/Medium/High), icon (emoji)}
+- executiveSummaryBullets: 4-5 bullets, each with {label (e.g. "Key Finding"), text (1-2 sentences), icon (emoji), color (hex)}`;
 
       const analysisResponse = await invokeLLM({
         messages: [
@@ -511,6 +519,71 @@ Return JSON with ALL of these fields:
                     additionalProperties: false,
                   },
                 },
+                brandProfiles: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      brandKey: { type: "string" },
+                      brandName: { type: "string" },
+                      adCount: { type: "number" },
+                      avgRunDays: { type: "number" },
+                      topAngle: { type: "string" },
+                      dominantFormat: { type: "string" },
+                      toneOfVoice: { type: "string" },
+                      primaryCTA: { type: "string" },
+                      uniqueStrength: { type: "string" },
+                      whatsWorking: { type: "array", items: { type: "string" } },
+                      whatsNotWorking: { type: "array", items: { type: "string" } },
+                    },
+                    required: ["brandKey", "brandName", "adCount", "avgRunDays", "topAngle", "dominantFormat", "toneOfVoice", "primaryCTA", "uniqueStrength", "whatsWorking", "whatsNotWorking"],
+                    additionalProperties: false,
+                  },
+                },
+                adVolumeTimeline: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      month: { type: "string" },
+                      brand1: { type: "number" },
+                      brand2: { type: "number" },
+                    },
+                    required: ["month", "brand1", "brand2"],
+                    additionalProperties: false,
+                  },
+                },
+                strategicRecommendations: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      title: { type: "string" },
+                      rationale: { type: "string" },
+                      action: { type: "string" },
+                      priority: { type: "string" },
+                      effort: { type: "string" },
+                      impact: { type: "string" },
+                      icon: { type: "string" },
+                    },
+                    required: ["title", "rationale", "action", "priority", "effort", "impact", "icon"],
+                    additionalProperties: false,
+                  },
+                },
+                executiveSummaryBullets: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      label: { type: "string" },
+                      text: { type: "string" },
+                      icon: { type: "string" },
+                      color: { type: "string" },
+                    },
+                    required: ["label", "text", "icon", "color"],
+                    additionalProperties: false,
+                  },
+                },
               },
               required: [
                 "messagingAngles",
@@ -523,6 +596,10 @@ Return JSON with ALL of these fields:
                 "brandComparison",
                 "categoryContext",
                 "opportunityGaps",
+                "brandProfiles",
+                "adVolumeTimeline",
+                "strategicRecommendations",
+                "executiveSummaryBullets",
               ],
               additionalProperties: false,
             },
@@ -650,6 +727,48 @@ Return JSON with ALL of these fields:
         priority: (g.priority === "High" || g.priority === "Medium" || g.priority === "Low") ? g.priority : "Medium" as "High" | "Medium" | "Low",
       }));
 
+      // Map new rich fields
+      const brandProfiles = (analysis.brandProfiles || []).map((b: any) => ({
+        brandKey: b.brandKey || "",
+        brandName: b.brandName || "",
+        color: identity.competitors.find((c: any) => c.key === b.brandKey)?.color || "#888",
+        emoji: identity.competitors.find((c: any) => c.key === b.brandKey)?.emoji || "🏢",
+        adCount: typeof b.adCount === "number" ? b.adCount : 0,
+        avgRunDays: typeof b.avgRunDays === "number" ? b.avgRunDays : 14,
+        topAngle: b.topAngle || "",
+        dominantFormat: b.dominantFormat || "Image",
+        toneOfVoice: b.toneOfVoice || "",
+        primaryCTA: b.primaryCTA || "",
+        uniqueStrength: b.uniqueStrength || "",
+        whatsWorking: Array.isArray(b.whatsWorking) ? b.whatsWorking : [],
+        whatsNotWorking: Array.isArray(b.whatsNotWorking) ? b.whatsNotWorking : [],
+      }));
+
+      // Map adVolumeTimeline — replace brand1/brand2 keys with actual brand keys
+      const brandKeys = identity.competitors.slice(0, 2).map((c: any) => c.key);
+      const adVolumeTimeline = (analysis.adVolumeTimeline || []).map((point: any) => ({
+        month: point.month || "",
+        [brandKeys[0] || "brand1"]: typeof point.brand1 === "number" ? point.brand1 : 0,
+        [brandKeys[1] || "brand2"]: typeof point.brand2 === "number" ? point.brand2 : 0,
+      }));
+
+      const strategicRecommendations = (analysis.strategicRecommendations || []).map((r: any) => ({
+        title: r.title || "",
+        rationale: r.rationale || "",
+        action: r.action || "",
+        priority: (["High", "Medium", "Low"].includes(r.priority) ? r.priority : "Medium") as "High" | "Medium" | "Low",
+        effort: (["Low", "Medium", "High"].includes(r.effort) ? r.effort : "Medium") as "Low" | "Medium" | "High",
+        impact: (["Low", "Medium", "High"].includes(r.impact) ? r.impact : "Medium") as "Low" | "Medium" | "High",
+        icon: r.icon || "💡",
+      }));
+
+      const executiveSummaryBullets = (analysis.executiveSummaryBullets || []).map((b: any) => ({
+        label: b.label || "Finding",
+        text: b.text || "",
+        icon: b.icon || "◆",
+        color: b.color || "#C2714F",
+      }));
+
       const reportConfig = {
         clientName: identity.brandName,
         reportTitle: "Competitor Creative Analysis",
@@ -669,6 +788,10 @@ Return JSON with ALL of these fields:
         platformBreakdown,
         brandComparison,
         opportunityGaps,
+        brandProfiles,
+        adVolumeTimeline,
+        strategicRecommendations,
+        executiveSummaryBullets,
         _meta: {
           brandName: identity.brandName,
           category: identity.category,

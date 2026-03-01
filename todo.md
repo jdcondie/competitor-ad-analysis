@@ -162,3 +162,17 @@
 - [x] Upgrade LLM prompt to generate all new rich data fields
 - [x] Rebuild ReportDetail page with charts (recharts), stat grids, ad cards with thumbnails, trigger analysis, brand comparison table
 - [x] Add recharts dependency for bar/pie/radar charts in the report
+
+## Full Report Sections Upgrade (Match Reference Image)
+- [ ] Expand LLM prompt: add swipeFile per-ad breakdowns (headline, body, angle, hook, CTA, format, score)
+- [ ] Expand LLM prompt: add brandProfiles (per-brand stats, what's working, what's missing, top angle, dominant format)
+- [ ] Expand LLM prompt: add adVolumeTimeline (monthly ad count per brand for line chart)
+- [ ] Expand LLM prompt: add strategicRecommendations (actionable items with priority, effort, impact)
+- [ ] Expand LLM prompt: add executiveSummaryBullets (3-5 key findings as bullet points)
+- [ ] Expand LLM prompt: add whatsWorking / whatsNotWorking arrays for each brand
+- [ ] Build SwipeFile section in ReportDetail with ad grid cards (thumbnail, headline, body, angle/hook/CTA chips)
+- [ ] Build Brand Profiles section (per-brand stat card, top angle, dominant format, what's working/missing)
+- [ ] Build Ad Volume Timeline section (recharts LineChart with monthly data per brand)
+- [ ] Build Strategic Recommendations section (priority cards with effort/impact badges)
+- [ ] Reformat executive summary into skimmable bullets + key stat callouts
+- [ ] Break up all large text blocks into labeled sub-sections

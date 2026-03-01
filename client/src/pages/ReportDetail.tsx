@@ -27,7 +27,9 @@ import type { ReportConfig, WizardBrand, WizardAngle, WizardAd } from "@/context
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell,
+  LineChart, Line, Legend,
 } from "recharts";
+import type { BrandProfile, StrategicRecommendation, ExecutiveSummaryBullet, AdVolumePoint } from "@/contexts/ReportContext";
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const T = {
@@ -246,6 +248,10 @@ export default function ReportDetail() {
     platformBreakdown?: any[];
     brandComparison?: any[];
     opportunityGaps?: any[];
+    brandProfiles?: BrandProfile[];
+    adVolumeTimeline?: AdVolumePoint[];
+    strategicRecommendations?: StrategicRecommendation[];
+    executiveSummaryBullets?: ExecutiveSummaryBullet[];
   }) | null;
 
   return (
@@ -356,6 +362,23 @@ export default function ReportDetail() {
               <>
                 <motion.section variants={fadeUp} custom={0.05} initial="hidden" animate="visible">
                   <SectionHeader eyebrow="Overview" title="Executive Summary" subtitle={config.categoryContext || undefined} />
+                  {/* Skimmable bullet cards */}
+                  {(config.executiveSummaryBullets?.length ?? 0) > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                      {(config.executiveSummaryBullets ?? []).map((b: ExecutiveSummaryBullet, i: number) => (
+                        <motion.div key={i} variants={fadeUp} custom={i * 0.06} initial="hidden" animate="visible"
+                          className="rounded-xl p-5 flex items-start gap-3"
+                          style={{ background: T.white, border: `1px solid ${T.border}`, boxShadow: "0 1px 4px rgba(26,23,20,0.05)" }}>
+                          <span className="text-xl flex-shrink-0">{b.icon}</span>
+                          <div>
+                            <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: b.color }}>{b.label}</p>
+                            <p className="text-sm leading-relaxed" style={{ color: T.textSub }}>{b.text}</p>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+                  ) : null}
+                  {/* Full narrative below bullets */}
                   <div className="rounded-2xl p-8" style={{ background: T.white, border: `1px solid ${T.border}`, boxShadow: "0 1px 6px rgba(26,23,20,0.06)" }}>
                     <p className="text-base leading-relaxed" style={{ color: T.textSub }}>{config.executiveSummary}</p>
                   </div>
@@ -408,7 +431,90 @@ export default function ReportDetail() {
               </>
             )}
 
-            {/* ── 3. MESSAGING ANGLES ───────────────────────────────────────── */}
+                {/* ── 2b. BRAND PROFILES (What's Working / What's Missing) ────── */}
+            {(config.brandProfiles?.length ?? 0) > 0 && (
+              <>
+                <section>
+                  <SectionHeader eyebrow="Brand Deep Dive" title="What Each Brand Is Doing" subtitle="A breakdown of each competitor's creative strengths and gaps" />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    {(config.brandProfiles ?? []).map((profile: BrandProfile, i: number) => (
+                      <motion.div key={profile.brandKey} variants={fadeUp} custom={i * 0.08} initial="hidden" animate="visible"
+                        className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${T.border}`, boxShadow: "0 1px 6px rgba(26,23,20,0.06)" }}>
+                        {/* Header */}
+                        <div className="px-6 py-4 flex items-center gap-3" style={{ background: `${profile.color}12`, borderBottom: `1px solid ${profile.color}30` }}>
+                          <span className="text-3xl">{profile.emoji}</span>
+                          <div className="flex-1">
+                            <h3 className="font-bold text-base" style={{ fontFamily: T.serif, color: T.text }}>{profile.brandName}</h3>
+                            <p className="text-xs" style={{ color: T.textMuted }}>{profile.toneOfVoice} · Primary CTA: {profile.primaryCTA}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-lg font-bold" style={{ fontFamily: T.serif, color: profile.color }}>{profile.adCount}</p>
+                            <p className="text-xs" style={{ color: T.textFaint }}>ads</p>
+                          </div>
+                        </div>
+                        {/* Unique strength */}
+                        {profile.uniqueStrength && (
+                          <div className="px-6 py-3" style={{ background: T.bgAlt, borderBottom: `1px solid ${T.border}` }}>
+                            <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: T.accent }}>Unique Strength</p>
+                            <p className="text-sm italic" style={{ color: T.textSub }}>"{profile.uniqueStrength}"</p>
+                          </div>
+                        )}
+                        <div className="p-6 grid grid-cols-1 gap-4" style={{ background: T.white }}>
+                          {/* What's Working */}
+                          {profile.whatsWorking?.length > 0 && (
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: T.green }}>
+                                <span>✓</span> What's Working
+                              </p>
+                              <ul className="space-y-1.5">
+                                {profile.whatsWorking.map((item: string, j: number) => (
+                                  <li key={j} className="flex items-start gap-2 text-sm" style={{ color: T.textSub }}>
+                                    <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-xs" style={{ background: T.greenLight, color: T.green }}>✓</span>
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {/* What's Not Working */}
+                          {profile.whatsNotWorking?.length > 0 && (
+                            <div>
+                              <p className="text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5" style={{ color: "#B91C1C" }}>
+                                <span>▲</span> Gaps & Weaknesses
+                              </p>
+                              <ul className="space-y-1.5">
+                                {profile.whatsNotWorking.map((item: string, j: number) => (
+                                  <li key={j} className="flex items-start gap-2 text-sm" style={{ color: T.textSub }}>
+                                    <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-xs" style={{ background: "#FEF2F2", color: "#B91C1C" }}>▲</span>
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {/* Quick stats */}
+                          <div className="grid grid-cols-3 gap-2 pt-2" style={{ borderTop: `1px solid ${T.border}` }}>
+                            {[
+                              { label: "Avg Run", value: `${profile.avgRunDays}d` },
+                              { label: "Top Angle", value: profile.topAngle },
+                              { label: "Format", value: profile.dominantFormat },
+                            ].map((stat) => (
+                              <div key={stat.label} className="rounded-lg p-2 text-center" style={{ background: T.bgAlt }}>
+                                <p className="text-xs" style={{ color: T.textFaint }}>{stat.label}</p>
+                                <p className="text-xs font-semibold mt-0.5 leading-snug" style={{ color: T.text }}>{stat.value}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </section>
+                <Divider />
+              </>
+            )}
+
+            {/* ── 3. MESSAGING ANGLES ───────────────────────────────────── */}
             {config.angles?.length > 0 && (
               <>
                 <section>
@@ -704,6 +810,67 @@ export default function ReportDetail() {
                           <h4 className="font-bold text-sm mb-2" style={{ fontFamily: T.serif, color: T.text }}>{t.title}</h4>
                           <p className="text-xs leading-relaxed" style={{ color: T.textMuted }}>{t.body}</p>
                         </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ── 9. AD VOLUME TIMELINE ──────────────────────────────────── */}
+            {(config.adVolumeTimeline?.length ?? 0) > 0 && (
+              <>
+                <section>
+                  <SectionHeader eyebrow="Activity" title="Ad Volume Over Time" subtitle="How many ads each competitor was running across the observed period" />
+                  <div className="rounded-2xl p-6" style={{ background: T.white, border: `1px solid ${T.border}`, boxShadow: "0 1px 6px rgba(26,23,20,0.06)" }}>
+                    <ResponsiveContainer width="100%" height={240}>
+                      <LineChart data={config.adVolumeTimeline ?? []} margin={{ top: 8, right: 16, left: 0, bottom: 8 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke={T.border} />
+                        <XAxis dataKey="month" tick={{ fontSize: 11, fill: T.textFaint }} />
+                        <YAxis tick={{ fontSize: 11, fill: T.textFaint }} />
+                        <Tooltip contentStyle={{ background: T.white, border: `1px solid ${T.border}`, borderRadius: 8, fontSize: 12 }} />
+                        <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+                        {config.brands?.map((b: WizardBrand, i: number) => (
+                          <Line key={b.key} type="monotone" dataKey={b.key} name={b.name} stroke={b.color} strokeWidth={2} dot={{ r: 3, fill: b.color }} />
+                        ))}
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </section>
+                <Divider />
+              </>
+            )}
+
+            {/* ── 10. STRATEGIC RECOMMENDATIONS ─────────────────────────────── */}
+            {(config.strategicRecommendations?.length ?? 0) > 0 && (
+              <section>
+                <SectionHeader eyebrow="Action Plan" title="Strategic Recommendations" subtitle="What Post Script Society should do differently based on this competitive analysis" />
+                <div className="space-y-4">
+                  {(config.strategicRecommendations ?? []).map((rec: StrategicRecommendation, i: number) => (
+                    <motion.div key={i} variants={fadeUp} custom={i * 0.06} initial="hidden" animate="visible"
+                      className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${T.border}`, boxShadow: "0 1px 4px rgba(26,23,20,0.05)" }}>
+                      <div className="px-6 py-4 flex items-center gap-4" style={{ background: T.bgAlt, borderBottom: `1px solid ${T.border}` }}>
+                        <span className="text-2xl flex-shrink-0">{rec.icon}</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-bold text-sm" style={{ fontFamily: T.serif, color: T.text }}>{rec.title}</h4>
+                            <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{
+                              background: rec.priority === "High" ? T.accentLight : rec.priority === "Medium" ? T.greenLight : T.bgAlt,
+                              color: rec.priority === "High" ? T.accent : rec.priority === "Medium" ? T.green : T.textFaint,
+                              border: `1px solid ${rec.priority === "High" ? T.accentBorder : rec.priority === "Medium" ? T.greenBorder : T.border}`,
+                            }}>{rec.priority} Priority</span>
+                            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: T.bgAlt, color: T.textMuted, border: `1px solid ${T.border}` }}>Effort: {rec.effort}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="px-6 py-5" style={{ background: T.white }}>
+                        <p className="text-sm leading-relaxed mb-3" style={{ color: T.textSub }}>{rec.rationale}</p>
+                        {rec.action && (
+                          <div className="flex items-start gap-2 mt-2 p-3 rounded-lg" style={{ background: T.accentLight, border: `1px solid ${T.accentBorder}` }}>
+                            <span className="text-xs font-bold uppercase tracking-wider flex-shrink-0 mt-0.5" style={{ color: T.accent }}>Action</span>
+                            <p className="text-sm" style={{ color: T.text }}>{rec.action}</p>
+                          </div>
+                        )}
                       </div>
                     </motion.div>
                   ))}

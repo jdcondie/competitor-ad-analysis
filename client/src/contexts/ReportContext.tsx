@@ -82,6 +82,44 @@ export interface BrandComparison {
   toneOfVoice: string;
 }
 
+export interface BrandProfile {
+  brandKey: string;
+  brandName: string;
+  color: string;
+  emoji: string;
+  adCount: number;
+  topAngle: string;
+  dominantFormat: string;
+  toneOfVoice: string;
+  avgRunDays: number;
+  whatsWorking: string[];   // 3-4 bullet points
+  whatsNotWorking: string[]; // 2-3 bullet points
+  uniqueStrength: string;    // 1 sentence
+  primaryCTA: string;
+}
+
+export interface AdVolumePoint {
+  month: string;  // e.g. "Jan 2026"
+  [brandKey: string]: number | string; // dynamic per-brand counts
+}
+
+export interface StrategicRecommendation {
+  title: string;
+  rationale: string;   // 2-3 sentences
+  action: string;      // specific action to take
+  priority: "High" | "Medium" | "Low";
+  effort: "Low" | "Medium" | "High";
+  impact: "Low" | "Medium" | "High";
+  icon: string;
+}
+
+export interface ExecutiveSummaryBullet {
+  label: string;    // e.g. "Key Finding", "Opportunity", "Risk"
+  text: string;     // 1-2 sentences
+  icon: string;
+  color: string;
+}
+
 export interface ReportConfig {
   // Step 1 — Report Identity
   clientName: string;       // e.g. "Post Script Society"
@@ -110,6 +148,12 @@ export interface ReportConfig {
   brandComparison?: BrandComparison[];
   categoryContext?: string;     // 1-2 sentences on the broader category landscape
   opportunityGaps?: { title: string; description: string; priority: "High" | "Medium" | "Low" }[];
+
+  // New rich sections
+  brandProfiles?: BrandProfile[];
+  adVolumeTimeline?: AdVolumePoint[];
+  strategicRecommendations?: StrategicRecommendation[];
+  executiveSummaryBullets?: ExecutiveSummaryBullet[];
 }
 
 export interface ReportContextValue {
