@@ -6,7 +6,7 @@
  * Typography: DM Serif Display (headings) + DM Sans (body)
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 
@@ -124,7 +124,51 @@ const MOCK_COMPETITORS = [
   { emoji: '\u{1F33F}', name: 'Tiny Farmers Market', color: '#6B8A3A' },
 ];
 
+const TYPED_URL = 'postscriptsociety.com';
+// Animation phases: 0=typing, 1=typed+scanning, 2=brand shown, 3=competitors shown, 4=pause before reset
+const PHASE_DURATIONS = [TYPED_URL.length * 60, 600, 500, 800, 1200];
+
 function WizardMockup() {
+  const [phase, setPhase] = useState(0);
+  const [charCount, setCharCount] = useState(0);
+  const [visibleCompetitors, setVisibleCompetitors] = useState(0);
+
+  useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
+
+    if (phase === 0) {
+      // Typing phase: add one character every 60ms
+      if (charCount < TYPED_URL.length) {
+        timeout = setTimeout(() => setCharCount(c => c + 1), 60);
+      } else {
+        timeout = setTimeout(() => setPhase(1), PHASE_DURATIONS[1]);
+      }
+    } else if (phase === 1) {
+      timeout = setTimeout(() => setPhase(2), PHASE_DURATIONS[2]);
+    } else if (phase === 2) {
+      // Show competitors one by one
+      if (visibleCompetitors < MOCK_COMPETITORS.length) {
+        timeout = setTimeout(() => setVisibleCompetitors(v => v + 1), 300);
+      } else {
+        timeout = setTimeout(() => setPhase(3), PHASE_DURATIONS[3]);
+      }
+    } else if (phase === 3) {
+      timeout = setTimeout(() => setPhase(4), PHASE_DURATIONS[4]);
+    } else if (phase === 4) {
+      // Reset
+      setCharCount(0);
+      setVisibleCompetitors(0);
+      setPhase(0);
+    }
+
+    return () => clearTimeout(timeout);
+  }, [phase, charCount, visibleCompetitors]);
+
+  const displayedUrl = TYPED_URL.slice(0, charCount);
+  const isScanning = phase === 1;
+  const showBrand = phase >= 2;
+  const showCompetitors = phase >= 2;
+
   return (
     <div style={{ background: '#F7F5F0', padding: '28px 24px', fontFamily: "'DM Sans', sans-serif" }}>
       {/* Progress bar */}
@@ -135,14 +179,14 @@ function WizardMockup() {
               className="flex items-center justify-center rounded-full text-xs font-bold"
               style={{
                 width: 22, height: 22, flexShrink: 0,
-                background: i === 0 ? '#C2714F' : i < 1 ? '#E8D5C8' : '#E5E0D8',
+                background: i === 0 ? '#C2714F' : '#E5E0D8',
                 color: i === 0 ? '#fff' : '#9C8E80',
                 fontSize: 10,
               }}
             >
-              {i < 0 ? '✓' : i + 1}
+              {i + 1}
             </div>
-            {i < 5 && <div style={{ width: 16, height: 2, background: i < 0 ? '#C2714F' : '#E5E0D8', borderRadius: 2 }} />}
+            {i < 5 && <div style={{ width: 16, height: 2, background: '#E5E0D8', borderRadius: 2 }} />}
           </div>
         ))}
       </div>
@@ -154,16 +198,28 @@ function WizardMockup() {
 
       {/* URL input */}
       <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-        <div style={{ flex: 1, background: '#fff', border: '2px solid #C2714F', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#1A1714', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <div style={{ flex: 1, background: '#fff', border: `2px solid ${isScanning ? '#E8A87C' : '#C2714F'}`, borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#1A1714', display: 'flex', alignItems: 'center', gap: 6, transition: 'border-color 0.3s' }}>
           <span style={{ color: '#9C8E80', fontSize: 12 }}>🔗</span>
-          <span style={{ color: '#1A1714' }}>postscriptsociety.com</span>
-          <span style={{ marginLeft: 'auto', width: 2, height: 16, background: '#C2714F', borderRadius: 1, animation: 'blink 1s step-end infinite' }} />
+          <span style={{ color: '#1A1714', fontFamily: 'monospace' }}>{displayedUrl}</span>
+          {!isScanning && phase < 3 && (
+            <span style={{ width: 2, height: 16, background: '#C2714F', borderRadius: 1, animation: 'blink 1s step-end infinite', display: 'inline-block' }} />
+          )}
+          {isScanning && (
+            <span style={{ marginLeft: 4, fontSize: 10, color: '#C2714F', fontWeight: 600, animation: 'pulse 1s ease-in-out infinite' }}>Scanning...</span>
+          )}
         </div>
-        <div style={{ background: '#C2714F', color: '#fff', borderRadius: 10, padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap' }}>Scout →</div>
+        <div style={{ background: '#C2714F', color: '#fff', borderRadius: 10, padding: '10px 16px', fontSize: 13, fontWeight: 700, cursor: 'pointer', whiteSpace: 'nowrap', opacity: phase >= 1 ? 1 : 0.6, transition: 'opacity 0.3s' }}>Scout →</div>
       </div>
 
       {/* Detected brand card */}
-      <div style={{ background: '#fff', border: '1px solid #E5E0D8', borderRadius: 12, padding: '14px 16px', marginBottom: 12 }}>
+      <div
+        style={{
+          background: '#fff', border: '1px solid #E5E0D8', borderRadius: 12, padding: '14px 16px', marginBottom: 12,
+          opacity: showBrand ? 1 : 0,
+          transform: showBrand ? 'translateY(0)' : 'translateY(8px)',
+          transition: 'opacity 0.4s ease, transform 0.4s ease',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <div style={{ width: 36, height: 36, borderRadius: 8, background: '#F0EDE8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>✉️</div>
           <div>
@@ -180,11 +236,26 @@ function WizardMockup() {
       </div>
 
       {/* Competitors found */}
-      <div style={{ background: '#FBF5F1', border: '1px solid #E8D5C8', borderRadius: 10, padding: '10px 14px' }}>
+      <div
+        style={{
+          background: '#FBF5F1', border: '1px solid #E8D5C8', borderRadius: 10, padding: '10px 14px',
+          opacity: showCompetitors ? 1 : 0,
+          transform: showCompetitors ? 'translateY(0)' : 'translateY(8px)',
+          transition: 'opacity 0.4s ease 0.2s, transform 0.4s ease 0.2s',
+        }}
+      >
         <p style={{ fontSize: 10, fontWeight: 700, color: '#C2714F', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Competitors Found</p>
         <div style={{ display: 'flex', gap: 8 }}>
-          {MOCK_COMPETITORS.map(c => (
-            <div key={c.name} style={{ flex: 1, background: '#fff', border: `1px solid ${c.color}30`, borderRadius: 8, padding: '8px 10px', textAlign: 'center' }}>
+          {MOCK_COMPETITORS.map((c, idx) => (
+            <div
+              key={c.name}
+              style={{
+                flex: 1, background: '#fff', border: `1px solid ${c.color}30`, borderRadius: 8, padding: '8px 10px', textAlign: 'center',
+                opacity: idx < visibleCompetitors ? 1 : 0,
+                transform: idx < visibleCompetitors ? 'scale(1)' : 'scale(0.85)',
+                transition: 'opacity 0.3s ease, transform 0.3s ease',
+              }}
+            >
               <div style={{ fontSize: 16, marginBottom: 3 }}>{c.emoji}</div>
               <p style={{ fontSize: 9, fontWeight: 700, color: c.color, lineHeight: 1.3, margin: 0 }}>{c.name}</p>
             </div>

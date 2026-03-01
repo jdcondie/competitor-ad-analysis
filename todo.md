@@ -82,3 +82,9 @@
 - [x] Retheme Report.tsx to light editorial style (off-white bg, dark text, terracotta accents)
 - [x] Replace landing page product screenshots with illustrated SVG feature preview cards
 - [x] Add zoom-in detail cards for specific features (angles bar chart, hooks list, swipefile card, comparison table)
+
+## WizardMockup Animation
+- [x] Add typewriter URL animation (character by character)
+- [x] Add sequential brand identity card population after URL types
+- [x] Add sequential competitor card population after brand identity appears
+- [x] Loop the animation continuously
