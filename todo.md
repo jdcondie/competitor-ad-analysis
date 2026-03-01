@@ -48,3 +48,8 @@
 - [x] Wire landing page as root route (/) in App.tsx
 - [x] Move wizard to /wizard route
 - [x] Verify navigation from landing page CTA to wizard works
+
+## Landing Page Enhancements
+- [x] Add social proof / testimonial strip (between Problem and How It Works)
+- [x] Add email capture secondary CTA in hero section
+- [x] Add "What you'll get" feature grid section

@@ -5,6 +5,7 @@
  * Typography: DM Serif Display (headings) + Inter (body)
  */
 
+import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 
@@ -60,15 +61,12 @@ function StepCard({
         border: "1px solid oklch(0.18 0 0)",
       }}
     >
-      {/* Step number badge */}
       <div
         className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
         style={{ background: "oklch(0.17 0 0)", color: "#C2714F", border: "1px solid oklch(0.22 0 0)" }}
       >
         {number}
       </div>
-
-      {/* Connector line (not on last) */}
       <div className="flex-1">
         <h3
           className="text-lg font-semibold mb-2 leading-snug"
@@ -84,9 +82,63 @@ function StepCard({
   );
 }
 
+// ─── FEATURE CARD ─────────────────────────────────────────────────────────────
+
+function FeatureCard({
+  icon,
+  title,
+  body,
+  delay,
+}: {
+  icon: string;
+  title: string;
+  body: string;
+  delay: number;
+}) {
+  return (
+    <motion.div
+      variants={fadeUp}
+      custom={delay}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-40px" }}
+      className="rounded-2xl p-6"
+      style={{
+        background: "oklch(0.11 0 0)",
+        border: "1px solid oklch(0.18 0 0)",
+      }}
+    >
+      <div
+        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-4"
+        style={{ background: "oklch(0.72 0.15 55 / 0.1)", border: "1px solid oklch(0.72 0.15 55 / 0.15)" }}
+      >
+        {icon}
+      </div>
+      <h4
+        className="text-sm font-semibold mb-1.5"
+        style={{ color: "oklch(0.9 0 0)" }}
+      >
+        {title}
+      </h4>
+      <p className="text-xs leading-relaxed" style={{ color: "oklch(0.5 0 0)" }}>
+        {body}
+      </p>
+    </motion.div>
+  );
+}
+
 // ─── MAIN COMPONENT ───────────────────────────────────────────────────────────
 
 export default function Landing() {
+  const [email, setEmail] = useState("");
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+
+  const handleEmailSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !email.includes("@")) return;
+    setEmailSubmitted(true);
+  };
+
   return (
     <div
       className="min-h-screen relative overflow-x-hidden"
@@ -199,13 +251,13 @@ export default function Landing() {
           Paste your brand URL and get a full competitor ad report — built from real ads running right now in the Meta Ads Library.
         </motion.p>
 
-        {/* CTA */}
+        {/* Primary CTA */}
         <motion.div
           variants={fadeUp}
           custom={0.32}
           initial="hidden"
           animate="visible"
-          className="flex flex-col sm:flex-row items-center gap-4"
+          className="flex flex-col sm:flex-row items-center gap-4 mb-8"
         >
           <Link href="/wizard">
             <button
@@ -225,10 +277,53 @@ export default function Landing() {
           </p>
         </motion.div>
 
+        {/* Email capture — secondary CTA */}
+        <motion.div
+          variants={fadeUp}
+          custom={0.4}
+          initial="hidden"
+          animate="visible"
+          className="w-full max-w-md"
+        >
+          {emailSubmitted ? (
+            <div
+              className="rounded-2xl px-6 py-4 text-sm font-medium flex items-center justify-center gap-2"
+              style={{ background: "oklch(0.72 0.15 145 / 0.1)", border: "1px solid oklch(0.72 0.15 145 / 0.2)", color: "oklch(0.72 0.15 145)" }}
+            >
+              ✓ You're on the list — we'll be in touch.
+            </div>
+          ) : (
+            <form onSubmit={handleEmailSubmit} className="flex gap-2">
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Enter your email for early access"
+                className="flex-1 px-4 py-3 rounded-xl text-sm outline-none transition-all"
+                style={{
+                  background: "oklch(0.12 0 0)",
+                  border: "1px solid oklch(0.2 0 0)",
+                  color: "oklch(0.9 0 0)",
+                  caretColor: "#C2714F",
+                }}
+                onFocus={e => (e.target.style.borderColor = "oklch(0.35 0.08 55)")}
+                onBlur={e => (e.target.style.borderColor = "oklch(0.2 0 0)")}
+              />
+              <button
+                type="submit"
+                className="px-5 py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-95 whitespace-nowrap"
+                style={{ background: "oklch(0.17 0 0)", color: "oklch(0.75 0 0)", border: "1px solid oklch(0.24 0 0)" }}
+              >
+                Get Early Access
+              </button>
+            </form>
+          )}
+        </motion.div>
+
         {/* Hero visual — mock report card */}
         <motion.div
           variants={fadeUp}
-          custom={0.44}
+          custom={0.5}
           initial="hidden"
           animate="visible"
           className="mt-16 w-full max-w-2xl rounded-2xl overflow-hidden"
@@ -297,19 +392,16 @@ export default function Landing() {
             {/* Mock ad rows */}
             <div className="space-y-2">
               {[
-                { brand: "Competitor A", hook: "\"Slow down. The world can wait.\"", angle: "Nostalgia" },
-                { brand: "Competitor B", hook: "\"Join 40,000 readers who unplug every month.\"", angle: "Community" },
-                { brand: "Competitor C", hook: "\"Handwritten. Handpicked. Handcrafted.\"", angle: "Artisan Quality" },
+                { hook: "\"Slow down. The world can wait.\"", angle: "Nostalgia" },
+                { hook: "\"Join 40,000 readers who unplug every month.\"", angle: "Community" },
+                { hook: "\"Handwritten. Handpicked. Handcrafted.\"", angle: "Artisan Quality" },
               ].map((row) => (
                 <div
-                  key={row.brand}
+                  key={row.hook}
                   className="flex items-center gap-3 rounded-xl px-4 py-3"
                   style={{ background: "oklch(0.13 0 0)" }}
                 >
-                  <div
-                    className="w-6 h-6 rounded-md shrink-0"
-                    style={{ background: "oklch(0.18 0 0)" }}
-                  />
+                  <div className="w-6 h-6 rounded-md shrink-0" style={{ background: "oklch(0.18 0 0)" }} />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-medium truncate" style={{ color: "oklch(0.75 0 0)" }}>
                       {row.hook}
@@ -390,6 +482,155 @@ export default function Landing() {
               </div>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── SOCIAL PROOF / TESTIMONIALS ── */}
+      <section
+        className="relative z-10 px-6 md:px-12 py-20"
+        style={{ borderTop: "1px solid oklch(0.13 0 0)", background: "oklch(0.09 0 0)" }}
+      >
+        <div className="max-w-5xl mx-auto">
+          <motion.p
+            variants={fadeUp}
+            custom={0}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            className="text-center text-xs font-semibold tracking-widest uppercase mb-10"
+            style={{ color: "oklch(0.38 0 0)", letterSpacing: "0.12em" }}
+          >
+            What beta users are saying
+          </motion.p>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {[
+              {
+                quote: "I found 3 angles I'd never considered in 45 seconds. Ended up using two of them in our next campaign.",
+                name: "Sarah K.",
+                role: "Brand Strategist",
+                delay: 0,
+              },
+              {
+                quote: "We used to spend hours manually pulling ads from the library. Scout does it in a minute and actually tells you what's working.",
+                name: "Marcus T.",
+                role: "Performance Marketer",
+                delay: 0.08,
+              },
+              {
+                quote: "The hook analysis alone is worth it. Seeing exactly what emotional triggers competitors are leaning on changed how we write copy.",
+                name: "Priya M.",
+                role: "Creative Director",
+                delay: 0.16,
+              },
+            ].map((t) => (
+              <motion.div
+                key={t.name}
+                variants={fadeUp}
+                custom={t.delay}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-40px" }}
+                className="rounded-2xl p-6 flex flex-col gap-5"
+                style={{ background: "oklch(0.11 0 0)", border: "1px solid oklch(0.18 0 0)" }}
+              >
+                {/* Stars */}
+                <div className="flex gap-1">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} style={{ color: "#C2714F", fontSize: "12px" }}>★</span>
+                  ))}
+                </div>
+
+                {/* Quote */}
+                <p className="text-sm leading-relaxed flex-1" style={{ color: "oklch(0.65 0 0)" }}>
+                  "{t.quote}"
+                </p>
+
+                {/* Attribution */}
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
+                    style={{ background: "oklch(0.72 0.15 55 / 0.15)", color: "#C2714F" }}
+                  >
+                    {t.name[0]}
+                  </div>
+                  <div>
+                    <p className="text-xs font-semibold" style={{ color: "oklch(0.8 0 0)" }}>{t.name}</p>
+                    <p className="text-xs" style={{ color: "oklch(0.42 0 0)" }}>{t.role}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHAT YOU'LL GET — FEATURE GRID ── */}
+      <section
+        className="relative z-10 px-6 md:px-12 py-24 md:py-32"
+        style={{ borderTop: "1px solid oklch(0.13 0 0)" }}
+      >
+        <div className="max-w-5xl mx-auto">
+          <motion.div
+            variants={fadeUp}
+            custom={0}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            className="text-center mb-14"
+          >
+            <p
+              className="text-xs font-semibold tracking-widest uppercase mb-4"
+              style={{ color: "#C2714F", letterSpacing: "0.12em" }}
+            >
+              What You'll Get
+            </p>
+            <h2
+              className="text-4xl md:text-5xl font-bold"
+              style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+            >
+              Every report includes all of this.
+            </h2>
+          </motion.div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <FeatureCard
+              icon="🎯"
+              title="Messaging Angles"
+              body="The core emotional and strategic angles competitors are using to position their brand and drive clicks."
+              delay={0}
+            />
+            <FeatureCard
+              icon="🪝"
+              title="Hook Analysis"
+              body="The exact opening lines and attention-grabbing techniques pulled from real running ads."
+              delay={0.05}
+            />
+            <FeatureCard
+              icon="🧠"
+              title="Psych Triggers"
+              body="Scarcity, social proof, identity, curiosity — Scout identifies which psychological levers each ad pulls."
+              delay={0.1}
+            />
+            <FeatureCard
+              icon="📁"
+              title="SwipeFile Ads"
+              body="A curated swipe file of the strongest ads from each competitor, ready to reference and riff on."
+              delay={0.15}
+            />
+            <FeatureCard
+              icon="💡"
+              title="Key Takeaways"
+              body="Actionable strategic insights synthesized from the full ad landscape — what to steal, what to avoid."
+              delay={0.2}
+            />
+            <FeatureCard
+              icon="📊"
+              title="Cross-Brand Comparison"
+              body="Side-by-side breakdown of how competitors differ in tone, format, frequency, and creative approach."
+              delay={0.25}
+            />
+          </div>
         </div>
       </section>
 
