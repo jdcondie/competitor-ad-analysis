@@ -183,13 +183,13 @@ function StepUrl({
     const initMsg = "Fetching real ads from Meta Ads Library...";
     setStatusMsg(initMsg);
     onGeneratingChange?.(true, initMsg, competitorNames);
+    // Progress messages timed to match the faster parallel pipeline (~15-25s total)
     const progressMsgs = [
-      { ms: 3000, msg: `Fetching ads for ${identity.competitors?.[0]?.name || "Competitor 1"}...` },
-      { ms: 8000, msg: `Fetching ads for ${identity.competitors?.[1]?.name || "Competitor 2"}...` },
-      { ms: 14000, msg: "Analyzing real ad copy with AI..." },
-      { ms: 20000, msg: "Extracting messaging angles & hooks..." },
-      { ms: 28000, msg: "Synthesizing key takeaways..." },
-      { ms: 36000, msg: "Almost done — building report config..." },
+      { ms: 1500, msg: `Fetching ads for ${identity.competitors?.[0]?.name || "Competitor 1"} & ${identity.competitors?.[1]?.name || "Competitor 2"} in parallel...` },
+      { ms: 6000, msg: "Analyzing real ad copy with AI..." },
+      { ms: 11000, msg: "Extracting messaging angles & hooks..." },
+      { ms: 16000, msg: "Synthesizing key takeaways..." },
+      { ms: 20000, msg: "Almost done — building report..." },
     ];
     progressMsgs.forEach(({ ms, msg }) => {
       setTimeout(() => {

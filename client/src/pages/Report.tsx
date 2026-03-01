@@ -7,7 +7,7 @@
  * Layout: Scout nav bar + full-width scrollable content (no sidebar)
  */
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useCallback } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import { useReport } from "@/contexts/ReportContext";
@@ -23,6 +23,32 @@ import {
 import {
   brands, hashtagData, peakTimeData,
 } from "@/lib/analysisData";
+
+// ─── SHARE TOAST ─────────────────────────────────────────────────────────────
+const ShareToast = ({ visible }: { visible: boolean }) => (
+  <div
+    className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] flex items-center gap-2.5 px-5 py-3 rounded-full shadow-xl transition-all duration-300"
+    style={{
+      background: "#1A1714",
+      color: "#F7F5F0",
+      fontFamily: "'DM Sans', system-ui, sans-serif",
+      fontSize: 14,
+      fontWeight: 500,
+      opacity: visible ? 1 : 0,
+      transform: visible ? "translateX(-50%) translateY(0)" : "translateX(-50%) translateY(16px)",
+      pointerEvents: "none",
+    }}
+  >
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+      <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+    </svg>
+    Link copied to clipboard
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6EE7B7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  </div>
+);
 
 // ─── DESIGN TOKENS (match Landing.tsx) ────────────────────────────────────────
 const T = {
@@ -718,6 +744,30 @@ export default function Report() {
     strength: t.strength,
   }));
 
+  // ── Share handler ──
+  const [shareToastVisible, setShareToastVisible] = useState(false);
+  const shareTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleShare = useCallback(() => {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      setShareToastVisible(true);
+      if (shareTimeoutRef.current) clearTimeout(shareTimeoutRef.current);
+      shareTimeoutRef.current = setTimeout(() => setShareToastVisible(false), 2800);
+    }).catch(() => {
+      // Fallback: select a temporary input
+      const el = document.createElement("input");
+      el.value = url;
+      document.body.appendChild(el);
+      el.select();
+      document.execCommand("copy");
+      document.body.removeChild(el);
+      setShareToastVisible(true);
+      if (shareTimeoutRef.current) clearTimeout(shareTimeoutRef.current);
+      shareTimeoutRef.current = setTimeout(() => setShareToastVisible(false), 2800);
+    });
+  }, []);
+
   return (
     <div
       className="landing-page min-h-screen"
@@ -769,6 +819,24 @@ export default function Report() {
               ← Demo report
             </button>
           )}
+          {/* Share Report button */}
+          <button
+            onClick={handleShare}
+            className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold border transition-all hover:bg-[#EDE8E1]"
+            style={{
+              color: T.textSub,
+              borderColor: T.border,
+              background: "transparent",
+              fontFamily: T.sans,
+            }}
+            title="Copy shareable link"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            </svg>
+            Share
+          </button>
           <Link href="/wizard">
             <button
               className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
@@ -779,6 +847,9 @@ export default function Report() {
           </Link>
         </div>
       </nav>
+
+      {/* ── SHARE TOAST ── */}
+      <ShareToast visible={shareToastVisible} />
 
       {/* ── HERO HEADER ── */}
       <section

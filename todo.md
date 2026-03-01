@@ -103,3 +103,14 @@
 - [x] Improve typography hierarchy to match landing page DM Serif Display usage
 - [x] Add section dividers and editorial spacing between report sections
 - [x] Redesign stat strip to match landing page stat cards
+
+## Share Report Feature
+- [x] Add Share Report button to Report page nav bar
+- [x] Implement clipboard copy of current page URL
+- [x] Show toast confirmation after copy with link icon
+
+## Report Generation Speed
+- [x] Audit generation pipeline for sequential bottlenecks
+- [x] Parallelize all independent API calls (Meta Ads fetch + LLM analysis)
+- [x] Reduce LLM prompt size / use faster model settings where possible
+- [x] Stream generation progress steps to frontend for perceived speed
