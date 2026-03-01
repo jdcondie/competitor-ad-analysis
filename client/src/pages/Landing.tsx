@@ -343,10 +343,10 @@ export default function Landing() {
           className="text-center text-xs font-semibold uppercase tracking-widest mb-5"
           style={{ color: "#5A4E44" }}
         >
-          Built for teams at
+          Built for your team
         </p>
         <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-medium" style={{ color: "#5A4E44" }}>
-          {["DTC Brands", "Creative Agencies", "Media Buyers", "Brand Strategists", "Growth Teams", "Freelance Strategists"].map(
+          {["DTC Brands", "Creative Agencies", "Media Buyers", "Brand Strategists"].map(
             (name) => (
               <span key={name} className="opacity-70 hover:opacity-100 transition-opacity">
                 {name}
