@@ -115,10 +115,12 @@ function StepUrl({
   onAutoFill,
   onSkip,
   onGeneratingChange,
+  onNavigate,
 }: {
   onAutoFill: (config: Partial<ReportConfig>) => void;
   onSkip: () => void;
   onGeneratingChange?: (isGenerating: boolean, statusMsg: string, competitors: string[], done?: boolean) => void;
+  onNavigate?: (path: string) => void;
 }) {
   const [url, setUrl] = useState("");
   const [phase, setPhase] = useState<"idle" | "extracting" | "extracted" | "generating" | "done" | "error">("idle");
@@ -154,7 +156,12 @@ function StepUrl({
         setStatusMsg(doneMsg);
         onGeneratingChange?.(false, doneMsg, [], true); // done=true: overlay jumps to 100%
         const savedReportId = (data as any).savedReportId;
-        onAutoFill({ ...(data.config as Partial<ReportConfig>), _savedReportId: savedReportId } as any);
+        // Navigate directly to /reports after 900ms (overlay shows "done" state)
+        // Avoid calling onAutoFill with large config — that triggers a heavy re-render
+        // that freezes the UI thread and makes the overlay appear stuck.
+        setTimeout(() => {
+          onNavigate?.("/reports");
+        }, 900);
         if (isAiOnly) {
           toast("Report generated using AI analysis — Meta Ads Library API access requires identity verification at facebook.com/ads/library/api", {
             duration: 10000,
@@ -940,6 +947,7 @@ export default function Wizard() {
           onAutoFill={handleAutoFill}
           onSkip={() => setStep(1)}
           onGeneratingChange={handleGeneratingChange}
+          onNavigate={navigate}
         />
       );
       case 1: return <StepIdentity data={formData as any} onChange={updateField} />;

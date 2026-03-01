@@ -145,3 +145,8 @@
 - [x] Shorten overlay step durations to match actual ~15-25s pipeline
 - [x] Add "done" prop to overlay so it jumps to 100% when mutation resolves
 - [x] Shorten wizard progress message timings to match
+
+## Fix Server-Side Generation Hang
+- [x] Identify exact step causing 4+ minute hang in server logs
+- [x] Add per-step timeouts to prevent indefinite hangs
+- [x] Add overall mutation timeout (e.g. 60s hard limit)
