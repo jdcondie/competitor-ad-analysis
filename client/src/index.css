@@ -432,3 +432,27 @@
     color: #1A1714;
   }
 }
+
+  /* ── LANDING-PAGE: paper-card and section-label light overrides ── */
+  .landing-page .paper-card {
+    background: #ffffff;
+    border: 1px solid #E5E0D8;
+    box-shadow: 0 1px 4px rgba(26, 23, 20, 0.06);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .landing-page .paper-card:hover {
+    border-color: #C8BEB4;
+    box-shadow: 0 2px 8px rgba(26, 23, 20, 0.08);
+  }
+  .landing-page .section-label {
+    color: #9C8E80;
+  }
+  .landing-page .custom-scroll::-webkit-scrollbar-thumb {
+    background: #D4C9BC;
+  }
+  .landing-page .custom-scroll::-webkit-scrollbar-thumb:hover {
+    background: #B8AFA6;
+  }
+  .landing-page ::-webkit-scrollbar-thumb {
+    background: #D4C9BC;
+  }

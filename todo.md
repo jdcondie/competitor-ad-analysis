@@ -93,3 +93,13 @@
 - [x] Remove hero video embed
 - [x] Build HeroJourneyMockup: URL typing → brand ID → competitors → loading → report
 - [x] Replace video with animated mockup in hero section
+
+## Report Page Visual Redesign (Match Landing Page Theme)
+- [x] Replace sidebar layout with top-nav matching landing page nav style
+- [x] Add dot-grid hero header section matching landing page hero aesthetic
+- [x] Redesign section headers with editorial dividers and eyebrow labels
+- [x] Upgrade card treatments: white bg, subtle shadows, editorial borders
+- [x] Add Scout nav bar to Report page (same as landing page nav)
+- [x] Improve typography hierarchy to match landing page DM Serif Display usage
+- [x] Add section dividers and editorial spacing between report sections
+- [x] Redesign stat strip to match landing page stat cards
