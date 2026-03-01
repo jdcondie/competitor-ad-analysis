@@ -6,7 +6,6 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { ReportProvider } from "./contexts/ReportContext";
 import Landing from "./pages/Landing";
-import Report from "./pages/Report";
 import Reports from "./pages/Reports";
 import Wizard from "./pages/Wizard";
 
@@ -16,8 +15,6 @@ function Router() {
       <Route path={"/"} component={Landing} />
       <Route path={"/wizard"} component={Wizard} />
       <Route path={"/reports"} component={Reports} />
-      <Route path={"/report/:id"} component={Report} />
-      <Route path={"/report"} component={Report} />
       <Route path={"/404"} component={NotFound} />
       <Route component={NotFound} />
     </Switch>

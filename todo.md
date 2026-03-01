@@ -134,3 +134,9 @@
 - [x] Update Report detail page to load config from DB by report ID
 - [x] Wire wizard to save report to DB on successful generation and redirect to /report/:id
 - [x] Update App.tsx routing for /reports and /report/:id
+
+## Remove Report Detail Pages
+- [x] Remove /report and /report/:id routes from App.tsx
+- [x] Delete Report.tsx
+- [x] Update wizard to redirect to /reports after generation
+- [x] Clean up any remaining imports/references to Report.tsx

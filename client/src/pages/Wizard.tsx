@@ -918,7 +918,7 @@ export default function Wizard() {
     toast.success("Report generated! Redirecting...");
     // Use savedReportId from context if available (set by StepUrl auto-generation)
     const savedId = (formData as any)._savedReportId;
-    setTimeout(() => navigate(savedId ? `/report/${savedId}` : "/report"), 600);
+    setTimeout(() => navigate("/reports"), 600);
   };
 
   const stepContent = () => {
@@ -990,10 +990,10 @@ export default function Wizard() {
         </nav>
         <div className="p-4" style={{ borderTop: '1px solid #E5E0D8' }}>
           <button
-            onClick={() => { clearConfig(); navigate("/report"); }}
+            onClick={() => { clearConfig(); navigate("/reports"); }}
             className="w-full text-xs transition-colors text-left" style={{ color: '#9C8E80' }}
           >
-            ← Back to Demo Report
+            ← My Reports
           </button>
         </div>
       </aside>

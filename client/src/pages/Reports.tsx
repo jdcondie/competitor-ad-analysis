@@ -102,95 +102,58 @@ const ReportCard = ({ report, index }: { report: ReportSummary; index: number })
       custom={index * 0.06}
       initial="hidden"
       animate="visible"
+      className="rounded-2xl border p-6"
+      style={{
+        background: T.white,
+        borderColor: T.border,
+        boxShadow: "0 1px 4px rgba(26,23,20,0.06)",
+      }}
     >
-      <Link href={`/report/${report.id}`}>
-        <div
-          className="group rounded-2xl border p-6 cursor-pointer transition-all hover:shadow-md hover:-translate-y-0.5"
-          style={{
-            background: T.white,
-            borderColor: T.border,
-            boxShadow: "0 1px 4px rgba(26,23,20,0.06)",
-          }}
+      <p
+        className="text-xs font-semibold uppercase tracking-widest mb-2"
+        style={{ color: T.accent }}
+      >
+        ✦ {report.category || "Competitor Analysis"}
+      </p>
+      <h3
+        className="text-xl font-bold leading-tight mb-1 truncate"
+        style={{ fontFamily: T.serif, color: T.text, letterSpacing: "-0.02em" }}
+      >
+        {report.brandName}
+      </h3>
+      <p className="text-sm italic mb-4" style={{ color: T.textMuted }}>
+        Competitor Creative Analysis
+      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <span
+          className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border"
+          style={
+            report.isAiOnly
+              ? { color: "#6B5E52", borderColor: T.border, background: T.bgAlt }
+              : { color: T.accent, borderColor: T.accentBorder, background: T.accentLight }
+          }
         >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex-1 min-w-0">
-              {/* Eyebrow */}
-              <p
-                className="text-xs font-semibold uppercase tracking-widest mb-2"
-                style={{ color: T.accent }}
-              >
-                ✦ {report.category || "Competitor Analysis"}
-              </p>
-
-              {/* Brand name */}
-              <h3
-                className="text-xl font-bold leading-tight mb-1 truncate group-hover:text-[#C2714F] transition-colors"
-                style={{ fontFamily: T.serif, color: T.text, letterSpacing: "-0.02em" }}
-              >
-                {report.brandName}
-              </h3>
-              <p className="text-sm italic mb-4" style={{ color: T.textMuted }}>
-                Competitor Creative Analysis
-              </p>
-
-              {/* Meta row */}
-              <div className="flex flex-wrap items-center gap-3">
-                {/* Data source badge */}
-                <span
-                  className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full border"
-                  style={
-                    report.isAiOnly
-                      ? { color: "#6B5E52", borderColor: T.border, background: T.bgAlt }
-                      : { color: T.accent, borderColor: T.accentBorder, background: T.accentLight }
-                  }
-                >
-                  {report.isAiOnly ? (
-                    <>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <circle cx="12" cy="12" r="10" />
-                        <path d="M12 8v4M12 16h.01" />
-                      </svg>
-                      AI Analysis
-                    </>
-                  ) : (
-                    <>
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <polyline points="20 6 9 17 4 12" />
-                      </svg>
-                      {report.totalAdsAnalyzed} real ads
-                    </>
-                  )}
-                </span>
-
-                {/* Date */}
-                <span className="text-xs" style={{ color: T.textFaint }}>
-                  {formattedDate} · {formattedTime}
-                </span>
-              </div>
-            </div>
-
-            {/* Arrow */}
-            <div
-              className="flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center border transition-all group-hover:border-[#C2714F] group-hover:bg-[#FBF5F1]"
-              style={{ borderColor: T.border }}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke={T.textFaint}
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="group-hover:stroke-[#C2714F] transition-colors"
-              >
-                <path d="M7 17L17 7M17 7H7M17 7v10" />
+          {report.isAiOnly ? (
+            <>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 8v4M12 16h.01" />
               </svg>
-            </div>
-          </div>
-        </div>
-      </Link>
+              AI Analysis
+            </>
+          ) : (
+            <>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+              {report.totalAdsAnalyzed} real ads
+            </>
+          )}
+        </span>
+        <span className="text-xs" style={{ color: T.textFaint }}>
+          {formattedDate} · {formattedTime}
+        </span>
+      </div>
     </motion.div>
   );
 };
