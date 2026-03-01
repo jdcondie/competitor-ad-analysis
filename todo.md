@@ -58,3 +58,10 @@
 - [x] Read Wizard.tsx report generation flow to identify loading state hook point
 - [x] Build animated loading overlay/screen with step-by-step progress messages
 - [x] Wire loading state to show during generateReport mutation and hide on completion
+
+## Landing Page Redesign (Light Editorial Theme)
+- [x] Capture product screenshots of wizard and report pages for mockup sections
+- [x] Upload screenshots to CDN
+- [x] Redesign Landing.tsx: light/off-white theme, serif headings, scattered product screenshots
+- [x] Add multi-section layout: Hero, Features with screenshots, Social proof, How It Works, FAQ, Footer
+- [x] Update index.css global theme tokens to support light theme on landing page

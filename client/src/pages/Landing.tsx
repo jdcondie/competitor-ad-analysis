@@ -1,129 +1,116 @@
 /**
- * Landing.tsx — Scout product landing page
- * Design: Dark premium, editorial, high-converting
- * Palette: Near-black bg, white text, terracotta (#C2714F) CTA accent
- * Typography: DM Serif Display (headings) + Inter (body)
+ * Landing.tsx — Scout Landing Page
+ *
+ * Design: Light editorial, product-screenshot-heavy (Metabase-style)
+ * Palette: Off-white (#F7F5F0) bg, near-black (#1A1714) text, terracotta (#C2714F) accent
+ * Typography: DM Serif Display (headings) + DM Sans (body)
  */
 
 import { useState } from "react";
 import { Link } from "wouter";
 import { motion } from "framer-motion";
 
-// ─── ANIMATION VARIANTS ───────────────────────────────────────────────────────
+// ─── CDN URLS ─────────────────────────────────────────────────────────────────
+
+const REPORT_SCREENSHOT =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/scout-report-screenshot_9c8b1eef.webp";
+const WIZARD_SCREENSHOT =
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663321985501/E9CJ6LneYrjM9z9Tk9vwgk/scout-wizard-screenshot_a0513b04.webp";
+
+// ─── ANIMATION ────────────────────────────────────────────────────────────────
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 28 },
+  hidden: { opacity: 0, y: 24 },
   visible: (delay = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.65, ease: "easeOut" as const, delay },
+    transition: { duration: 0.6, ease: "easeOut" as const, delay },
   }),
 };
 
-// ─── NOISE TEXTURE SVG (subtle grain) ─────────────────────────────────────────
+// ─── FAQ ITEM ─────────────────────────────────────────────────────────────────
 
-const NoiseBg = () => (
-  <svg
-    className="pointer-events-none fixed inset-0 w-full h-full opacity-[0.025] z-0"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <filter id="noise">
-      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
-      <feColorMatrix type="saturate" values="0" />
-    </filter>
-    <rect width="100%" height="100%" filter="url(#noise)" />
-  </svg>
-);
-
-// ─── STEP CARD ────────────────────────────────────────────────────────────────
-
-function StepCard({
-  number,
-  title,
-  body,
-  delay,
-}: {
-  number: string;
-  title: string;
-  body: string;
-  delay: number;
-}) {
+function FaqItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <motion.div
-      variants={fadeUp}
-      custom={delay}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-60px" }}
-      className="relative flex flex-col gap-4 rounded-2xl p-7"
-      style={{
-        background: "oklch(0.11 0 0)",
-        border: "1px solid oklch(0.18 0 0)",
-      }}
+    <div
+      className="border-b"
+      style={{ borderColor: "#E5E0D8" }}
     >
-      <div
-        className="w-9 h-9 rounded-xl flex items-center justify-center text-sm font-bold shrink-0"
-        style={{ background: "oklch(0.17 0 0)", color: "#C2714F", border: "1px solid oklch(0.22 0 0)" }}
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between py-5 text-left gap-4"
       >
-        {number}
-      </div>
-      <div className="flex-1">
-        <h3
-          className="text-lg font-semibold mb-2 leading-snug"
-          style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: "oklch(0.97 0 0)" }}
+        <span className="text-sm font-semibold" style={{ color: "#1A1714" }}>
+          {q}
+        </span>
+        <span
+          className="text-lg leading-none shrink-0 transition-transform"
+          style={{ color: "#9C8E80", transform: open ? "rotate(45deg)" : "none" }}
         >
-          {title}
-        </h3>
-        <p className="text-sm leading-relaxed" style={{ color: "oklch(0.55 0 0)" }}>
-          {body}
-        </p>
-      </div>
-    </motion.div>
+          +
+        </span>
+      </button>
+      {open && (
+        <div className="pb-5 text-sm leading-relaxed" style={{ color: "#6B5E52" }}>
+          {a}
+        </div>
+      )}
+    </div>
   );
 }
 
-// ─── FEATURE CARD ─────────────────────────────────────────────────────────────
+// ─── BROWSER CHROME WRAPPER ───────────────────────────────────────────────────
 
-function FeatureCard({
-  icon,
-  title,
-  body,
-  delay,
+function BrowserFrame({
+  children,
+  title = "scout.app",
+  className = "",
+  style = {},
 }: {
-  icon: string;
-  title: string;
-  body: string;
-  delay: number;
+  children: React.ReactNode;
+  title?: string;
+  className?: string;
+  style?: React.CSSProperties;
 }) {
   return (
-    <motion.div
-      variants={fadeUp}
-      custom={delay}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, margin: "-40px" }}
-      className="rounded-2xl p-6"
-      style={{
-        background: "oklch(0.11 0 0)",
-        border: "1px solid oklch(0.18 0 0)",
-      }}
+    <div
+      className={`rounded-xl overflow-hidden shadow-2xl border ${className}`}
+      style={{ borderColor: "#D4C9BC", background: "#fff", ...style }}
     >
+      {/* Chrome bar */}
       <div
-        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-4"
-        style={{ background: "oklch(0.72 0.15 55 / 0.1)", border: "1px solid oklch(0.72 0.15 55 / 0.15)" }}
+        className="flex items-center gap-1.5 px-3 py-2.5 border-b"
+        style={{ background: "#F2EFE9", borderColor: "#E5E0D8" }}
       >
-        {icon}
+        <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#F4B8B8" }} />
+        <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#F4D9B8" }} />
+        <div className="w-2.5 h-2.5 rounded-full" style={{ background: "#C4E0C4" }} />
+        <span
+          className="ml-2 text-xs font-mono"
+          style={{ color: "#9C8E80" }}
+        >
+          {title}
+        </span>
       </div>
-      <h4
-        className="text-sm font-semibold mb-1.5"
-        style={{ color: "oklch(0.9 0 0)" }}
-      >
-        {title}
-      </h4>
-      <p className="text-xs leading-relaxed" style={{ color: "oklch(0.5 0 0)" }}>
-        {body}
-      </p>
-    </motion.div>
+      {children}
+    </div>
+  );
+}
+
+// ─── MINI MOCK CARDS ──────────────────────────────────────────────────────────
+
+function AngleBar({ label, pct, color }: { label: string; pct: number; color: string }) {
+  return (
+    <div>
+      <div className="flex justify-between text-xs mb-1" style={{ color: "#6B5E52" }}>
+        <span>{label}</span>
+        <span className="font-semibold" style={{ color }}>{pct}%</span>
+      </div>
+      <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "#F0EDE8" }}>
+        <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color }} />
+      </div>
+    </div>
   );
 }
 
@@ -141,34 +128,40 @@ export default function Landing() {
 
   return (
     <div
-      className="min-h-screen relative overflow-x-hidden"
-      style={{ background: "oklch(0.08 0 0)", color: "oklch(0.97 0 0)" }}
+      className="min-h-screen overflow-x-hidden"
+      style={{
+        background: "#F7F5F0",
+        color: "#1A1714",
+        fontFamily: "'DM Sans', system-ui, sans-serif",
+      }}
     >
-      <NoiseBg />
-
       {/* ── NAV ── */}
       <nav
-        className="relative z-10 flex items-center justify-between px-6 md:px-12 py-5"
-        style={{ borderBottom: "1px solid oklch(0.13 0 0)" }}
+        className="sticky top-0 z-50 flex items-center justify-between px-6 md:px-12 py-4"
+        style={{
+          background: "rgba(247,245,240,0.92)",
+          backdropFilter: "blur(12px)",
+          borderBottom: "1px solid #E5E0D8",
+        }}
       >
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2">
           <span
-            className="text-xl font-bold tracking-tight"
-            style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: "oklch(0.97 0 0)" }}
+            className="text-lg font-bold"
+            style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
           >
             Scout
           </span>
           <span
             className="text-xs px-2 py-0.5 rounded-full font-medium"
-            style={{ background: "oklch(0.17 0 0)", color: "#C2714F", border: "1px solid oklch(0.22 0 0)" }}
+            style={{ background: "#EDE8E1", color: "#9C8E80" }}
           >
             Beta
           </span>
         </div>
         <Link href="/wizard">
           <button
-            className="px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-95"
-            style={{ background: "#C2714F", color: "#fff" }}
+            className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:opacity-90"
+            style={{ background: "#C2714F" }}
           >
             Get Started →
           </button>
@@ -176,351 +169,538 @@ export default function Landing() {
       </nav>
 
       {/* ── HERO ── */}
-      <section className="relative z-10 flex flex-col items-center text-center px-6 pt-24 pb-28 md:pt-32 md:pb-36">
-        {/* Ambient glow */}
+      <section className="relative px-6 md:px-12 pt-20 pb-0 text-center overflow-hidden">
+        {/* Subtle dot grid */}
         <div
-          className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[400px] rounded-full blur-[120px] pointer-events-none"
-          style={{ background: "oklch(0.55 0.12 55 / 0.12)" }}
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: "radial-gradient(circle, #C2714F18 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
         />
 
-        {/* Eyebrow */}
         <motion.div
           variants={fadeUp}
           custom={0}
           initial="hidden"
           animate="visible"
-          className="flex items-center gap-2 mb-6"
+          className="relative max-w-3xl mx-auto"
         >
-          <span
-            className="text-xs font-semibold tracking-widest uppercase px-3 py-1.5 rounded-full"
-            style={{
-              background: "oklch(0.14 0 0)",
-              color: "#C2714F",
-              border: "1px solid oklch(0.22 0 0)",
-              letterSpacing: "0.12em",
-            }}
+          {/* Eyebrow */}
+          <p
+            className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-widest px-3 py-1.5 rounded-full border mb-6"
+            style={{ color: "#C2714F", borderColor: "#E8D5C8", background: "#FBF5F1" }}
           >
-            ✦ Competitive Intelligence
-          </span>
-        </motion.div>
-
-        {/* Headline */}
-        <motion.h1
-          variants={fadeUp}
-          custom={0.08}
-          initial="hidden"
-          animate="visible"
-          className="text-5xl md:text-7xl lg:text-8xl font-bold leading-[1.02] tracking-tight mb-5"
-          style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
-        >
-          Scout the{" "}
-          <span
-            className="italic"
-            style={{
-              background: "linear-gradient(135deg, #C2714F 0%, oklch(0.78 0.18 60) 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-            }}
-          >
-            Competition.
-          </span>
-        </motion.h1>
-
-        {/* Sub-headline */}
-        <motion.p
-          variants={fadeUp}
-          custom={0.16}
-          initial="hidden"
-          animate="visible"
-          className="text-2xl md:text-3xl font-medium mb-6"
-          style={{ color: "oklch(0.65 0 0)", fontFamily: "'DM Serif Display', Georgia, serif", fontStyle: "italic" }}
-        >
-          Their ads. Your advantage.
-        </motion.p>
-
-        {/* Description */}
-        <motion.p
-          variants={fadeUp}
-          custom={0.24}
-          initial="hidden"
-          animate="visible"
-          className="text-base md:text-lg max-w-xl leading-relaxed mb-10"
-          style={{ color: "oklch(0.5 0 0)" }}
-        >
-          Paste your brand URL and get a full competitor ad report — built from real ads running right now in the Meta Ads Library.
-        </motion.p>
-
-        {/* Primary CTA */}
-        <motion.div
-          variants={fadeUp}
-          custom={0.32}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col sm:flex-row items-center gap-4 mb-8"
-        >
-          <Link href="/wizard">
-            <button
-              className="group px-8 py-4 rounded-2xl text-base font-semibold transition-all hover:opacity-90 active:scale-95 flex items-center gap-2.5 shadow-lg"
-              style={{
-                background: "linear-gradient(135deg, #C2714F 0%, oklch(0.62 0.18 45) 100%)",
-                color: "#fff",
-                boxShadow: "0 0 40px oklch(0.55 0.15 55 / 0.25)",
-              }}
-            >
-              Scout the Competition
-              <span className="transition-transform group-hover:translate-x-0.5">→</span>
-            </button>
-          </Link>
-          <p className="text-xs" style={{ color: "oklch(0.38 0 0)" }}>
-            No account required · Free to try
+            ✦ Competitive Intelligence for Creative Strategists
           </p>
-        </motion.div>
 
-        {/* Email capture — secondary CTA */}
-        <motion.div
-          variants={fadeUp}
-          custom={0.4}
-          initial="hidden"
-          animate="visible"
-          className="w-full max-w-md"
-        >
-          {emailSubmitted ? (
-            <div
-              className="rounded-2xl px-6 py-4 text-sm font-medium flex items-center justify-center gap-2"
-              style={{ background: "oklch(0.72 0.15 145 / 0.1)", border: "1px solid oklch(0.72 0.15 145 / 0.2)", color: "oklch(0.72 0.15 145)" }}
+          {/* Headline */}
+          <h1
+            className="text-5xl md:text-7xl font-bold leading-[1.04] mb-5"
+            style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              letterSpacing: "-0.02em",
+              color: "#1A1714",
+            }}
+          >
+            Bring the intelligence of{" "}
+            <span style={{ color: "#C2714F", fontStyle: "italic" }}>
+              real competitor ads
+            </span>
+            <br />
+            to your creative strategy.
+          </h1>
+
+          <p
+            className="text-lg md:text-xl max-w-xl mx-auto leading-relaxed mb-8"
+            style={{ color: "#6B5E52" }}
+          >
+            Paste your brand URL and get a full competitor ad report — built from real ads running right now in the Meta Ads Library.
+          </p>
+
+          {/* CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4">
+            <Link href="/wizard">
+              <button
+                className="px-8 py-4 rounded-xl text-base font-semibold text-white shadow-md transition-all hover:opacity-90 hover:-translate-y-0.5"
+                style={{ background: "#C2714F" }}
+              >
+                Scout the Competition →
+              </button>
+            </Link>
+            <span className="text-sm" style={{ color: "#9C8E80" }}>
+              No account required · Free to try
+            </span>
+          </div>
+
+          {/* Email capture */}
+          {!emailSubmitted ? (
+            <form
+              onSubmit={handleEmailSubmit}
+              className="flex flex-col sm:flex-row items-center justify-center gap-2 max-w-md mx-auto mt-4"
             >
-              ✓ You're on the list — we'll be in touch.
-            </div>
-          ) : (
-            <form onSubmit={handleEmailSubmit} className="flex gap-2">
               <input
                 type="email"
                 value={email}
-                onChange={e => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email for early access"
-                className="flex-1 px-4 py-3 rounded-xl text-sm outline-none transition-all"
+                className="flex-1 px-4 py-3 rounded-xl border text-sm outline-none w-full"
                 style={{
-                  background: "oklch(0.12 0 0)",
-                  border: "1px solid oklch(0.2 0 0)",
-                  color: "oklch(0.9 0 0)",
-                  caretColor: "#C2714F",
+                  borderColor: "#D4C9BC",
+                  background: "#fff",
+                  color: "#1A1714",
                 }}
-                onFocus={e => (e.target.style.borderColor = "oklch(0.35 0.08 55)")}
-                onBlur={e => (e.target.style.borderColor = "oklch(0.2 0 0)")}
               />
               <button
                 type="submit"
-                className="px-5 py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-95 whitespace-nowrap"
-                style={{ background: "oklch(0.17 0 0)", color: "oklch(0.75 0 0)", border: "1px solid oklch(0.24 0 0)" }}
+                className="px-5 py-3 rounded-xl text-sm font-semibold border transition-all hover:bg-stone-50 whitespace-nowrap"
+                style={{ borderColor: "#D4C9BC", background: "#fff", color: "#6B5E52" }}
               >
                 Get Early Access
               </button>
             </form>
+          ) : (
+            <p
+              className="text-sm mt-4 inline-block px-4 py-2 rounded-xl border"
+              style={{ borderColor: "#C4D9C4", background: "#F4FAF4", color: "#5A8A5A" }}
+            >
+              ✓ You're on the list — we'll be in touch.
+            </p>
           )}
         </motion.div>
 
-        {/* Hero visual — mock report card */}
+        {/* Hero product screenshot — large, floating */}
         <motion.div
-          variants={fadeUp}
-          custom={0.5}
-          initial="hidden"
-          animate="visible"
-          className="mt-16 w-full max-w-2xl rounded-2xl overflow-hidden"
-          style={{
-            background: "oklch(0.11 0 0)",
-            border: "1px solid oklch(0.18 0 0)",
-            boxShadow: "0 40px 80px oklch(0 0 0 / 0.5)",
-          }}
+          initial={{ opacity: 0, y: 48, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.9, delay: 0.25, ease: "easeOut" }}
+          className="relative max-w-5xl mx-auto mt-14"
         >
-          {/* Mock toolbar */}
+          {/* Floating stat badges */}
           <div
-            className="flex items-center gap-2 px-4 py-3"
-            style={{ borderBottom: "1px solid oklch(0.15 0 0)", background: "oklch(0.09 0 0)" }}
+            className="absolute -left-4 lg:-left-12 top-16 z-10 hidden lg:block"
+            style={{ transform: "rotate(-2.5deg)" }}
           >
-            <div className="w-3 h-3 rounded-full" style={{ background: "oklch(0.65 0.18 25 / 0.6)" }} />
-            <div className="w-3 h-3 rounded-full" style={{ background: "oklch(0.72 0.15 80 / 0.6)" }} />
-            <div className="w-3 h-3 rounded-full" style={{ background: "oklch(0.72 0.15 145 / 0.6)" }} />
             <div
-              className="ml-3 flex-1 rounded-md px-3 py-1 text-xs font-mono"
-              style={{ background: "oklch(0.14 0 0)", color: "oklch(0.38 0 0)" }}
+              className="rounded-xl shadow-lg px-4 py-3 text-left border"
+              style={{ background: "#fff", borderColor: "#E5E0D8" }}
             >
-              scout.app/report/your-brand
+              <p className="text-xs mb-1" style={{ color: "#9C8E80" }}>Ads analyzed</p>
+              <p
+                className="text-3xl font-bold"
+                style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: "#C2714F" }}
+              >
+                93
+              </p>
+              <p className="text-xs" style={{ color: "#9C8E80" }}>variations tracked</p>
+            </div>
+          </div>
+          <div
+            className="absolute -right-4 lg:-right-10 top-24 z-10 hidden lg:block"
+            style={{ transform: "rotate(1.8deg)" }}
+          >
+            <div
+              className="rounded-xl shadow-lg px-4 py-3 text-left border"
+              style={{ background: "#fff", borderColor: "#E5E0D8" }}
+            >
+              <p className="text-xs mb-1" style={{ color: "#9C8E80" }}>Angles identified</p>
+              <p
+                className="text-3xl font-bold"
+                style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: "#1A1714" }}
+              >
+                5
+              </p>
+              <p className="text-xs" style={{ color: "#9C8E80" }}>in this category</p>
             </div>
           </div>
 
-          {/* Mock report content */}
-          <div className="p-6 text-left">
-            <div className="flex items-center gap-3 mb-5">
-              <div
-                className="w-8 h-8 rounded-lg flex items-center justify-center text-sm"
-                style={{ background: "oklch(0.72 0.15 55 / 0.15)", color: "#C2714F" }}
-              >
-                ✦
-              </div>
-              <div>
-                <p className="text-sm font-semibold" style={{ color: "oklch(0.85 0 0)" }}>
-                  Competitor Ad Report
-                </p>
-                <p className="text-xs" style={{ color: "oklch(0.42 0 0)" }}>
-                  3 competitors · 14 ads analyzed · 5 angles identified
-                </p>
-              </div>
-              <div
-                className="ml-auto text-xs px-2.5 py-1 rounded-full font-medium"
-                style={{ background: "oklch(0.72 0.15 145 / 0.12)", color: "oklch(0.72 0.15 145)" }}
-              >
-                Live data
-              </div>
-            </div>
-
-            {/* Mock angle pills */}
-            <div className="flex flex-wrap gap-2 mb-5">
-              {["Nostalgia & Escapism", "Community Belonging", "Slow Living", "Artisan Quality", "Gift-Worthy"].map(
-                (angle) => (
-                  <span
-                    key={angle}
-                    className="text-xs px-3 py-1 rounded-full"
-                    style={{ background: "oklch(0.14 0 0)", color: "oklch(0.6 0 0)", border: "1px solid oklch(0.2 0 0)" }}
-                  >
-                    {angle}
-                  </span>
-                )
-              )}
-            </div>
-
-            {/* Mock ad rows */}
-            <div className="space-y-2">
-              {[
-                { hook: "\"Slow down. The world can wait.\"", angle: "Nostalgia" },
-                { hook: "\"Join 40,000 readers who unplug every month.\"", angle: "Community" },
-                { hook: "\"Handwritten. Handpicked. Handcrafted.\"", angle: "Artisan Quality" },
-              ].map((row) => (
-                <div
-                  key={row.hook}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3"
-                  style={{ background: "oklch(0.13 0 0)" }}
-                >
-                  <div className="w-6 h-6 rounded-md shrink-0" style={{ background: "oklch(0.18 0 0)" }} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-medium truncate" style={{ color: "oklch(0.75 0 0)" }}>
-                      {row.hook}
-                    </p>
-                  </div>
-                  <span
-                    className="text-xs px-2 py-0.5 rounded-full shrink-0"
-                    style={{ background: "oklch(0.72 0.15 55 / 0.1)", color: "#C2714F" }}
-                  >
-                    {row.angle}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
+          <BrowserFrame title="scout.app/report">
+            <img
+              src={REPORT_SCREENSHOT}
+              alt="Scout competitor ad report"
+              className="w-full h-auto"
+            />
+          </BrowserFrame>
         </motion.div>
       </section>
 
-      {/* ── PROBLEM SECTION ── */}
+      {/* ── LOGO STRIP ── */}
       <section
-        className="relative z-10 px-6 md:px-12 py-24 md:py-32"
-        style={{ borderTop: "1px solid oklch(0.13 0 0)" }}
+        className="py-10 px-6 border-y"
+        style={{ borderColor: "#E5E0D8", background: "#F0EDE8" }}
       >
-        <div className="max-w-4xl mx-auto">
+        <p
+          className="text-center text-xs font-semibold uppercase tracking-widest mb-5"
+          style={{ color: "#9C8E80" }}
+        >
+          Built for teams at
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-medium" style={{ color: "#9C8E80" }}>
+          {["DTC Brands", "Creative Agencies", "Media Buyers", "Brand Strategists", "Growth Teams", "Freelance Strategists"].map(
+            (name) => (
+              <span key={name} className="opacity-70 hover:opacity-100 transition-opacity">
+                {name}
+              </span>
+            )
+          )}
+        </div>
+      </section>
+
+      {/* ── PROBLEM ── */}
+      <section className="py-24 px-6 md:px-12 max-w-4xl mx-auto text-center">
+        <motion.div
+          variants={fadeUp}
+          custom={0}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+        >
+          <h2
+            className="text-4xl md:text-5xl font-bold leading-tight mb-5"
+            style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            No more guessing{" "}
+            <span style={{ fontStyle: "italic", color: "#C2714F" }}>
+              what's working.
+            </span>
+          </h2>
+          <p
+            className="text-lg leading-relaxed max-w-2xl mx-auto mb-12"
+            style={{ color: "#6B5E52" }}
+          >
+            Your competitors are running ads right now. Some are bombing. Some are crushing it. Scout tells you which is which — and why.
+          </p>
+        </motion.div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { value: "93+", label: "Ad variations tracked per report" },
+            { value: "5", label: "Messaging angles extracted" },
+            { value: "~45s", label: "Average time to first insight" },
+            { value: "100%", label: "Real Meta Ads Library data" },
+          ].map((s) => (
+            <motion.div
+              key={s.label}
+              variants={fadeUp}
+              custom={0.05}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="flex flex-col items-center px-4 py-5 rounded-2xl border"
+              style={{ background: "#fff", borderColor: "#E5E0D8" }}
+            >
+              <span
+                className="text-3xl font-bold mb-1"
+                style={{
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  color: "#C2714F",
+                }}
+              >
+                {s.value}
+              </span>
+              <span className="text-xs text-center leading-tight" style={{ color: "#9C8E80" }}>
+                {s.label}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FEATURE: CONNECTED WORKFLOWS ── */}
+      <section
+        className="py-24 px-6 md:px-12"
+        style={{ background: "#F0EDE8", borderTop: "1px solid #E5E0D8" }}
+      >
+        <div className="max-w-6xl mx-auto">
           <motion.div
             variants={fadeUp}
             custom={0}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            className="grid md:grid-cols-2 gap-12 items-center"
+            viewport={{ once: true }}
+            className="text-center mb-16"
           >
-            {/* Left: headline */}
-            <div>
-              <p
-                className="text-xs font-semibold tracking-widest uppercase mb-4"
-                style={{ color: "#C2714F", letterSpacing: "0.12em" }}
-              >
-                The Problem
-              </p>
-              <h2
-                className="text-4xl md:text-5xl font-bold leading-tight"
-                style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
-              >
-                No more guessing what's working.
-              </h2>
-            </div>
-
-            {/* Right: body */}
-            <div>
-              <p className="text-lg leading-relaxed" style={{ color: "oklch(0.55 0 0)" }}>
-                Your competitors are running ads right now. Some are bombing. Some are crushing it.
-              </p>
-              <p className="text-lg leading-relaxed mt-4" style={{ color: "oklch(0.55 0 0)" }}>
-                Scout tells you which is which — and why.
-              </p>
-
-              {/* Stat pills */}
-              <div className="flex flex-wrap gap-3 mt-8">
-                {[
-                  { value: "Real ads", label: "from Meta Ads Library" },
-                  { value: "AI analysis", label: "of angles & hooks" },
-                  { value: "< 60 sec", label: "to full report" },
-                ].map((stat) => (
-                  <div
-                    key={stat.value}
-                    className="rounded-xl px-4 py-3"
-                    style={{ background: "oklch(0.11 0 0)", border: "1px solid oklch(0.18 0 0)" }}
-                  >
-                    <p className="text-sm font-semibold" style={{ color: "oklch(0.9 0 0)" }}>
-                      {stat.value}
-                    </p>
-                    <p className="text-xs mt-0.5" style={{ color: "oklch(0.45 0 0)" }}>
-                      {stat.label}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <h2
+              className="text-4xl md:text-5xl font-bold leading-tight"
+              style={{
+                fontFamily: "'DM Serif Display', Georgia, serif",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              A connected set of{" "}
+              <span style={{ fontStyle: "italic" }}>ad intelligence</span>
+              <br />
+              workflows that really work.
+            </h2>
           </motion.div>
+
+          {/* Feature row 1 — Wizard + text */}
+          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 mb-24">
+            <motion.div
+              variants={fadeUp}
+              custom={0}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="flex-1 min-w-0"
+            >
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-3"
+                style={{ color: "#C2714F" }}
+              >
+                Step 1 — Scout Your Brand
+              </p>
+              <h3
+                className="text-3xl lg:text-4xl font-bold leading-tight mb-4"
+                style={{
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  color: "#1A1714",
+                }}
+              >
+                Agentic brand analysis for your most critical strategies.
+              </h3>
+              <p className="leading-relaxed" style={{ color: "#6B5E52" }}>
+                Paste your URL. Scout identifies your brand, category, and the competitors worth watching — automatically. No spreadsheets, no manual research.
+              </p>
+            </motion.div>
+            <motion.div
+              variants={fadeUp}
+              custom={0.1}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="flex-1 min-w-0 w-full"
+              style={{ transform: "rotate(0.8deg)" }}
+            >
+              <BrowserFrame title="scout.app/wizard">
+                <img
+                  src={WIZARD_SCREENSHOT}
+                  alt="Scout wizard — brand URL step"
+                  className="w-full h-auto"
+                />
+              </BrowserFrame>
+            </motion.div>
+          </div>
+
+          {/* Feature row 2 — Report + text (flipped) */}
+          <div className="flex flex-col lg:flex-row-reverse items-center gap-12 lg:gap-20 mb-24">
+            <motion.div
+              variants={fadeUp}
+              custom={0}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="flex-1 min-w-0"
+            >
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-3"
+                style={{ color: "#C2714F" }}
+              >
+                Step 2 — Scout the Competition
+              </p>
+              <h3
+                className="text-3xl lg:text-4xl font-bold leading-tight mb-4"
+                style={{
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  color: "#1A1714",
+                }}
+              >
+                Conversational insights from your competitor ads.
+              </h3>
+              <p className="leading-relaxed" style={{ color: "#6B5E52" }}>
+                Scout pulls real ads from the Meta Ads Library and breaks down the angles, hooks, psychological triggers, and takeaways behind what's actually running — not what ran last year.
+              </p>
+            </motion.div>
+            <motion.div
+              variants={fadeUp}
+              custom={0.1}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="flex-1 min-w-0 w-full"
+              style={{ transform: "rotate(-0.6deg)" }}
+            >
+              <BrowserFrame title="scout.app/report">
+                <img
+                  src={REPORT_SCREENSHOT}
+                  alt="Scout competitor ad report"
+                  className="w-full h-auto"
+                />
+              </BrowserFrame>
+            </motion.div>
+          </div>
+
+          {/* Feature row 3 — Mock UI cards + text */}
+          <div className="flex flex-col lg:flex-row items-start gap-12 lg:gap-20">
+            <motion.div
+              variants={fadeUp}
+              custom={0}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="flex-1 min-w-0"
+            >
+              <p
+                className="text-xs font-semibold uppercase tracking-widest mb-3"
+                style={{ color: "#C2714F" }}
+              >
+                Step 3 — Review & Launch
+              </p>
+              <h3
+                className="text-3xl lg:text-4xl font-bold leading-tight mb-4"
+                style={{
+                  fontFamily: "'DM Serif Display', Georgia, serif",
+                  color: "#1A1714",
+                }}
+              >
+                Beautiful site apps, dashboards and data — exactly when you want to share them.
+              </h3>
+              <p className="leading-relaxed" style={{ color: "#6B5E52" }}>
+                Your report comes pre-filled and ready to act on. Adjust angles, swap ads, rewrite takeaways — then share or download. Every section is editable.
+              </p>
+            </motion.div>
+
+            {/* Scattered mini-cards */}
+            <div className="flex-1 min-w-0 w-full relative" style={{ minHeight: "360px" }}>
+              {/* Angles card */}
+              <motion.div
+                variants={fadeUp}
+                custom={0.05}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="absolute top-0 left-0 w-64 rounded-xl border shadow-lg p-4"
+                style={{ background: "#fff", borderColor: "#E5E0D8", transform: "rotate(-1.5deg)" }}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#9C8E80" }}>
+                  Messaging Angles
+                </p>
+                <div className="space-y-2">
+                  <AngleBar label="Nostalgic Escapism" pct={80} color="#C2714F" />
+                  <AngleBar label="Gift Positioning" pct={65} color="#B5546A" />
+                  <AngleBar label="Curiosity Gap" pct={50} color="#4A6FA5" />
+                  <AngleBar label="Identity & Belonging" pct={45} color="#5A8A6A" />
+                </div>
+              </motion.div>
+
+              {/* Takeaways card */}
+              <motion.div
+                variants={fadeUp}
+                custom={0.12}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="absolute top-8 right-0 w-60 rounded-xl border shadow-lg p-4"
+                style={{ background: "#fff", borderColor: "#E5E0D8", transform: "rotate(1.2deg)" }}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#9C8E80" }}>
+                  Key Takeaways
+                </p>
+                <div className="space-y-2.5">
+                  {[
+                    { icon: "💡", text: "Nostalgia is the category's master key" },
+                    { icon: "🎯", text: "TFL's 55-variation test = paid media maturity" },
+                    { icon: "🔍", text: "Social proof absent from all LFA paid ads" },
+                  ].map((t, i) => (
+                    <div key={i} className="flex items-start gap-2">
+                      <span className="text-sm shrink-0">{t.icon}</span>
+                      <p className="text-xs leading-snug" style={{ color: "#6B5E52" }}>{t.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Comparison card */}
+              <motion.div
+                variants={fadeUp}
+                custom={0.2}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="absolute bottom-0 left-8 w-72 rounded-xl border shadow-lg p-4"
+                style={{ background: "#fff", borderColor: "#E5E0D8", transform: "rotate(0.5deg)" }}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide mb-3" style={{ color: "#9C8E80" }}>
+                  Cross-Brand Comparison
+                </p>
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr style={{ borderBottom: "1px solid #F0EDE8" }}>
+                      <th className="text-left pb-2 font-medium" style={{ color: "#9C8E80" }}>Dimension</th>
+                      <th className="text-left pb-2 font-semibold" style={{ color: "#C2714F" }}>LFA</th>
+                      <th className="text-left pb-2 font-semibold" style={{ color: "#B5546A" }}>TFL</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["Variations", "3–4", "Up to 55"],
+                      ["Social Proof", "Absent", "Named quotes"],
+                      ["Discount", "10% off", "$30–70 off"],
+                    ].map(([dim, lfa, tfl]) => (
+                      <tr key={dim} style={{ borderBottom: "1px solid #F7F5F0" }}>
+                        <td className="py-1.5" style={{ color: "#9C8E80" }}>{dim}</td>
+                        <td className="py-1.5" style={{ color: "#1A1714" }}>{lfa}</td>
+                        <td className="py-1.5" style={{ color: "#1A1714" }}>{tfl}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── SOCIAL PROOF / TESTIMONIALS ── */}
+      {/* ── TESTIMONIALS ── */}
       <section
-        className="relative z-10 px-6 md:px-12 py-20"
-        style={{ borderTop: "1px solid oklch(0.13 0 0)", background: "oklch(0.09 0 0)" }}
+        className="py-24 px-6 md:px-12"
+        style={{ borderTop: "1px solid #E5E0D8" }}
       >
         <div className="max-w-5xl mx-auto">
-          <motion.p
+          <motion.div
             variants={fadeUp}
             custom={0}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="text-center text-xs font-semibold tracking-widest uppercase mb-10"
-            style={{ color: "oklch(0.38 0 0)", letterSpacing: "0.12em" }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
           >
-            What beta users are saying
-          </motion.p>
+            <h2
+              className="text-4xl md:text-5xl font-bold"
+              style={{
+                fontFamily: "'DM Serif Display', Georgia, serif",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              <span style={{ fontStyle: "italic" }}>Loved</span> by the best creative teams.
+            </h2>
+          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                quote: "I found 3 angles I'd never considered in 45 seconds. Ended up using two of them in our next campaign.",
+                quote:
+                  "I found 3 angles I'd never considered in 45 seconds. Sent the report straight to my client.",
                 name: "Sarah K.",
-                role: "Brand Strategist",
+                role: "Creative Strategist, DTC Agency",
                 delay: 0,
               },
               {
-                quote: "We used to spend hours manually pulling ads from the library. Scout does it in a minute and actually tells you what's working.",
+                quote:
+                  "The cross-brand comparison table alone saved me 3 hours of manual Ads Library research.",
                 name: "Marcus T.",
-                role: "Performance Marketer",
+                role: "Media Buyer, Growth Studio",
                 delay: 0.08,
               },
               {
-                quote: "The hook analysis alone is worth it. Seeing exactly what emotional triggers competitors are leaning on changed how we write copy.",
+                quote:
+                  "Finally a tool that gives me the 'why' behind what competitors are running, not just the 'what'.",
                 name: "Priya M.",
-                role: "Creative Director",
+                role: "Brand Strategist, Subscription Brand",
                 delay: 0.16,
               },
             ].map((t) => (
@@ -530,33 +710,28 @@ export default function Landing() {
                 custom={t.delay}
                 initial="hidden"
                 whileInView="visible"
-                viewport={{ once: true, margin: "-40px" }}
-                className="rounded-2xl p-6 flex flex-col gap-5"
-                style={{ background: "oklch(0.11 0 0)", border: "1px solid oklch(0.18 0 0)" }}
+                viewport={{ once: true }}
+                className="rounded-2xl p-6 border"
+                style={{ background: "#fff", borderColor: "#E5E0D8" }}
               >
-                {/* Stars */}
-                <div className="flex gap-1">
+                <div className="flex gap-0.5 mb-4">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i} style={{ color: "#C2714F", fontSize: "12px" }}>★</span>
+                    <span key={i} className="text-sm" style={{ color: "#C2714F" }}>★</span>
                   ))}
                 </div>
-
-                {/* Quote */}
-                <p className="text-sm leading-relaxed flex-1" style={{ color: "oklch(0.65 0 0)" }}>
+                <p className="text-sm leading-relaxed mb-5 italic" style={{ color: "#6B5E52" }}>
                   "{t.quote}"
                 </p>
-
-                {/* Attribution */}
                 <div className="flex items-center gap-3">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                    style={{ background: "oklch(0.72 0.15 55 / 0.15)", color: "#C2714F" }}
+                    style={{ background: "#F0EDE8", color: "#C2714F" }}
                   >
                     {t.name[0]}
                   </div>
                   <div>
-                    <p className="text-xs font-semibold" style={{ color: "oklch(0.8 0 0)" }}>{t.name}</p>
-                    <p className="text-xs" style={{ color: "oklch(0.42 0 0)" }}>{t.role}</p>
+                    <p className="text-xs font-semibold" style={{ color: "#1A1714" }}>{t.name}</p>
+                    <p className="text-xs" style={{ color: "#9C8E80" }}>{t.role}</p>
                   </div>
                 </div>
               </motion.div>
@@ -565,169 +740,217 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── WHAT YOU'LL GET — FEATURE GRID ── */}
-      <section
-        className="relative z-10 px-6 md:px-12 py-24 md:py-32"
-        style={{ borderTop: "1px solid oklch(0.13 0 0)" }}
-      >
-        <div className="max-w-5xl mx-auto">
-          <motion.div
-            variants={fadeUp}
-            custom={0}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            className="text-center mb-14"
-          >
-            <p
-              className="text-xs font-semibold tracking-widest uppercase mb-4"
-              style={{ color: "#C2714F", letterSpacing: "0.12em" }}
-            >
-              What You'll Get
-            </p>
-            <h2
-              className="text-4xl md:text-5xl font-bold"
-              style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
-            >
-              Every report includes all of this.
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <FeatureCard
-              icon="🎯"
-              title="Messaging Angles"
-              body="The core emotional and strategic angles competitors are using to position their brand and drive clicks."
-              delay={0}
-            />
-            <FeatureCard
-              icon="🪝"
-              title="Hook Analysis"
-              body="The exact opening lines and attention-grabbing techniques pulled from real running ads."
-              delay={0.05}
-            />
-            <FeatureCard
-              icon="🧠"
-              title="Psych Triggers"
-              body="Scarcity, social proof, identity, curiosity — Scout identifies which psychological levers each ad pulls."
-              delay={0.1}
-            />
-            <FeatureCard
-              icon="📁"
-              title="SwipeFile Ads"
-              body="A curated swipe file of the strongest ads from each competitor, ready to reference and riff on."
-              delay={0.15}
-            />
-            <FeatureCard
-              icon="💡"
-              title="Key Takeaways"
-              body="Actionable strategic insights synthesized from the full ad landscape — what to steal, what to avoid."
-              delay={0.2}
-            />
-            <FeatureCard
-              icon="📊"
-              title="Cross-Brand Comparison"
-              body="Side-by-side breakdown of how competitors differ in tone, format, frequency, and creative approach."
-              delay={0.25}
-            />
-          </div>
-        </div>
-      </section>
-
       {/* ── HOW IT WORKS ── */}
       <section
-        className="relative z-10 px-6 md:px-12 py-24 md:py-32"
-        style={{ borderTop: "1px solid oklch(0.13 0 0)" }}
+        className="py-24 px-6 md:px-12"
+        style={{ background: "#F0EDE8", borderTop: "1px solid #E5E0D8" }}
       >
         <div className="max-w-5xl mx-auto">
-          {/* Section header */}
           <motion.div
             variants={fadeUp}
             custom={0}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <p
-              className="text-xs font-semibold tracking-widest uppercase mb-4"
-              style={{ color: "#C2714F", letterSpacing: "0.12em" }}
-            >
-              How It Works
-            </p>
             <h2
               className="text-4xl md:text-5xl font-bold"
-              style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+              style={{
+                fontFamily: "'DM Serif Display', Georgia, serif",
+                letterSpacing: "-0.02em",
+              }}
             >
-              Three steps. One unfair advantage.
+              Getting started is{" "}
+              <span style={{ fontStyle: "italic", color: "#C2714F" }}>easy.</span>
             </h2>
           </motion.div>
 
-          {/* Steps grid */}
-          <div className="grid md:grid-cols-3 gap-5">
-            <StepCard
-              number="01"
-              title="Scout Your Brand"
-              body="Paste your URL. Scout identifies your brand, category, and the competitors worth watching."
-              delay={0}
-            />
-            <StepCard
-              number="02"
-              title="Scout the Competition"
-              body="Scout pulls real ads from the Meta Ads Library and breaks down the angles, hooks, and takeaways behind what's actually running."
-              delay={0.08}
-            />
-            <StepCard
-              number="03"
-              title="Review & Launch"
-              body="Your report comes pre-filled and ready to act on. Adjust, download, and go."
-              delay={0.16}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                step: "01",
+                icon: "🔍",
+                title: "Scout Your Brand",
+                body: "Paste your URL. Scout identifies your brand, category, and the competitors worth watching.",
+                delay: 0,
+              },
+              {
+                step: "02",
+                icon: "📊",
+                title: "Scout the Competition",
+                body: "Scout pulls real ads from the Meta Ads Library and breaks down the angles, hooks, and takeaways behind what's actually running.",
+                delay: 0.08,
+              },
+              {
+                step: "03",
+                icon: "🚀",
+                title: "Review & Launch",
+                body: "Your report comes pre-filled and ready to act on. Adjust, download, and go.",
+                delay: 0.16,
+              },
+            ].map((s) => (
+              <motion.div
+                key={s.step}
+                variants={fadeUp}
+                custom={s.delay}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true }}
+                className="rounded-2xl p-6 border h-full"
+                style={{ background: "#fff", borderColor: "#E5E0D8" }}
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="text-2xl">{s.icon}</span>
+                  <span className="text-xs font-bold font-mono" style={{ color: "#D4C9BC" }}>
+                    {s.step}
+                  </span>
+                </div>
+                <h3
+                  className="text-lg font-bold mb-2"
+                  style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+                >
+                  {s.title}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#6B5E52" }}>
+                  {s.body}
+                </p>
+              </motion.div>
+            ))}
           </div>
 
-          {/* Bottom CTA */}
           <motion.div
             variants={fadeUp}
             custom={0.24}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-60px" }}
-            className="mt-16 text-center"
+            viewport={{ once: true }}
+            className="mt-12 text-center"
           >
             <Link href="/wizard">
               <button
-                className="group px-10 py-4 rounded-2xl text-base font-semibold transition-all hover:opacity-90 active:scale-95 inline-flex items-center gap-2.5"
-                style={{
-                  background: "linear-gradient(135deg, #C2714F 0%, oklch(0.62 0.18 45) 100%)",
-                  color: "#fff",
-                  boxShadow: "0 0 40px oklch(0.55 0.15 55 / 0.2)",
-                }}
+                className="px-10 py-4 rounded-xl text-base font-semibold text-white shadow-md transition-all hover:opacity-90 hover:-translate-y-0.5"
+                style={{ background: "#C2714F" }}
               >
-                Scout the Competition
-                <span className="transition-transform group-hover:translate-x-0.5">→</span>
+                Scout the Competition →
               </button>
             </Link>
-            <p className="text-xs mt-3" style={{ color: "oklch(0.35 0 0)" }}>
+            <p className="text-xs mt-3" style={{ color: "#9C8E80" }}>
               No account required · Free to try
             </p>
           </motion.div>
         </div>
       </section>
 
+      {/* ── FAQ ── */}
+      <section className="py-24 px-6 md:px-12" style={{ borderTop: "1px solid #E5E0D8" }}>
+        <div className="max-w-2xl mx-auto">
+          <motion.div
+            variants={fadeUp}
+            custom={0}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2
+              className="text-4xl font-bold"
+              style={{
+                fontFamily: "'DM Serif Display', Georgia, serif",
+                letterSpacing: "-0.02em",
+              }}
+            >
+              FAQ
+            </h2>
+          </motion.div>
+          <div>
+            {[
+              {
+                q: "Does this work for any brand or niche?",
+                a: "Yes. Scout uses your brand URL to identify your category and find relevant competitors — it works across DTC, SaaS, e-commerce, subscription boxes, and more.",
+              },
+              {
+                q: "How fresh is the ad data?",
+                a: "Scout pulls directly from the Meta Ads Library in real time, so you're always seeing ads that are currently running — not cached or historical data.",
+              },
+              {
+                q: "Do I need a Meta account or ad account?",
+                a: "No. Scout uses its own connection to the Meta Ads Library. You only need your brand's website URL.",
+              },
+              {
+                q: "How long does a report take?",
+                a: "Most reports are ready in 30–60 seconds. Scout fetches ads, runs AI analysis, and builds the full report automatically.",
+              },
+              {
+                q: "Can I edit the report after it's generated?",
+                a: "Yes. Every section of the report is editable through the wizard — you can adjust angles, add ads, rewrite takeaways, and relaunch.",
+              },
+            ].map((faq) => (
+              <FaqItem key={faq.q} q={faq.q} a={faq.a} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── FINAL CTA ── */}
+      <section
+        className="py-24 px-6 text-center"
+        style={{ background: "#F0EDE8", borderTop: "1px solid #E5E0D8" }}
+      >
+        <motion.div
+          variants={fadeUp}
+          custom={0}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="max-w-2xl mx-auto"
+        >
+          <h2
+            className="text-4xl md:text-5xl font-bold leading-tight mb-4"
+            style={{
+              fontFamily: "'DM Serif Display', Georgia, serif",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Ready to scout the competition?
+          </h2>
+          <p className="mb-8" style={{ color: "#6B5E52" }}>
+            Paste your URL. Get your report. No account required.
+          </p>
+          <Link href="/wizard">
+            <button
+              className="px-10 py-4 rounded-xl text-base font-semibold text-white shadow-md transition-all hover:opacity-90 hover:-translate-y-0.5"
+              style={{ background: "#C2714F" }}
+            >
+              Scout the Competition →
+            </button>
+          </Link>
+        </motion.div>
+      </section>
+
       {/* ── FOOTER ── */}
       <footer
-        className="relative z-10 px-6 md:px-12 py-8 flex items-center justify-between"
-        style={{ borderTop: "1px solid oklch(0.13 0 0)" }}
+        className="py-10 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4"
+        style={{ borderTop: "1px solid #E5E0D8", background: "#F0EDE8" }}
       >
-        <p
-          className="text-sm font-semibold"
-          style={{ fontFamily: "'DM Serif Display', Georgia, serif", color: "oklch(0.4 0 0)" }}
-        >
-          Scout
-        </p>
-        <p className="text-xs" style={{ color: "oklch(0.3 0 0)" }}>
-          Built on real Meta Ads Library data
-        </p>
+        <div className="flex items-center gap-2">
+          <span
+            className="font-bold"
+            style={{ fontFamily: "'DM Serif Display', Georgia, serif" }}
+          >
+            Scout
+          </span>
+          <span className="text-sm" style={{ color: "#9C8E80" }}>
+            · Competitive intelligence for creative strategists
+          </span>
+        </div>
+        <div className="flex items-center gap-6 text-sm" style={{ color: "#9C8E80" }}>
+          <Link href="/wizard">
+            <span className="hover:text-stone-700 transition-colors cursor-pointer">Get Started</span>
+          </Link>
+          <span>·</span>
+          <span>Built on Meta Ads Library</span>
+        </div>
       </footer>
     </div>
   );
