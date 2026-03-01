@@ -53,3 +53,8 @@
 - [x] Add social proof / testimonial strip (between Problem and How It Works)
 - [x] Add email capture secondary CTA in hero section
 - [x] Add "What you'll get" feature grid section
+
+## Report Generation Loading Animation
+- [x] Read Wizard.tsx report generation flow to identify loading state hook point
+- [x] Build animated loading overlay/screen with step-by-step progress messages
+- [x] Wire loading state to show during generateReport mutation and hide on completion

@@ -16,6 +16,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useReport, type ReportConfig, type WizardBrand, type WizardAd, type WizardAngle } from "@/contexts/ReportContext";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import ReportGeneratingOverlay from "@/components/ReportGeneratingOverlay";
 
 // ─── STEP DEFINITIONS ─────────────────────────────────────────────────────────
 
@@ -110,9 +111,11 @@ const Btn = ({ onClick, children, variant = "primary", disabled = false, classNa
 function StepUrl({
   onAutoFill,
   onSkip,
+  onGeneratingChange,
 }: {
   onAutoFill: (config: Partial<ReportConfig>) => void;
   onSkip: () => void;
+  onGeneratingChange?: (isGenerating: boolean, statusMsg: string, competitors: string[]) => void;
 }) {
   const [url, setUrl] = useState("");
   const [phase, setPhase] = useState<"idle" | "extracting" | "extracted" | "generating" | "done" | "error">("idle");
@@ -141,17 +144,23 @@ function StepUrl({
     onSuccess: (data) => {
       if (data.success && data.config) {
         setPhase("done");
-        setStatusMsg(`Report generated from ${data.totalAdsAnalyzed} real Meta ads! Review and adjust below.`);
+        const doneMsg = `Report generated from ${data.totalAdsAnalyzed} real Meta ads! Review and adjust below.`;
+        setStatusMsg(doneMsg);
+        onGeneratingChange?.(false, doneMsg, []);
         onAutoFill(data.config as Partial<ReportConfig>);
         toast.success(`Report pre-filled from ${data.totalAdsAnalyzed} real Meta Ads Library ads!`);
       } else {
         setPhase("error");
-        setStatusMsg("Could not generate report. Try again or fill in manually.");
+        const errMsg = "Could not generate report. Try again or fill in manually.";
+        setStatusMsg(errMsg);
+        onGeneratingChange?.(false, errMsg, []);
       }
     },
     onError: (err: any) => {
       setPhase("error");
-      setStatusMsg(err.message || "Report generation failed. Try again or fill in manually.");
+      const errMsg = err.message || "Report generation failed. Try again or fill in manually.";
+      setStatusMsg(errMsg);
+      onGeneratingChange?.(false, errMsg, []);
     },
   });
 
@@ -166,8 +175,11 @@ function StepUrl({
 
   const handleGenerate = () => {
     if (!identity) { toast.error("Please extract brand info first"); return; }
+    const competitorNames: string[] = (identity.competitors || []).map((c: any) => c.name).filter(Boolean);
     setPhase("generating");
-    setStatusMsg("Fetching real ads from Meta Ads Library...");
+    const initMsg = "Fetching real ads from Meta Ads Library...";
+    setStatusMsg(initMsg);
+    onGeneratingChange?.(true, initMsg, competitorNames);
     const progressMsgs = [
       { ms: 3000, msg: `Fetching ads for ${identity.competitors?.[0]?.name || "Competitor 1"}...` },
       { ms: 8000, msg: `Fetching ads for ${identity.competitors?.[1]?.name || "Competitor 2"}...` },
@@ -178,7 +190,8 @@ function StepUrl({
     ];
     progressMsgs.forEach(({ ms, msg }) => {
       setTimeout(() => {
-        if (phase !== "done" && phase !== "error") setStatusMsg(msg);
+        setStatusMsg(msg);
+        onGeneratingChange?.(true, msg, competitorNames);
       }, ms);
     });
     generateMutation.mutate({ identity });
@@ -815,6 +828,17 @@ export default function Wizard() {
   const [step, setStep] = useState(0);
   const [autoFilled, setAutoFilled] = useState(false);
 
+  // Generating overlay state
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generatingStatus, setGeneratingStatus] = useState("");
+  const [generatingCompetitors, setGeneratingCompetitors] = useState<string[]>([]);
+
+  const handleGeneratingChange = (generating: boolean, statusMsg: string, competitors: string[]) => {
+    setIsGenerating(generating);
+    setGeneratingStatus(statusMsg);
+    if (competitors.length > 0) setGeneratingCompetitors(competitors);
+  };
+
   const [formData, setFormData] = useState<Partial<ReportConfig>>(() => existingConfig || {
     clientName: "",
     reportTitle: "Competitor Creative Analysis",
@@ -875,6 +899,7 @@ export default function Wizard() {
         <StepUrl
           onAutoFill={handleAutoFill}
           onSkip={() => setStep(1)}
+          onGeneratingChange={handleGeneratingChange}
         />
       );
       case 1: return <StepIdentity data={formData as any} onChange={updateField} />;
@@ -892,6 +917,12 @@ export default function Wizard() {
 
   return (
     <div className="min-h-screen flex" style={{ background: 'oklch(0.08 0 0)' }}>
+      {/* Full-screen loading overlay during report generation */}
+      <ReportGeneratingOverlay
+        visible={isGenerating}
+        statusMsg={generatingStatus}
+        competitors={generatingCompetitors}
+      />
       {/* Left sidebar */}
       <aside className="w-64 flex-shrink-0 text-white flex-col hidden md:flex" style={{ background: 'oklch(0.06 0 0)', borderRight: '1px solid oklch(0.15 0 0)' }}>
         <div className="p-5" style={{ borderBottom: '1px solid oklch(0.15 0 0)' }}>
