@@ -115,20 +115,16 @@ function StepUrl({
   onSkip: () => void;
 }) {
   const [url, setUrl] = useState("");
-  const [token, setToken] = useState("");
-  const [showToken, setShowToken] = useState(false);
   const [phase, setPhase] = useState<"idle" | "extracting" | "extracted" | "generating" | "done" | "error">("idle");
   const [statusMsg, setStatusMsg] = useState("");
   const [identity, setIdentity] = useState<any>(null);
-  const [tokenValid, setTokenValid] = useState<boolean | null>(null);
-  const [tokenName, setTokenName] = useState("");
 
   const extractMutation = trpc.research.extractBrand.useMutation({
     onSuccess: (data) => {
       if (data.success && data.identity) {
         setIdentity(data.identity);
         setPhase("extracted");
-        setStatusMsg("Brand identified! Now connect Meta Ads Library to fetch real competitor ads.");
+        setStatusMsg("Brand identified! Click \"Fetch Real Ads\" below to pull competitor ads from Meta Ads Library.");
         toast.success(`Brand identified: ${data.identity.brandName}`);
       } else {
         setPhase("error");
@@ -138,23 +134,6 @@ function StepUrl({
     onError: (err: any) => {
       setPhase("error");
       setStatusMsg(err.message || "Could not fetch brand page. Try again or fill in manually.");
-    },
-  });
-
-  const validateMutation = trpc.research.validateToken.useMutation({
-    onSuccess: (data) => {
-      if (data.valid) {
-        setTokenValid(true);
-        setTokenName(data.name || "Authenticated");
-        toast.success(`Token valid — connected as ${data.name}`);
-      } else {
-        setTokenValid(false);
-        toast.error(data.error || "Invalid token. Please check and try again.");
-      }
-    },
-    onError: (err: any) => {
-      setTokenValid(false);
-      toast.error(err.message || "Token validation failed.");
     },
   });
 
@@ -172,7 +151,7 @@ function StepUrl({
     },
     onError: (err: any) => {
       setPhase("error");
-      setStatusMsg(err.message || "Report generation failed. Check your access token and try again.");
+      setStatusMsg(err.message || "Report generation failed. Try again or fill in manually.");
     },
   });
 
@@ -185,14 +164,8 @@ function StepUrl({
     extractMutation.mutate({ url: normalized });
   };
 
-  const handleValidateToken = () => {
-    if (!token.trim()) { toast.error("Please enter your Meta access token"); return; }
-    validateMutation.mutate({ token: token.trim() });
-  };
-
   const handleGenerate = () => {
     if (!identity) { toast.error("Please extract brand info first"); return; }
-    if (!token.trim()) { toast.error("Please enter your Meta access token"); return; }
     setPhase("generating");
     setStatusMsg("Fetching real ads from Meta Ads Library...");
     const progressMsgs = [
@@ -208,7 +181,7 @@ function StepUrl({
         if (phase !== "done" && phase !== "error") setStatusMsg(msg);
       }, ms);
     });
-    generateMutation.mutate({ identity, metaAccessToken: token.trim() });
+    generateMutation.mutate({ identity });
   };
 
   const isLoading = phase === "extracting" || phase === "generating";
@@ -223,14 +196,14 @@ function StepUrl({
             <h2 className="text-xl font-bold leading-tight" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
               AI-Powered Report Generator
             </h2>
-            <p className="text-sm" style={{ color: 'oklch(0.55 0 0)' }}>Paste your brand URL + Meta token — get a report built from real competitor ads</p>
+            <p className="text-sm" style={{ color: 'oklch(0.55 0 0)' }}>Paste your brand URL — get a report built from real competitor ads in the Meta Ads Library</p>
           </div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
           {[
             { icon: "🔍", label: "Step 1: Brand Analysis", desc: "Paste your URL to identify brand, category & competitors" },
-            { icon: "🔑", label: "Step 2: Connect Meta", desc: "Add your Meta access token to pull real ads from the Ads Library" },
-            { icon: "📊", label: "Step 3: Generate Report", desc: "AI analyzes real ad copy to extract angles, hooks & takeaways" },
+            { icon: "📊", label: "Step 2: Generate Report", desc: "AI fetches real ads from Meta Ads Library and extracts angles, hooks & takeaways" },
+            { icon: "✦", label: "Step 3: Review & Launch", desc: "Review the pre-filled report, adjust as needed, and launch" },
           ].map(item => (
             <div key={item.label} className="rounded-xl p-3" style={{ background: 'oklch(0.1 0 0 / 0.6)' }}>
               <div className="flex items-center gap-2 mb-1">
@@ -302,95 +275,46 @@ function StepUrl({
         )}
       </Card>
 
-      {/* PHASE 2: Meta Access Token */}
+      {/* PHASE 2: Generate Report */}
       <AnimatePresence>
         {(phase === "extracted" || phase === "generating" || phase === "done") && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-                  phase === "generating" ? "bg-[#C2714F] text-white" :
-                  phase === "done" ? "bg-green-500 text-white" :
-                  "bg-[#C2714F] text-white"
+                  phase === "done" ? "bg-green-500 text-white" : "bg-[#C2714F] text-white"
                 }`}>2</div>
-                <p className="font-semibold text-sm" style={{ color: 'oklch(0.85 0 0)' }}>Connect Meta Ads Library</p>
-                {tokenValid && <span className="text-xs px-2 py-0.5 rounded-full" style={{ color: 'oklch(0.72 0.15 145)', background: 'oklch(0.72 0.15 145 / 0.12)' }}>✓ Connected as {tokenName}</span>}
+                <p className="font-semibold text-sm" style={{ color: 'oklch(0.85 0 0)' }}>Fetch Real Ads & Generate Report</p>
               </div>
 
-              <div className="rounded-xl p-3 mb-4 text-xs" style={{ background: 'oklch(0.72 0.15 55 / 0.08)', border: '1px solid oklch(0.72 0.15 55 / 0.2)', color: 'oklch(0.72 0.15 55)' }}>
-                <p className="font-semibold mb-1">🔑 How to get your Meta Access Token (2 minutes):</p>
-                <ol className="list-decimal list-inside space-y-1">
-                  <li>Go to <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener noreferrer" className="underline">Meta Graph API Explorer</a></li>
-                  <li>Click <strong>Generate Access Token</strong> (top right)</li>
-                  <li>Select permissions: <code className="px-1 rounded" style={{ background: 'oklch(0.72 0.15 55 / 0.15)' }}>ads_read</code> and <code className="px-1 rounded" style={{ background: 'oklch(0.72 0.15 55 / 0.15)' }}>public_profile</code></li>
-                  <li>Copy the token and paste it below</li>
-                </ol>
-                <p className="mt-1" style={{ color: 'oklch(0.6 0.1 55)' }}>Note: User tokens expire in ~1 hour. For longer use, generate a long-lived token.</p>
-              </div>
-
-              <Label required>Meta User Access Token</Label>
-              <div className="flex gap-2 mt-1">
-                <div className="relative flex-1">
-                  <input
-                    type={showToken ? "text" : "password"}
-                    value={token}
-                    onChange={e => { setToken(e.target.value); setTokenValid(null); }}
-                    placeholder="EAA..."
-                    disabled={phase === "generating" || phase === "done"}
-                    className="w-full px-4 py-3 text-sm rounded-xl border-2 border-[oklch(0.22_0_0)] bg-[oklch(0.11_0_0)] text-white placeholder:text-[oklch(0.7_0.01_80)] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/30 focus:border-[#C2714F] transition-all disabled:opacity-50 font-mono pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowToken(s => !s)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[oklch(0.6_0.015_60)] hover:text-[oklch(0.75_0_0)] text-xs"
-                  >
-                    {showToken ? "Hide" : "Show"}
-                  </button>
-                </div>
-                <button
-                  onClick={handleValidateToken}
-                  disabled={!token || validateMutation.isPending || phase === "generating" || phase === "done"}
-                  className="px-4 py-3 rounded-xl text-sm font-medium disabled:opacity-40 transition-all whitespace-nowrap"
-                  style={{ border: '1px solid oklch(0.25 0 0)', color: 'oklch(0.5 0 0)' }}
-                >
-                  {validateMutation.isPending ? "Checking..." : tokenValid ? "✓ Valid" : "Validate"}
-                </button>
-              </div>
-              {tokenValid === false && (
-                <p className="text-xs mt-1" style={{ color: 'oklch(0.65 0.18 25)' }}>✕ Invalid token. Please check the token and try again.</p>
+              <button
+                onClick={handleGenerate}
+                disabled={!identity || phase === "generating" || phase === "done"}
+                className="w-full py-3.5 bg-[#C2714F] text-white rounded-xl text-sm font-semibold hover:bg-[#a85e3e] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
+              >
+                {phase === "generating" ? (
+                  <>
+                    <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    {statusMsg}
+                  </>
+                ) : phase === "done" ? (
+                  <>✓ Report Generated — Review Below</>
+                ) : (
+                  <>✦ Fetch Real Ads & Generate Report</>
+                )}
+              </button>
+              {phase === "generating" && (
+                <p className="text-xs text-center mt-2" style={{ color: 'oklch(0.45 0 0)' }}>This takes ~30–60 seconds — fetching real ads from Meta Ads Library then running AI analysis</p>
               )}
-
-              {/* Generate button */}
-              <div className="mt-5">
-                <button
-                  onClick={handleGenerate}
-                  disabled={!identity || !token || phase === "generating" || phase === "done"}
-                  className="w-full py-3.5 bg-[#C2714F] text-white rounded-xl text-sm font-semibold hover:bg-[#a85e3e] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
-                >
-                  {phase === "generating" ? (
-                    <>
-                      <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                      </svg>
-                      {statusMsg}
-                    </>
-                  ) : phase === "done" ? (
-                    <>✓ Report Generated — Review Below</>
-                  ) : (
-                    <>✦ Fetch Real Ads & Generate Report</>
-                  )}
-                </button>
-                {phase === "generating" && (
-                  <p className="text-xs text-center mt-2" style={{ color: 'oklch(0.45 0 0)' }}>This takes ~30–60 seconds — fetching real ads from Meta then running AI analysis</p>
-                )}
-                {phase === "done" && (
-                  <div className="mt-3 rounded-xl p-3 text-sm" style={{ background: 'oklch(0.72 0.15 145 / 0.08)', border: '1px solid oklch(0.72 0.15 145 / 0.2)' }}>
-                    <p className="font-semibold" style={{ color: 'oklch(0.72 0.15 145)' }}>✓ {statusMsg}</p>
-                    <p className="text-xs mt-1" style={{ color: 'oklch(0.6 0.08 145)' }}>All wizard fields have been pre-filled. Click <strong>Next</strong> to review and adjust, or click <strong>Launch Report</strong> at Step 6.</p>
-                  </div>
-                )}
-              </div>
+              {phase === "done" && (
+                <div className="mt-3 rounded-xl p-3 text-sm" style={{ background: 'oklch(0.72 0.15 145 / 0.08)', border: '1px solid oklch(0.72 0.15 145 / 0.2)' }}>
+                  <p className="font-semibold" style={{ color: 'oklch(0.72 0.15 145)' }}>✓ {statusMsg}</p>
+                  <p className="text-xs mt-1" style={{ color: 'oklch(0.6 0.08 145)' }}>All wizard fields have been pre-filled. Click <strong>Next</strong> to review and adjust, or click <strong>Launch Report</strong> at Step 6.</p>
+                </div>
+              )}
             </Card>
           </motion.div>
         )}
@@ -400,7 +324,7 @@ function StepUrl({
       {phase === "error" && (
         <div className="rounded-xl p-4 text-sm" style={{ background: 'oklch(0.65 0.18 25 / 0.08)', border: '1px solid oklch(0.65 0.18 25 / 0.25)', color: 'oklch(0.65 0.18 25)' }}>
           <p className="font-semibold">✕ {statusMsg}</p>
-          <p className="text-xs mt-1" style={{ color: 'oklch(0.55 0.12 25)' }}>Check your access token has <code>ads_read</code> permission, then try again. Or skip to fill in manually.</p>
+          <p className="text-xs mt-1" style={{ color: 'oklch(0.55 0.12 25)' }}>Try again or skip to fill in manually.</p>
         </div>
       )}
 

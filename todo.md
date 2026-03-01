@@ -35,3 +35,10 @@
 - [x] Fix status badges (Active/Inactive) to dark theme
 - [x] Fix loading skeleton colors to dark theme
 - [x] Update Card, Btn, Label, Input, Textarea, Select shared components to dark theme
+
+## Remove Meta Token Requirement
+- [x] Remove token input step from wizard UI (StepUrl / any dedicated token step)
+- [x] Remove metaToken from wizard state and all step props
+- [x] Update server research router to use server-side token (env var) instead of user-provided token
+- [x] Remove token from tRPC procedure inputs
+- [x] Verify report generation works end-to-end without user entering a token

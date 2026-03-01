@@ -13,6 +13,7 @@ import { z } from "zod";
 import { publicProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
 import { captureAdScreenshots } from "../screenshotService";
+import { ENV } from "../_core/env";
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
 
@@ -274,11 +275,14 @@ Return a JSON object identifying this brand and its 2 closest direct competitors
             })
           ),
         }),
-        metaAccessToken: z.string().min(10),
       })
     )
     .mutation(async ({ input }) => {
-      const { identity, metaAccessToken } = input;
+      const { identity } = input;
+      const metaAccessToken = ENV.metaAccessToken;
+      if (!metaAccessToken) {
+        throw new Error("Meta access token is not configured on the server. Please contact the administrator.");
+      }
 
       // 1. Fetch real ads for each competitor from Meta Ads Library API
       const competitorAds: Array<{ competitor: any; ads: MetaAd[] }> = [];
@@ -302,7 +306,7 @@ Return a JSON object identifying this brand and its 2 closest direct competitors
       const totalRealAds = competitorAds.reduce((sum, ca) => sum + ca.ads.length, 0);
       if (totalRealAds === 0 && errors.length > 0) {
         throw new Error(
-          `Could not fetch ads from Meta Ads Library. ${errors.join("; ")}. Please check your access token.`
+          `Could not fetch ads from Meta Ads Library. ${errors.join("; ")}. The server token may have expired.`
         );
       }
 
@@ -616,24 +620,5 @@ Rules:
       }
     }),
 
-  /**
-   * Validate a Meta access token by making a lightweight test call.
-   */
-  validateToken: publicProcedure
-    .input(z.object({ token: z.string() }))
-    .mutation(async ({ input }) => {
-      try {
-        const res = await fetch(
-          `https://graph.facebook.com/v25.0/me?access_token=${encodeURIComponent(input.token)}`,
-          { signal: AbortSignal.timeout(8000) }
-        );
-        const json = await res.json() as any;
-        if (json.error) {
-          return { valid: false, error: json.error.message };
-        }
-        return { valid: true, name: json.name || "Authenticated" };
-      } catch (err: any) {
-        return { valid: false, error: err.message };
-      }
-    }),
 });
+
