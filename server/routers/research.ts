@@ -304,10 +304,24 @@ ${trimmedText}`;
 
       // Check if we got any real ads at all
       const totalRealAds = competitorAds.reduce((sum, ca) => sum + ca.ads.length, 0);
+
+      // Detect Meta API permission errors (code 10 / identity verification required)
+      const isPermissionError = errors.some(
+        (e) => e.includes("code 10") || e.includes("does not have permission") || e.includes("follow the steps")
+      );
+
       if (totalRealAds === 0 && errors.length > 0) {
-        throw new Error(
-          `Could not fetch ads from Meta Ads Library. ${errors.join("; ")}. The server token may have expired.`
-        );
+        if (isPermissionError) {
+          // Graceful fallback: generate AI-only report from brand identity
+          // The Meta Ads Library API requires the Facebook app to complete identity
+          // verification at facebook.com/ads/library/api before it can access ads_archive.
+          console.warn("[Meta Ads API] Permission error (code 10) — falling back to AI-only analysis.");
+          // Fall through to LLM analysis with empty ad corpus
+        } else {
+          throw new Error(
+            `Could not fetch ads from Meta Ads Library. ${errors.join("; ")}. The server token may have expired.`
+          );
+        }
       }
 
       // 2. Build a concise ad corpus for LLM analysis (trimmed to reduce token count)
@@ -324,13 +338,24 @@ ${trimmedText}`;
         })
         .join("\n\n");
 
-      // 3. LLM analysis of real ad copy (concise prompt to reduce latency)
-      const analysisPrompt = `Senior creative strategist. Analyze these real Meta Ads Library ads for ${identity.brandName} (${identity.category}).
+      // 3. LLM analysis — uses real ad data if available, falls back to brand-only analysis
+      const hasRealAds = totalRealAds > 0;
+      const analysisPrompt = hasRealAds
+        ? `Senior creative strategist. Analyze these real Meta Ads Library ads for ${identity.brandName} (${identity.category}).
 
 ADS:
 ${adCorpus}
 
-Return JSON with: messagingAngles (4-5, each with title/description/color/share/exampleAdIds), topHooks (4-5, each with text/type/brand/effectiveness), psychTriggers (4-5, each with trigger/description/frequency), executiveSummary (2 paragraphs: patterns found + implications for ${identity.brandName}), keyTakeaways (4-5, each with title/body/icon/color). Be specific, reference actual ad copy.`;
+Return JSON with: messagingAngles (4-5, each with title/description/color/share/exampleAdIds), topHooks (4-5, each with text/type/brand/effectiveness), psychTriggers (4-5, each with trigger/description/frequency), executiveSummary (2 paragraphs: patterns found + implications for ${identity.brandName}), keyTakeaways (4-5, each with title/body/icon/color). Be specific, reference actual ad copy.`
+        : `Senior creative strategist. Based on your knowledge of the ${identity.category} category, generate a realistic competitor creative analysis for ${identity.brandName}.
+
+COMPETITORS TO ANALYZE: ${identity.competitors.map((c: any) => c.name).join(", ")}
+CATEGORY: ${identity.category}
+TARGET AUDIENCE: ${identity.targetAudience}
+
+Note: Real Meta Ads Library data was unavailable (API permission pending). Generate a realistic, research-grounded analysis based on known advertising patterns in this category.
+
+Return JSON with: messagingAngles (4-5, each with title/description/color/share/exampleAdIds), topHooks (4-5, each with text/type/brand/effectiveness), psychTriggers (4-5, each with trigger/description/frequency), executiveSummary (2 paragraphs: typical patterns in this category + implications for ${identity.brandName}), keyTakeaways (4-5, each with title/body/icon/color).`;
 
       const analysisResponse = await invokeLLM({
         messages: [
@@ -502,7 +527,9 @@ Return JSON with: messagingAngles (4-5, each with title/description/color/share/
         clientName: identity.brandName,
         reportTitle: "Competitor Creative Analysis",
         reportDate: today,
-        dataSource: `Meta Ads Library (United States) — ${totalRealAds} real ads analyzed`,
+        dataSource: hasRealAds
+          ? `Meta Ads Library (United States) — ${totalRealAds} real ads analyzed`
+          : `AI Analysis (Meta Ads Library API access pending) — based on ${identity.category} category research`,
         executiveSummary: analysis.executiveSummary || "",
         brands,
         angles,
@@ -516,6 +543,7 @@ Return JSON with: messagingAngles (4-5, each with title/description/color/share/
           topHooks: (analysis.topHooks || []).map((h: any) => h.text || h),
           psychTriggers: (analysis.psychTriggers || []).map((p: any) => p.trigger || p),
           totalAdsAnalyzed: totalRealAds,
+          isAiOnly: !hasRealAds,
           errors: errors.length > 0 ? errors : undefined,
         },
       };
@@ -541,7 +569,15 @@ Return JSON with: messagingAngles (4-5, each with title/description/color/share/
         });
       }
 
-      return { success: true, config: reportConfig, totalAdsAnalyzed: totalRealAds };
+      return {
+        success: true,
+        config: reportConfig,
+        totalAdsAnalyzed: totalRealAds,
+        isAiOnly: !hasRealAds,
+        metaApiNote: !hasRealAds
+          ? "Meta Ads Library API access requires identity verification at facebook.com/ads/library/api. Report generated using AI analysis of known category patterns instead."
+          : undefined,
+      };
     }),
 
   /**

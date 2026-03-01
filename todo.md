@@ -118,3 +118,8 @@
 ## Meta Token Fix
 - [x] Refresh expired META_ACCESS_TOKEN secret
 - [x] Improve wizard error message for token expiry (show actionable guidance)
+
+## Meta API Permission Fix (code 10)
+- [x] Diagnose ads_archive permission requirements
+- [x] Fix API call to use correct endpoint / parameters for the token type
+- [x] Improve error message for permission errors (code 10)

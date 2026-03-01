@@ -147,11 +147,21 @@ function StepUrl({
     onSuccess: (data) => {
       if (data.success && data.config) {
         setPhase("done");
-        const doneMsg = `Report generated from ${data.totalAdsAnalyzed} real Meta ads! Review and adjust below.`;
+        const isAiOnly = (data as any).isAiOnly;
+        const doneMsg = isAiOnly
+          ? `AI analysis complete! Report generated using category research (Meta Ads Library API access pending). Review and adjust below.`
+          : `Report generated from ${data.totalAdsAnalyzed} real Meta ads! Review and adjust below.`;
         setStatusMsg(doneMsg);
         onGeneratingChange?.(false, doneMsg, []);
         onAutoFill(data.config as Partial<ReportConfig>);
-        toast.success(`Report pre-filled from ${data.totalAdsAnalyzed} real Meta Ads Library ads!`);
+        if (isAiOnly) {
+          toast("Report generated using AI analysis — Meta Ads Library API access requires identity verification at facebook.com/ads/library/api", {
+            duration: 10000,
+            icon: "ℹ️",
+          });
+        } else {
+          toast.success(`Report pre-filled from ${data.totalAdsAnalyzed} real Meta Ads Library ads!`);
+        }
       } else {
         setPhase("error");
         const errMsg = "Could not generate report. Try again or fill in manually.";
