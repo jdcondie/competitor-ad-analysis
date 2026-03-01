@@ -47,6 +47,41 @@ export interface WizardAngle {
   share: number; // 0–100 percentage
 }
 
+export interface PsychTrigger {
+  trigger: string;
+  description: string;
+  frequency: string; // e.g. "High", "Medium", "Low"
+  score: number;    // 0-100
+  color: string;
+  brands: string[]; // brand keys that use this trigger
+}
+
+export interface TopHook {
+  text: string;
+  type: string;         // e.g. "Question", "Stat", "Curiosity Gap"
+  brand: string;        // brand key
+  effectiveness: string; // e.g. "High", "Medium"
+  score: number;        // 0-100
+}
+
+export interface PlatformStat {
+  platform: string;  // e.g. "Facebook", "Instagram", "Messenger"
+  adCount: number;
+  share: number;     // 0-100 percentage
+  color: string;
+}
+
+export interface BrandComparison {
+  brandKey: string;
+  brandName: string;
+  adCount: number;
+  avgRunDays: number;
+  topAngle: string;
+  topFormat: string;
+  ctaStyle: string;
+  toneOfVoice: string;
+}
+
 export interface ReportConfig {
   // Step 1 — Report Identity
   clientName: string;       // e.g. "Post Script Society"
@@ -54,6 +89,7 @@ export interface ReportConfig {
   reportDate: string;       // e.g. "March 2026"
   dataSource: string;       // e.g. "Meta Ads Library (United States)"
   executiveSummary: string;
+  strategicNarrative?: string;  // Extended multi-paragraph narrative analysis
 
   // Step 2 — Competitor Brands
   brands: WizardBrand[];
@@ -66,6 +102,14 @@ export interface ReportConfig {
 
   // Step 5 — Key Takeaways
   takeaways: { title: string; body: string; icon: string; color: string }[];
+
+  // Rich analysis fields
+  psychTriggers?: PsychTrigger[];
+  topHooks?: TopHook[];
+  platformBreakdown?: PlatformStat[];
+  brandComparison?: BrandComparison[];
+  categoryContext?: string;     // 1-2 sentences on the broader category landscape
+  opportunityGaps?: { title: string; description: string; priority: "High" | "Medium" | "Low" }[];
 }
 
 export interface ReportContextValue {

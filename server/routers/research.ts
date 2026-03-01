@@ -341,22 +341,50 @@ ${trimmedText}`;
 
       // 3. LLM analysis — uses real ad data if available, falls back to brand-only analysis
       const hasRealAds = totalRealAds > 0;
+      const competitorNames = identity.competitors.map((c: any) => c.name).join(", ");
       const analysisPrompt = hasRealAds
-        ? `Senior creative strategist. Analyze these real Meta Ads Library ads for ${identity.brandName} (${identity.category}).
+        ? `You are a senior creative strategist producing a premium competitor ad intelligence report for ${identity.brandName} (${identity.category}).
 
-ADS:
+REAL ADS FROM META ADS LIBRARY:
 ${adCorpus}
 
-Return JSON with: messagingAngles (4-5, each with title/description/color/share/exampleAdIds), topHooks (4-5, each with text/type/brand/effectiveness), psychTriggers (4-5, each with trigger/description/frequency), executiveSummary (2 paragraphs: patterns found + implications for ${identity.brandName}), keyTakeaways (4-5, each with title/body/icon/color). Be specific, reference actual ad copy.`
-        : `Senior creative strategist. Based on your knowledge of the ${identity.category} category, generate a realistic competitor creative analysis for ${identity.brandName}.
+COMPETITORS: ${competitorNames}
+TARGET AUDIENCE: ${identity.targetAudience}
+CLIENT VALUE PROP: ${identity.coreValueProp}
 
-COMPETITORS TO ANALYZE: ${identity.competitors.map((c: any) => c.name).join(", ")}
+Produce a deeply detailed, specific analysis. Reference actual ad copy. Be opinionated and strategic.
+
+Return JSON with ALL of these fields:
+- messagingAngles: 5-6 angles, each with title, description (2-3 sentences), color (hex), share (%), exampleAdIds
+- topHooks: 5-6 hooks, each with text (exact hook), type (Question/Stat/Curiosity Gap/Social Proof/Fear/Benefit), brand (brand key), effectiveness (High/Medium/Low), score (0-100)
+- psychTriggers: 5-6 triggers, each with trigger (name), description (2 sentences), frequency (High/Medium/Low), score (0-100), color (hex), brands (array of brand keys)
+- executiveSummary: 3-4 sentence overview of the competitive landscape
+- strategicNarrative: 3 paragraphs — (1) what competitors are doing well, (2) patterns and themes across the category, (3) specific opportunities for ${identity.brandName}
+- keyTakeaways: 5-6 takeaways, each with title, body (2-3 sentences), icon (emoji), color (hex)
+- platformBreakdown: array of {platform, adCount, share (%), color (hex)} for Facebook/Instagram/Messenger/Audience Network
+- brandComparison: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, topFormat, ctaStyle, toneOfVoice}
+- categoryContext: 2 sentences on the broader ${identity.category} advertising landscape
+- opportunityGaps: 3-4 gaps, each with title, description (2 sentences), priority (High/Medium/Low)`
+        : `You are a senior creative strategist producing a premium competitor ad intelligence report for ${identity.brandName}.
+
+COMPETITORS TO ANALYZE: ${competitorNames}
 CATEGORY: ${identity.category}
 TARGET AUDIENCE: ${identity.targetAudience}
+CLIENT VALUE PROP: ${identity.coreValueProp}
 
-Note: Real Meta Ads Library data was unavailable (API permission pending). Generate a realistic, research-grounded analysis based on known advertising patterns in this category.
+Note: Real Meta Ads Library data was unavailable (API permission pending). Generate a highly realistic, research-grounded analysis based on known advertising patterns in this category. Be specific, opinionated, and strategic — as if you had reviewed 50+ real ads.
 
-Return JSON with: messagingAngles (4-5, each with title/description/color/share/exampleAdIds), topHooks (4-5, each with text/type/brand/effectiveness), psychTriggers (4-5, each with trigger/description/frequency), executiveSummary (2 paragraphs: typical patterns in this category + implications for ${identity.brandName}), keyTakeaways (4-5, each with title/body/icon/color).`;
+Return JSON with ALL of these fields:
+- messagingAngles: 5-6 angles, each with title, description (2-3 sentences), color (hex), share (%), exampleAdIds
+- topHooks: 5-6 hooks, each with text (realistic example hook), type (Question/Stat/Curiosity Gap/Social Proof/Fear/Benefit), brand (brand key), effectiveness (High/Medium/Low), score (0-100)
+- psychTriggers: 5-6 triggers, each with trigger (name), description (2 sentences), frequency (High/Medium/Low), score (0-100), color (hex), brands (array of brand keys)
+- executiveSummary: 3-4 sentence overview of the competitive landscape
+- strategicNarrative: 3 paragraphs — (1) what competitors are doing well, (2) patterns and themes across the category, (3) specific opportunities for ${identity.brandName}
+- keyTakeaways: 5-6 takeaways, each with title, body (2-3 sentences), icon (emoji), color (hex)
+- platformBreakdown: array of {platform, adCount, share (%), color (hex)} for Facebook/Instagram/Messenger/Audience Network
+- brandComparison: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, topFormat, ctaStyle, toneOfVoice}
+- categoryContext: 2 sentences on the broader ${identity.category} advertising landscape
+- opportunityGaps: 3-4 gaps, each with title, description (2 sentences), priority (High/Medium/Low)`;
 
       const analysisResponse = await invokeLLM({
         messages: [
@@ -399,8 +427,9 @@ Return JSON with: messagingAngles (4-5, each with title/description/color/share/
                       type: { type: "string" },
                       brand: { type: "string" },
                       effectiveness: { type: "string" },
+                      score: { type: "number" },
                     },
-                    required: ["text", "type", "brand", "effectiveness"],
+                    required: ["text", "type", "brand", "effectiveness", "score"],
                     additionalProperties: false,
                   },
                 },
@@ -412,12 +441,16 @@ Return JSON with: messagingAngles (4-5, each with title/description/color/share/
                       trigger: { type: "string" },
                       description: { type: "string" },
                       frequency: { type: "string" },
+                      score: { type: "number" },
+                      color: { type: "string" },
+                      brands: { type: "array", items: { type: "string" } },
                     },
-                    required: ["trigger", "description", "frequency"],
+                    required: ["trigger", "description", "frequency", "score", "color", "brands"],
                     additionalProperties: false,
                   },
                 },
                 executiveSummary: { type: "string" },
+                strategicNarrative: { type: "string" },
                 keyTakeaways: {
                   type: "array",
                   items: {
@@ -432,13 +465,64 @@ Return JSON with: messagingAngles (4-5, each with title/description/color/share/
                     additionalProperties: false,
                   },
                 },
+                platformBreakdown: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      platform: { type: "string" },
+                      adCount: { type: "number" },
+                      share: { type: "number" },
+                      color: { type: "string" },
+                    },
+                    required: ["platform", "adCount", "share", "color"],
+                    additionalProperties: false,
+                  },
+                },
+                brandComparison: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      brandKey: { type: "string" },
+                      brandName: { type: "string" },
+                      adCount: { type: "number" },
+                      avgRunDays: { type: "number" },
+                      topAngle: { type: "string" },
+                      topFormat: { type: "string" },
+                      ctaStyle: { type: "string" },
+                      toneOfVoice: { type: "string" },
+                    },
+                    required: ["brandKey", "brandName", "adCount", "avgRunDays", "topAngle", "topFormat", "ctaStyle", "toneOfVoice"],
+                    additionalProperties: false,
+                  },
+                },
+                categoryContext: { type: "string" },
+                opportunityGaps: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      title: { type: "string" },
+                      description: { type: "string" },
+                      priority: { type: "string" },
+                    },
+                    required: ["title", "description", "priority"],
+                    additionalProperties: false,
+                  },
+                },
               },
               required: [
                 "messagingAngles",
                 "topHooks",
                 "psychTriggers",
                 "executiveSummary",
+                "strategicNarrative",
                 "keyTakeaways",
+                "platformBreakdown",
+                "brandComparison",
+                "categoryContext",
+                "opportunityGaps",
               ],
               additionalProperties: false,
             },
@@ -524,6 +608,48 @@ Return JSON with: messagingAngles (4-5, each with title/description/color/share/
         color: t.color || "#888",
       }));
 
+      // Map rich analysis fields
+      const psychTriggers = (analysis.psychTriggers || []).map((p: any) => ({
+        trigger: p.trigger || "",
+        description: p.description || "",
+        frequency: p.frequency || "Medium",
+        score: typeof p.score === "number" ? p.score : 60,
+        color: p.color || "#C2714F",
+        brands: Array.isArray(p.brands) ? p.brands : [],
+      }));
+
+      const topHooks = (analysis.topHooks || []).map((h: any) => ({
+        text: h.text || "",
+        type: h.type || "Benefit",
+        brand: h.brand || "",
+        effectiveness: h.effectiveness || "Medium",
+        score: typeof h.score === "number" ? h.score : 70,
+      }));
+
+      const platformBreakdown = (analysis.platformBreakdown || []).map((p: any) => ({
+        platform: p.platform || "",
+        adCount: typeof p.adCount === "number" ? p.adCount : 0,
+        share: typeof p.share === "number" ? p.share : 25,
+        color: p.color || "#888",
+      }));
+
+      const brandComparison = (analysis.brandComparison || []).map((b: any) => ({
+        brandKey: b.brandKey || "",
+        brandName: b.brandName || "",
+        adCount: typeof b.adCount === "number" ? b.adCount : 0,
+        avgRunDays: typeof b.avgRunDays === "number" ? b.avgRunDays : 14,
+        topAngle: b.topAngle || "",
+        topFormat: b.topFormat || "Image",
+        ctaStyle: b.ctaStyle || "",
+        toneOfVoice: b.toneOfVoice || "",
+      }));
+
+      const opportunityGaps = (analysis.opportunityGaps || []).map((g: any) => ({
+        title: g.title || "",
+        description: g.description || "",
+        priority: (g.priority === "High" || g.priority === "Medium" || g.priority === "Low") ? g.priority : "Medium" as "High" | "Medium" | "Low",
+      }));
+
       const reportConfig = {
         clientName: identity.brandName,
         reportTitle: "Competitor Creative Analysis",
@@ -532,17 +658,22 @@ Return JSON with: messagingAngles (4-5, each with title/description/color/share/
           ? `Meta Ads Library (United States) — ${totalRealAds} real ads analyzed`
           : `AI Analysis (Meta Ads Library API access pending) — based on ${identity.category} category research`,
         executiveSummary: analysis.executiveSummary || "",
+        strategicNarrative: analysis.strategicNarrative || "",
+        categoryContext: analysis.categoryContext || "",
         brands,
         angles,
         ads: allMappedAds.slice(0, 10),
         takeaways,
+        psychTriggers,
+        topHooks,
+        platformBreakdown,
+        brandComparison,
+        opportunityGaps,
         _meta: {
           brandName: identity.brandName,
           category: identity.category,
           targetAudience: identity.targetAudience,
           coreValueProp: identity.coreValueProp,
-          topHooks: (analysis.topHooks || []).map((h: any) => h.text || h),
-          psychTriggers: (analysis.psychTriggers || []).map((p: any) => p.trigger || p),
           totalAdsAnalyzed: totalRealAds,
           isAiOnly: !hasRealAds,
           errors: errors.length > 0 ? errors : undefined,

@@ -156,3 +156,9 @@
 - [x] Add getReport tRPC procedure to fetch single report by ID
 - [x] Wire /reports cards to link to /reports/:id
 - [x] Add /reports/:id route to App.tsx
+
+## Premium Report Upgrade
+- [x] Expand ReportConfig type with psych triggers, platform stats, hooks breakdown, brand comparison, narrative sections
+- [x] Upgrade LLM prompt to generate all new rich data fields
+- [x] Rebuild ReportDetail page with charts (recharts), stat grids, ad cards with thumbnails, trigger analysis, brand comparison table
+- [x] Add recharts dependency for bar/pie/radar charts in the report
