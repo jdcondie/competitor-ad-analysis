@@ -102,6 +102,8 @@ async function fetchMetaAds(
     ad_active_status: "ALL",
     fields,
     limit: String(limit),
+    // Sort by longest-running ads (best performers stay live longest)
+    sort_data: JSON.stringify({ direction: "DESC", field: "ad_delivery_start_time" }),
     access_token: accessToken,
   });
 
@@ -368,7 +370,8 @@ Return JSON with ALL of these fields:
 - brandProfiles: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength (1 sentence), whatsWorking (array of 3-4 specific bullet strings), whatsNotWorking (array of 2-3 specific bullet strings)}
 - adVolumeTimeline: array of 6 monthly data points {month (e.g. "Oct 2025"), [brandKey]: number} — realistic estimated ad counts per brand per month
 - strategicRecommendations: 4-5 recommendations, each with {title, rationale (2-3 sentences), action (specific 1-sentence action), priority (High/Medium/Low), effort (Low/Medium/High), impact (Low/Medium/High), icon (emoji)}
-- executiveSummaryBullets: 4-5 bullets, each with {label (e.g. "Key Finding"), text (1-2 sentences), icon (emoji), color (hex)}`
+- executiveSummaryBullets: 4-5 bullets, each with {label (e.g. "Key Finding"), text (1-2 sentences), icon (emoji), color (hex)}
+- swipeFileAds: exactly 10 realistic example ads (5 per competitor) with {id, brandKey (use the competitor's key), headline (compelling ad headline), bodyPreview (first 120 chars of body), fullBody (full ad copy, 2-4 sentences), format (Video/Image/Carousel/DCO), status (Active/Inactive), startDate (e.g. "Nov 19, 2025"), variations (1-4), angle (one of the messagingAngles titles), hook (opening line), cta (e.g. "Shop Now"/"Learn More"/"Subscribe"), platforms (array of Facebook/Instagram/Messenger/Audience Network/Threads), runningDuration (e.g. "3+ months")}`
         : `You are a senior creative strategist producing a premium competitor ad intelligence report for ${identity.brandName}.
 
 COMPETITORS TO ANALYZE: ${competitorNames}
@@ -392,7 +395,8 @@ Return JSON with ALL of these fields:
 - brandProfiles: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength (1 sentence), whatsWorking (array of 3-4 specific bullet strings), whatsNotWorking (array of 2-3 specific bullet strings)}
 - adVolumeTimeline: array of 6 monthly data points {month (e.g. "Oct 2025"), [brandKey]: number} — realistic estimated ad counts per brand per month
 - strategicRecommendations: 4-5 recommendations, each with {title, rationale (2-3 sentences), action (specific 1-sentence action), priority (High/Medium/Low), effort (Low/Medium/High), impact (Low/Medium/High), icon (emoji)}
-- executiveSummaryBullets: 4-5 bullets, each with {label (e.g. "Key Finding"), text (1-2 sentences), icon (emoji), color (hex)}`;
+- executiveSummaryBullets: 4-5 bullets, each with {label (e.g. "Key Finding"), text (1-2 sentences), icon (emoji), color (hex)}
+- swipeFileAds: exactly 10 realistic example ads (5 per competitor) with {id, brandKey (use the competitor's key), headline (compelling ad headline), bodyPreview (first 120 chars of body), fullBody (full ad copy, 2-4 sentences), format (Video/Image/Carousel/DCO), status (Active/Inactive), startDate (e.g. "Nov 19, 2025"), variations (1-4), angle (one of the messagingAngles titles), hook (opening line), cta (e.g. "Shop Now"/"Learn More"/"Subscribe"), platforms (array of Facebook/Instagram/Messenger/Audience Network/Threads), runningDuration (e.g. "3+ months")}`;
 
       const analysisResponse = await invokeLLM({
         messages: [
@@ -584,6 +588,30 @@ Return JSON with ALL of these fields:
                     additionalProperties: false,
                   },
                 },
+                swipeFileAds: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      id: { type: "string" },
+                      brandKey: { type: "string" },
+                      headline: { type: "string" },
+                      bodyPreview: { type: "string" },
+                      fullBody: { type: "string" },
+                      format: { type: "string" },
+                      status: { type: "string" },
+                      startDate: { type: "string" },
+                      variations: { type: "number" },
+                      angle: { type: "string" },
+                      hook: { type: "string" },
+                      cta: { type: "string" },
+                      platforms: { type: "array", items: { type: "string" } },
+                      runningDuration: { type: "string" },
+                    },
+                    required: ["id", "brandKey", "headline", "bodyPreview", "fullBody", "format", "status", "startDate", "variations", "angle", "hook", "cta", "platforms", "runningDuration"],
+                    additionalProperties: false,
+                  },
+                },
               },
               required: [
                 "messagingAngles",
@@ -600,6 +628,7 @@ Return JSON with ALL of these fields:
                 "adVolumeTimeline",
                 "strategicRecommendations",
                 "executiveSummaryBullets",
+                "swipeFileAds",
               ],
               additionalProperties: false,
             },
@@ -654,6 +683,30 @@ Return JSON with ALL of these fields:
           });
 
           globalIndex++;
+        }
+      }
+
+      // 4b. If no real ads, use AI-generated swipeFileAds from the analysis
+      if (allMappedAds.length === 0 && (analysis.swipeFileAds || []).length > 0) {
+        for (const ad of (analysis.swipeFileAds || []).slice(0, 10)) {
+          allMappedAds.push({
+            id: ad.id || `ai-ad-${allMappedAds.length + 1}`,
+            brandKey: ad.brandKey || (identity.competitors[0]?.key ?? "brand1"),
+            format: ad.format || "Image",
+            headline: ad.headline || "",
+            bodyPreview: ad.bodyPreview || ad.fullBody?.slice(0, 120) || "",
+            fullBody: ad.fullBody || "",
+            status: (ad.status === "Active" || ad.status === "Inactive") ? ad.status : "Active",
+            startDate: ad.startDate || "",
+            variations: typeof ad.variations === "number" ? ad.variations : 1,
+            angle: ad.angle || "",
+            hook: ad.hook || "",
+            cta: ad.cta || "Learn More",
+            platforms: Array.isArray(ad.platforms) ? ad.platforms : ["Facebook", "Instagram"],
+            runningDuration: ad.runningDuration || "",
+            thumbnailUrl: "",
+            metaUrl: "",
+          });
         }
       }
 
@@ -803,26 +856,37 @@ Return JSON with ALL of these fields:
         },
       };
 
-      // 6. Return the report immediately — screenshots captured asynchronously in background
-      // This decouples the slow Playwright screenshot step from the user-facing response,
-      // cutting perceived generation time from ~60s down to ~15-25s.
+      // 6. Capture screenshots synchronously (with timeout) so CDN URLs are embedded in ad cards
       const adsWithSnapshots = allMappedAds
         .slice(0, 10)
         .filter((a) => a.metaUrl && a.metaUrl.includes("facebook.com"))
         .map((a) => ({ id: a.id, snapshotUrl: a.metaUrl }));
 
       if (adsWithSnapshots.length > 0) {
-        // Fire-and-forget: screenshots upload to S3 but don't block the response
-        setImmediate(async () => {
-          try {
-            console.log(`[Screenshots] Background capture: ${adsWithSnapshots.length} ads...`);
-            await captureAdScreenshots(adsWithSnapshots);
-            console.log(`[Screenshots] Background capture complete.`);
-          } catch (err) {
-            console.error("[Screenshots] Background capture failed:", err);
+        try {
+          console.log(`[Screenshots] Capturing ${adsWithSnapshots.length} ad screenshots...`);
+          // Race against a 90s timeout so we don't block indefinitely
+          const screenshotMap = await Promise.race([
+            captureAdScreenshots(adsWithSnapshots),
+            new Promise<Record<string, string | null>>((resolve) =>
+              setTimeout(() => resolve({}), 90000)
+            ),
+          ]);
+          // Embed CDN URLs back into the ad objects
+          for (const ad of allMappedAds) {
+            const cdnUrl = screenshotMap[ad.id];
+            if (cdnUrl) {
+              ad.thumbnailUrl = cdnUrl;
+            }
           }
-        });
+          console.log(`[Screenshots] Capture complete.`);
+        } catch (err) {
+          console.error("[Screenshots] Capture failed (non-fatal):", err);
+        }
       }
+
+      // Update reportConfig.ads with the CDN thumbnail URLs
+      reportConfig.ads = allMappedAds.slice(0, 10);
 
       // 7. Save report to DB if user is authenticated
       let savedReportId: number | null = null;

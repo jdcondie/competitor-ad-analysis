@@ -37,6 +37,7 @@ export interface WizardAd {
   thumbnailUrl?: string;
   isVideo?: boolean;
   metaUrl?: string;
+  runningDuration?: string;
 }
 
 export interface WizardAngle {

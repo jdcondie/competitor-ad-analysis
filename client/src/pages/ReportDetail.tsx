@@ -110,80 +110,216 @@ const SectionHeader = ({ eyebrow, title, subtitle }: { eyebrow: string; title: s
   </div>
 );
 
+// ─── FORMAT BADGE ─────────────────────────────────────────────────────────────
+const FormatBadge = ({ format }: { format: string }) => {
+  const isVideo = format === "Video";
+  const isCarousel = format === "Carousel";
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+      style={{
+        background: isVideo ? "#EEF3FC" : isCarousel ? "#EDF5F0" : "#F5F0FF",
+        color: isVideo ? T.blue : isCarousel ? T.green : "#6B4FBB",
+        border: `1px solid ${isVideo ? T.blueBorder : isCarousel ? T.greenBorder : "#D4C5F5"}`,
+      }}
+    >
+      {isVideo ? (
+        <svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor">
+          <path d="M2 2l8 4-8 4V2z" />
+        </svg>
+      ) : isCarousel ? (
+        <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="1" y="2" width="4" height="8" rx="0.5" />
+          <rect x="7" y="2" width="4" height="8" rx="0.5" />
+        </svg>
+      ) : (
+        <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <rect x="1" y="1" width="10" height="10" rx="1" />
+          <circle cx="4" cy="4" r="1" fill="currentColor" stroke="none" />
+          <path d="M1 8l3-3 2 2 2-2 3 3" />
+        </svg>
+      )}
+      {format}
+    </span>
+  );
+};
+
 // ─── AD CARD ──────────────────────────────────────────────────────────────────
 const AdCard = ({ ad, brands, index }: { ad: WizardAd; brands: WizardBrand[]; index: number }) => {
   const brand = brands.find(b => b.key === ad.brandKey);
+  const [expanded, setExpanded] = React.useState(false);
+  const isActive = ad.status === "Active";
+  const cardNum = String(index + 1).padStart(2, "0");
+
+  // Build a gradient placeholder for cards without screenshots
+  const placeholderGradient = brand
+    ? `linear-gradient(135deg, ${brand.color}22 0%, ${brand.color}08 100%)`
+    : `linear-gradient(135deg, ${T.bgAlt} 0%, ${T.bg} 100%)`;
+
   return (
     <motion.div
       variants={fadeUp} custom={index * 0.05} initial="hidden" animate="visible"
       className="rounded-2xl border flex flex-col overflow-hidden"
-      style={{ background: T.white, borderColor: T.border, boxShadow: "0 1px 6px rgba(26,23,20,0.07)" }}
+      style={{ background: T.white, borderColor: T.border, boxShadow: "0 2px 12px rgba(26,23,20,0.08)" }}
     >
-      {/* Thumbnail */}
-      <div className="h-36 flex items-center justify-center relative" style={{ background: brand ? `${brand.color}14` : T.bgAlt, borderBottom: `1px solid ${T.border}` }}>
-        {ad.thumbnailUrl ? (
-          <img src={ad.thumbnailUrl} alt={ad.headline} className="w-full h-full object-cover" />
-        ) : (
-          <span className="text-4xl opacity-30">📣</span>
-        )}
-        <span
-          className="absolute top-2 right-2 text-xs font-semibold px-2 py-0.5 rounded-full"
-          style={{
-            background: ad.status === "Active" ? T.greenLight : T.bgAlt,
-            color: ad.status === "Active" ? T.green : T.textFaint,
-            border: `1px solid ${ad.status === "Active" ? T.greenBorder : T.border}`,
-          }}
-        >
-          {ad.status}
-        </span>
+      {/* ── CARD HEADER ─────────────────────────────────────────────────── */}
+      <div className="px-4 pt-4 pb-2">
+        {/* Row 1: brand tag + format badge + card number */}
+        <div className="flex items-center gap-2 mb-2">
+          {brand && (
+            <span
+              className="text-xs font-bold px-2 py-0.5 rounded-full"
+              style={{ background: `${brand.color}20`, color: brand.color, border: `1px solid ${brand.color}50` }}
+            >
+              {brand.key}
+            </span>
+          )}
+          <FormatBadge format={ad.format} />
+          <span className="ml-auto text-xs font-bold" style={{ color: T.textFaint }}>#{cardNum}</span>
+        </div>
+
+        {/* Row 2: status + discount */}
+        <div className="flex items-center gap-2 mb-1.5">
+          <span className="flex items-center gap-1 text-xs font-semibold" style={{ color: isActive ? T.green : T.textFaint }}>
+            <span
+              className="w-1.5 h-1.5 rounded-full inline-block"
+              style={{ background: isActive ? T.green : T.textFaint }}
+            />
+            {ad.status}
+          </span>
+          {ad.discount && (
+            <span className="text-xs font-bold" style={{ color: T.accent }}>{ad.discount}</span>
+          )}
+        </div>
+
+        {/* Row 3: date · variations · duration */}
+        <p className="text-xs" style={{ color: T.textFaint }}>
+          {ad.startDate}
+          {ad.variations > 1 && ` · ${ad.variations} variations`}
+          {ad.runningDuration && ` · ${ad.runningDuration}`}
+        </p>
       </div>
 
-      <div className="p-5 flex flex-col flex-1 gap-3">
-        {/* Brand + format */}
-        <div className="flex items-center justify-between">
-          {brand && (
-            <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ background: `${brand.color}18`, color: brand.color, border: `1px solid ${brand.color}40` }}>
-              {brand.emoji} {brand.name}
-            </span>
-          )}
-          <span className="text-xs" style={{ color: T.textFaint }}>{ad.format}</span>
+      {/* ── THUMBNAIL ───────────────────────────────────────────────────── */}
+      <div
+        className="relative mx-4 mb-0 rounded-xl overflow-hidden"
+        style={{ aspectRatio: "4/3", background: placeholderGradient }}
+      >
+        {ad.thumbnailUrl ? (
+          <img
+            src={ad.thumbnailUrl}
+            alt={ad.headline}
+            className="w-full h-full object-cover"
+            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+          />
+        ) : (
+          // Styled placeholder with brand initial
+          <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+            {brand && (
+              <span
+                className="text-4xl font-bold opacity-20"
+                style={{ fontFamily: T.serif, color: brand.color }}
+              >
+                {brand.name.charAt(0)}
+              </span>
+            )}
+            <span className="text-xs font-medium opacity-30" style={{ color: T.textMuted }}>Ad Preview</span>
+          </div>
+        )}
+        {/* Format overlay badge */}
+        <div className="absolute bottom-2 right-2">
+          <FormatBadge format={ad.format} />
         </div>
+      </div>
 
+      {/* ── BODY ────────────────────────────────────────────────────────── */}
+      <div className="px-4 pt-4 pb-3 flex flex-col flex-1 gap-3">
         {/* Headline */}
         {ad.headline && (
-          <h4 className="text-base font-semibold leading-snug" style={{ fontFamily: T.serif, color: T.text }}>{ad.headline}</h4>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: T.textFaint }}>Headline</p>
+            <h4 className="text-base font-bold leading-snug" style={{ fontFamily: T.serif, color: T.text }}>{ad.headline}</h4>
+          </div>
         )}
 
-        {/* Full body copy */}
+        {/* Body copy */}
         {(ad.fullBody || ad.bodyPreview) && (
-          <p className="text-sm leading-relaxed" style={{ color: T.textMuted }}>
-            {ad.fullBody || ad.bodyPreview}
-          </p>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: T.textFaint }}>Body Copy</p>
+            <p className="text-sm leading-relaxed italic" style={{ color: T.textSub }}>
+              "{expanded ? (ad.fullBody || ad.bodyPreview) : (ad.bodyPreview || ad.fullBody?.slice(0, 120))}"
+            </p>
+            {(ad.fullBody?.length ?? 0) > 120 && (
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="text-xs font-medium mt-1 flex items-center gap-1"
+                style={{ color: T.accent }}
+              >
+                <span style={{ fontSize: "10px" }}>↓</span>
+                {expanded ? "Collapse" : "Read full copy"}
+              </button>
+            )}
+          </div>
         )}
 
-        {/* Chips */}
-        <div className="flex flex-wrap gap-1.5 mt-auto pt-3" style={{ borderTop: `1px solid ${T.border}` }}>
-          {ad.angle && (
-            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: T.accentLight, color: T.accent, border: `1px solid ${T.accentBorder}` }}>
-              {ad.angle}
-            </span>
-          )}
-          {ad.cta && (
-            <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: T.blueLight, color: T.blue, border: `1px solid ${T.blueBorder}` }}>
-              CTA: {ad.cta}
-            </span>
-          )}
-          {ad.platforms?.slice(0, 2).map((p: string) => (
-            <span key={p} className="text-xs px-2 py-0.5 rounded-full" style={{ background: T.bgAlt, color: T.textMuted, border: `1px solid ${T.border}` }}>
-              {p}
-            </span>
-          ))}
+        {/* Angle / CTA / Hook row */}
+        <div className="grid grid-cols-3 gap-2 pt-2" style={{ borderTop: `1px solid ${T.border}` }}>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: T.textFaint }}>Angle</p>
+            <p className="text-xs font-medium leading-snug" style={{ color: T.text }}>{ad.angle || "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: T.textFaint }}>CTA</p>
+            <p className="text-xs font-medium" style={{ color: T.text }}>{ad.cta || "—"}</p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: T.textFaint }}>Hook Type</p>
+            <p className="text-xs font-medium leading-snug" style={{ color: T.text }}>{ad.hook ? ad.hook.slice(0, 40) : "—"}</p>
+          </div>
         </div>
 
-        {ad.metaUrl && (
-          <a href={ad.metaUrl} target="_blank" rel="noopener noreferrer" className="text-xs font-medium hover:underline" style={{ color: T.accent }}>
-            View in Meta Ads Library →
+        {/* Platform tags */}
+        {ad.platforms?.length > 0 && (
+          <div className="flex flex-wrap gap-1.5">
+            {ad.platforms.map((p: string) => (
+              <span
+                key={p}
+                className="text-xs px-2 py-0.5 rounded-full"
+                style={{ background: T.bgAlt, color: T.textMuted, border: `1px solid ${T.border}` }}
+              >
+                {p}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* View on Meta button */}
+        {ad.metaUrl ? (
+          <a
+            href={ad.metaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-2 rounded-xl text-xs font-semibold transition-colors"
+            style={{ background: T.white, color: T.text, border: `1px solid ${T.border}` }}
+          >
+            {/* Facebook icon */}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+            </svg>
+            View on Meta
+            <span style={{ fontSize: "10px" }}>↗</span>
           </a>
+        ) : (
+          <div
+            className="flex items-center justify-center gap-2 w-full py-2 rounded-xl text-xs font-semibold"
+            style={{ background: T.bgAlt, color: T.textFaint, border: `1px solid ${T.border}` }}
+          >
+            {/* Facebook icon */}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#9C8E80">
+              <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+            </svg>
+            View on Meta
+          </div>
         )}
       </div>
     </motion.div>
@@ -555,11 +691,18 @@ export default function ReportDetail() {
               </>
             )}
 
-            {/* ── 4. SWIPE FILE ─────────────────────────────────────────────── */}
+            {/* ── 4. SWIPE FILE ───────────────────────────────────────────────────── */}
             {config.ads?.length > 0 && (
               <>
                 <section>
-                  <SectionHeader eyebrow="Swipe File" title="Ad Creative Library" subtitle={`${config.ads.length} ads collected from the Meta Ads Library`} />
+                  <SectionHeader
+                    eyebrow="Swipe File"
+                    title="Ad Creative Library"
+                    subtitle={data?.isAiOnly
+                      ? `${config.ads.length} AI-reconstructed ads based on known category patterns`
+                      : `${config.ads.length} top-performing ads from the Meta Ads Library`
+                    }
+                  />
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                     {config.ads.map((ad: WizardAd, i: number) => (
                       <AdCard key={ad.id} ad={ad} brands={config.brands} index={i} />

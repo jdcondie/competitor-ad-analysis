@@ -176,3 +176,12 @@
 - [ ] Build Strategic Recommendations section (priority cards with effort/impact badges)
 - [ ] Reformat executive summary into skimmable bullets + key stat callouts
 - [ ] Break up all large text blocks into labeled sub-sections
+
+## Premium Ad Cards (SwipeFile)
+- [x] Audit Meta Ads Library API fields for thumbnail, snapshot URL, format, platforms, dates, variations
+- [x] Update server to fetch top 10 best-performing ads (longest running) with all card fields
+- [x] Store ad card data (thumbnail URL, snapshot URL, format, platforms, start_date, variations) in ReportConfig
+- [x] Build AdCard component: brand tag, format badge, status, date, thumbnail, headline, body, angle/CTA/hook chips, platform tags, View on Meta button
+- [x] Integrate AdCard grid into SwipeFile section of ReportDetail
+- [x] Add AI-only fallback: LLM generates 10 realistic ad cards when Meta API is unavailable
+- [x] Add runningDuration field to WizardAd type and AI-generated ad cards
