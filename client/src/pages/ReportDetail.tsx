@@ -148,10 +148,15 @@ const FormatBadge = ({ format }: { format: string }) => {
 const AdCard = ({ ad, brands, index }: { ad: WizardAd; brands: WizardBrand[]; index: number }) => {
   const brand = brands.find(b => b.key === ad.brandKey);
   const [expanded, setExpanded] = React.useState(false);
+  const [iframeLoading, setIframeLoading] = React.useState(true);
+  const [iframeError, setIframeError] = React.useState(false);
   const isActive = ad.status === "Active";
   const cardNum = String(index + 1).padStart(2, "0");
 
-  // Build a gradient placeholder for cards without screenshots
+  // Determine if we have a real Meta snapshot URL (not an AI-only card)
+  const hasMetaPreview = !!(ad.metaUrl && ad.metaUrl.includes("facebook.com"));
+
+  // Build a gradient placeholder for AI-only cards
   const placeholderGradient = brand
     ? `linear-gradient(135deg, ${brand.color}22 0%, ${brand.color}08 100%)`
     : `linear-gradient(135deg, ${T.bgAlt} 0%, ${T.bg} 100%)`;
@@ -200,20 +205,70 @@ const AdCard = ({ ad, brands, index }: { ad: WizardAd; brands: WizardBrand[]; in
         </p>
       </div>
 
-      {/* ── THUMBNAIL ───────────────────────────────────────────────────── */}
+      {/* ── THUMBNAIL / IFRAME PREVIEW ──────────────────────────────────── */}
       <div
         className="relative mx-4 mb-0 rounded-xl overflow-hidden"
-        style={{ aspectRatio: "4/3", background: placeholderGradient }}
+        style={{
+          aspectRatio: hasMetaPreview ? "9/16" : "4/3",
+          background: placeholderGradient,
+          minHeight: hasMetaPreview ? 480 : undefined,
+        }}
       >
-        {ad.thumbnailUrl ? (
-          <img
-            src={ad.thumbnailUrl}
-            alt={ad.headline}
-            className="w-full h-full object-cover"
-            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-          />
+        {hasMetaPreview ? (
+          <>
+            {/* Loading spinner shown while iframe loads */}
+            {iframeLoading && !iframeError && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10"
+                style={{ background: placeholderGradient }}>
+                <div
+                  className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin"
+                  style={{ borderColor: `${brand?.color ?? T.accent}40`, borderTopColor: brand?.color ?? T.accent }}
+                />
+                <span className="text-xs font-medium" style={{ color: T.textMuted }}>Loading ad preview…</span>
+                <span className="text-xs" style={{ color: T.textFaint }}>Requires Facebook login</span>
+              </div>
+            )}
+            {/* Iframe embed of Meta ad snapshot */}
+            <iframe
+              src={ad.metaUrl}
+              title={`Ad preview: ${ad.headline}`}
+              className="w-full h-full border-0"
+              style={{
+                display: iframeError ? "none" : "block",
+                minHeight: 480,
+                opacity: iframeLoading ? 0 : 1,
+                transition: "opacity 0.3s ease",
+              }}
+              onLoad={() => setIframeLoading(false)}
+              onError={() => { setIframeError(true); setIframeLoading(false); }}
+              sandbox="allow-scripts allow-same-origin allow-popups"
+              referrerPolicy="no-referrer"
+            />
+            {/* Fallback if iframe fails to load */}
+            {iframeError && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4">
+                {brand && (
+                  <span className="text-4xl font-bold opacity-20" style={{ fontFamily: T.serif, color: brand.color }}>
+                    {brand.name.charAt(0)}
+                  </span>
+                )}
+                <p className="text-xs text-center" style={{ color: T.textMuted }}>
+                  Preview blocked by browser.
+                </p>
+                <a
+                  href={ad.metaUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-semibold px-3 py-1.5 rounded-lg"
+                  style={{ background: T.accent, color: T.white }}
+                >
+                  Open on Meta ↗
+                </a>
+              </div>
+            )}
+          </>
         ) : (
-          // Styled placeholder with brand initial
+          // AI-only card: styled placeholder with brand initial
           <div className="w-full h-full flex flex-col items-center justify-center gap-2">
             {brand && (
               <span
@@ -223,11 +278,11 @@ const AdCard = ({ ad, brands, index }: { ad: WizardAd; brands: WizardBrand[]; in
                 {brand.name.charAt(0)}
               </span>
             )}
-            <span className="text-xs font-medium opacity-30" style={{ color: T.textMuted }}>Ad Preview</span>
+            <span className="text-xs font-medium opacity-30" style={{ color: T.textMuted }}>AI-Generated Preview</span>
           </div>
         )}
         {/* Format overlay badge */}
-        <div className="absolute bottom-2 right-2">
+        <div className="absolute bottom-2 right-2 z-20">
           <FormatBadge format={ad.format} />
         </div>
       </div>

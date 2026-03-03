@@ -185,3 +185,11 @@
 - [x] Integrate AdCard grid into SwipeFile section of ReportDetail
 - [x] Add AI-only fallback: LLM generates 10 realistic ad cards when Meta API is unavailable
 - [x] Add runningDuration field to WizardAd type and AI-generated ad cards
+
+## Real Meta Ad Thumbnails Integration
+- [x] Investigated Meta Ads Library API — confirmed no direct image URL fields available (only ad_snapshot_url)
+- [x] Implemented iframe embed of ad_snapshot_url for real Meta ad previews
+- [x] Added loading spinner state while iframe loads
+- [x] Added graceful fallback (brand placeholder + Open on Meta button) when iframe fails
+- [x] AI-only cards show styled brand initial placeholder with 'AI-Generated Preview' label
+- [x] Verified rendering in browser — all 10 ad cards display correctly
