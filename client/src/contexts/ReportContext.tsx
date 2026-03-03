@@ -121,6 +121,22 @@ export interface ExecutiveSummaryBullet {
   color: string;
 }
 
+export interface ClientBrandAnalysis {
+  brandKey: string;
+  brandName: string;
+  adCount: number;
+  avgRunDays: number;
+  topAngle: string;
+  dominantFormat: string;
+  toneOfVoice: string;
+  primaryCTA: string;
+  uniqueStrength: string;
+  whatsWorking: string[];
+  whatsNotWorking: string[];
+  positionVsCompetitors: string; // 2-3 sentences on how the client stacks up
+  biggestOpportunity: string;    // 1-2 sentences
+}
+
 export interface ReportConfig {
   // Step 1 — Report Identity
   clientName: string;       // e.g. "Post Script Society"
@@ -155,6 +171,7 @@ export interface ReportConfig {
   adVolumeTimeline?: AdVolumePoint[];
   strategicRecommendations?: StrategicRecommendation[];
   executiveSummaryBullets?: ExecutiveSummaryBullet[];
+  clientBrandAnalysis?: ClientBrandAnalysis | null;
 }
 
 export interface ReportContextValue {

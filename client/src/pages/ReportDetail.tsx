@@ -29,7 +29,7 @@ import {
   ResponsiveContainer, PieChart, Pie, Cell,
   LineChart, Line, Legend,
 } from "recharts";
-import type { BrandProfile, StrategicRecommendation, ExecutiveSummaryBullet, AdVolumePoint } from "@/contexts/ReportContext";
+import type { BrandProfile, StrategicRecommendation, ExecutiveSummaryBullet, AdVolumePoint, ClientBrandAnalysis } from "@/contexts/ReportContext";
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────────────────
 const T = {
@@ -582,18 +582,35 @@ export default function ReportDetail() {
             {config.brands?.length > 0 && (
               <>
                 <section>
-                  <SectionHeader eyebrow="Competitors" title="Brands Under Analysis" />
+                  <SectionHeader
+                    eyebrow="Competitive Landscape"
+                    title="Brands Under Analysis"
+                    subtitle={`${config.clientName} vs. ${(config.brands as any[]).filter((b: any) => !b.isClientBrand).map((b: any) => b.name).join(", ")}`}
+                  />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {config.brands.map((brand, i) => {
+                    {(config.brands as any[]).map((brand: any, i: number) => {
                       const comparison = config.brandComparison?.find((b: any) => b.brandKey === brand.key);
+                      const isClient = brand.isClientBrand;
                       return (
                         <motion.div key={brand.key} variants={fadeUp} custom={i * 0.08} initial="hidden" animate="visible"
-                          className="rounded-2xl p-6" style={{ background: T.white, border: `1px solid ${T.border}`, boxShadow: "0 1px 6px rgba(26,23,20,0.06)" }}>
+                          className="rounded-2xl p-6 relative" style={{
+                            background: isClient ? `${brand.color}08` : T.white,
+                            border: isClient ? `2px solid ${brand.color}60` : `1px solid ${T.border}`,
+                            boxShadow: isClient ? `0 2px 12px ${brand.color}20` : "0 1px 6px rgba(26,23,20,0.06)"
+                          }}>
+                          {isClient && (
+                            <div className="absolute top-3 right-3">
+                              <span className="text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider"
+                                style={{ background: brand.color, color: "#fff" }}>Your Brand</span>
+                            </div>
+                          )}
                           <div className="flex items-center gap-3 mb-4">
                             <span className="text-3xl">{brand.emoji}</span>
                             <div>
                               <h3 className="text-lg font-bold" style={{ fontFamily: T.serif, color: T.text }}>{brand.name}</h3>
-                              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: brand.color }}>{brand.key}</span>
+                              <span className="text-xs font-semibold uppercase tracking-wider" style={{ color: brand.color }}>
+                                {isClient ? "Client Brand" : brand.key}
+                              </span>
                             </div>
                           </div>
                           {comparison && (
@@ -606,7 +623,7 @@ export default function ReportDetail() {
                                 { label: "CTA Style", value: comparison.ctaStyle },
                                 { label: "Tone", value: comparison.toneOfVoice },
                               ].map((item) => (
-                                <div key={item.label} className="rounded-lg p-2.5" style={{ background: T.bgAlt }}>
+                                <div key={item.label} className="rounded-lg p-2.5" style={{ background: isClient ? `${brand.color}10` : T.bgAlt }}>
                                   <p className="text-xs mb-0.5" style={{ color: T.textFaint }}>{item.label}</p>
                                   <p className="font-semibold text-xs leading-snug" style={{ color: T.text }}>{item.value}</p>
                                 </div>
@@ -626,16 +643,25 @@ export default function ReportDetail() {
             {(config.brandProfiles?.length ?? 0) > 0 && (
               <>
                 <section>
-                  <SectionHeader eyebrow="Brand Deep Dive" title="What Each Brand Is Doing" subtitle="A breakdown of each competitor's creative strengths and gaps" />
+                  <SectionHeader eyebrow="Brand Deep Dive" title="What Each Brand Is Doing" subtitle="A breakdown of each brand's creative strengths and gaps, including your own" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {(config.brandProfiles ?? []).map((profile: BrandProfile, i: number) => (
+                    {(config.brandProfiles ?? []).map((profile: BrandProfile & { isClientBrand?: boolean }, i: number) => (
                       <motion.div key={profile.brandKey} variants={fadeUp} custom={i * 0.08} initial="hidden" animate="visible"
-                        className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${T.border}`, boxShadow: "0 1px 6px rgba(26,23,20,0.06)" }}>
+                        className="rounded-2xl overflow-hidden" style={{
+                          border: profile.isClientBrand ? `2px solid ${profile.color}60` : `1px solid ${T.border}`,
+                          boxShadow: profile.isClientBrand ? `0 2px 12px ${profile.color}20` : "0 1px 6px rgba(26,23,20,0.06)"
+                        }}>
                         {/* Header */}
                         <div className="px-6 py-4 flex items-center gap-3" style={{ background: `${profile.color}12`, borderBottom: `1px solid ${profile.color}30` }}>
                           <span className="text-3xl">{profile.emoji}</span>
                           <div className="flex-1">
-                            <h3 className="font-bold text-base" style={{ fontFamily: T.serif, color: T.text }}>{profile.brandName}</h3>
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-bold text-base" style={{ fontFamily: T.serif, color: T.text }}>{profile.brandName}</h3>
+                              {profile.isClientBrand && (
+                                <span className="text-xs font-bold px-2 py-0.5 rounded-full uppercase tracking-wider"
+                                  style={{ background: profile.color, color: "#fff" }}>Your Brand</span>
+                              )}
+                            </div>
                             <p className="text-xs" style={{ color: T.textMuted }}>{profile.toneOfVoice} · Primary CTA: {profile.primaryCTA}</p>
                           </div>
                           <div className="text-right">
@@ -747,26 +773,55 @@ export default function ReportDetail() {
             )}
 
             {/* ── 4. SWIPE FILE ───────────────────────────────────────────────────── */}
-            {config.ads?.length > 0 && (
-              <>
-                <section>
-                  <SectionHeader
-                    eyebrow="Swipe File"
-                    title="Ad Creative Library"
-                    subtitle={data?.isAiOnly
-                      ? `${config.ads.length} AI-reconstructed ads based on known category patterns`
-                      : `${config.ads.length} top-performing ads from the Meta Ads Library`
-                    }
-                  />
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {config.ads.map((ad: WizardAd, i: number) => (
-                      <AdCard key={ad.id} ad={ad} brands={config.brands} index={i} />
+            <section>
+              <SectionHeader
+                eyebrow="Swipe File"
+                title="Ad Creative Library"
+                subtitle={!data?.isAiOnly && config.ads?.length > 0
+                  ? `${config.ads.length} top-performing ads pulled directly from the Meta Ads Library`
+                  : "Real competitor ads from the Meta Ads Library"
+                }
+              />
+              {!data?.isAiOnly && config.ads?.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {config.ads.map((ad: WizardAd, i: number) => (
+                    <AdCard key={ad.id} ad={ad} brands={config.brands} index={i} />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl p-10 flex flex-col items-center text-center gap-5"
+                  style={{ background: T.white, border: `2px dashed ${T.border}` }}>
+                  <div className="w-16 h-16 rounded-full flex items-center justify-center text-3xl"
+                    style={{ background: T.bgAlt, border: `1px solid ${T.border}` }}>📋</div>
+                  <div>
+                    <p className="text-lg font-semibold mb-2" style={{ fontFamily: T.serif, color: T.text }}>
+                      Real Ad Previews Pending API Access
+                    </p>
+                    <p className="text-sm max-w-md" style={{ color: T.textMuted }}>
+                      The Ad Creative Library displays actual ads pulled directly from the Meta Ads Library.
+                      To unlock this section, complete identity verification at{" "}
+                      <a href="https://www.facebook.com/ads/library/api/" target="_blank" rel="noopener noreferrer"
+                        className="underline font-medium" style={{ color: T.accent }}>
+                        facebook.com/ads/library/api
+                      </a>.
+                    </p>
+                  </div>
+                  <div className="flex flex-wrap gap-3 justify-center mt-2">
+                    {(config.brands ?? []).filter((b: any) => !b.isClientBrand).map((brand: WizardBrand) => (
+                      <a key={brand.key}
+                        href={`https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=US&q=${encodeURIComponent(brand.name)}&search_type=keyword_unordered`}
+                        target="_blank" rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-opacity hover:opacity-80"
+                        style={{ background: brand.color + "18", color: brand.color, border: `1px solid ${brand.color}40` }}>
+                        <span>{brand.emoji}</span>
+                        <span>Browse {brand.name} Ads ↗</span>
+                      </a>
                     ))}
                   </div>
-                </section>
-                <Divider />
-              </>
-            )}
+                </div>
+              )}
+            </section>
+            <Divider />
 
             {/* ── 5. TOP HOOKS ──────────────────────────────────────────────── */}
             {(config.topHooks?.length ?? 0) > 0 && (
@@ -910,7 +965,7 @@ export default function ReportDetail() {
             {(config.brandComparison?.length ?? 0) > 0 && (
               <>
                 <section>
-                  <SectionHeader eyebrow="Competitive Intelligence" title="Brand Comparison Matrix" subtitle="Side-by-side analysis of how each competitor approaches their creative strategy" />
+                  <SectionHeader eyebrow="Competitive Intelligence" title="Brand Comparison Matrix" subtitle={`How ${config.clientName} stacks up against the competition across key creative dimensions`} />
                   <div className="rounded-2xl overflow-hidden" style={{ border: `1px solid ${T.border}`, boxShadow: "0 1px 6px rgba(26,23,20,0.06)" }}>
                     <table className="w-full text-sm">
                       <thead>
@@ -922,16 +977,25 @@ export default function ReportDetail() {
                       </thead>
                       <tbody>
                         {(config.brandComparison ?? []).map((b: any, i: number) => {
-                          const brand = config.brands?.find((br: WizardBrand) => br.key === b.brandKey);
+                          const brand = (config.brands as any[])?.find((br: any) => br.key === b.brandKey);
+                          const isClient = brand?.isClientBrand;
                           return (
-                            <tr key={i} style={{ background: i % 2 === 0 ? T.white : T.bg, borderBottom: `1px solid ${T.border}` }}>
+                            <tr key={i} style={{
+                              background: isClient ? `${brand?.color}10` : (i % 2 === 0 ? T.white : T.bg),
+                              borderBottom: `1px solid ${T.border}`,
+                              borderLeft: isClient ? `3px solid ${brand?.color}` : undefined,
+                            }}>
                               <td className="px-4 py-3">
                                 <div className="flex items-center gap-2">
                                   {brand && <span className="text-base">{brand.emoji}</span>}
                                   <span className="font-semibold" style={{ color: brand?.color || T.text }}>{b.brandName}</span>
+                                  {isClient && (
+                                    <span className="text-xs font-bold px-1.5 py-0.5 rounded uppercase tracking-wider"
+                                      style={{ background: brand?.color, color: "#fff" }}>You</span>
+                                  )}
                                 </div>
                               </td>
-                              <td className="px-4 py-3 font-bold" style={{ color: T.accent }}>{b.adCount}</td>
+                              <td className="px-4 py-3 font-bold" style={{ color: isClient ? brand?.color : T.accent }}>{b.adCount}</td>
                               <td className="px-4 py-3" style={{ color: T.textMuted }}>{b.avgRunDays}d</td>
                               <td className="px-4 py-3" style={{ color: T.text }}>{b.topAngle}</td>
                               <td className="px-4 py-3">
@@ -952,8 +1016,83 @@ export default function ReportDetail() {
               </>
             )}
 
-            {/* ── 9. OPPORTUNITY GAPS ───────────────────────────────────────── */}
-            {(config.opportunityGaps?.length ?? 0) > 0 && (
+            {/* ── 8b. YOUR BRAND POSITION ───────────────────────────────────── */}
+            {config.clientBrandAnalysis && (
+              <>
+                <section>
+                  <SectionHeader
+                    eyebrow="Your Brand"
+                    title={`Where ${config.clientName} Stands`}
+                    subtitle="How your brand compares to the competitive landscape and where the biggest opportunity lies"
+                  />
+                  {(() => {
+                    const cba = config.clientBrandAnalysis as ClientBrandAnalysis;
+                    const clientBrand = (config.brands as any[])?.find((b: any) => b.isClientBrand);
+                    const brandColor = clientBrand?.color || T.accent;
+                    return (
+                      <div className="space-y-4">
+                        {/* Position vs Competitors */}
+                        {cba.positionVsCompetitors && (
+                          <div className="rounded-2xl p-6" style={{ background: `${brandColor}08`, border: `2px solid ${brandColor}40` }}>
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="text-xl">{clientBrand?.emoji || "⭐"}</span>
+                              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: brandColor }}>Position vs. Competitors</p>
+                            </div>
+                            <p className="text-base leading-relaxed" style={{ color: T.textSub }}>{cba.positionVsCompetitors}</p>
+                          </div>
+                        )}
+                        {/* Biggest Opportunity */}
+                        {cba.biggestOpportunity && (
+                          <div className="rounded-2xl p-6" style={{ background: T.greenLight, border: `1px solid ${T.greenBorder}` }}>
+                            <div className="flex items-center gap-2 mb-3">
+                              <span className="text-xl">🎯</span>
+                              <p className="text-xs font-bold uppercase tracking-wider" style={{ color: T.green }}>Biggest Opportunity</p>
+                            </div>
+                            <p className="text-base leading-relaxed font-medium" style={{ color: T.green }}>{cba.biggestOpportunity}</p>
+                          </div>
+                        )}
+                        {/* What's Working / What's Not */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          {cba.whatsWorking?.length > 0 && (
+                            <div className="rounded-xl p-5" style={{ background: T.white, border: `1px solid ${T.border}` }}>
+                              <p className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5" style={{ color: T.green }}>
+                                <span>✓</span> What's Working for {config.clientName}
+                              </p>
+                              <ul className="space-y-2">
+                                {cba.whatsWorking.map((item: string, j: number) => (
+                                  <li key={j} className="flex items-start gap-2 text-sm" style={{ color: T.textSub }}>
+                                    <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-xs" style={{ background: T.greenLight, color: T.green }}>✓</span>
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                          {cba.whatsNotWorking?.length > 0 && (
+                            <div className="rounded-xl p-5" style={{ background: T.white, border: `1px solid ${T.border}` }}>
+                              <p className="text-xs font-bold uppercase tracking-wider mb-3 flex items-center gap-1.5" style={{ color: "#B91C1C" }}>
+                                <span>▲</span> Where to Improve
+                              </p>
+                              <ul className="space-y-2">
+                                {cba.whatsNotWorking.map((item: string, j: number) => (
+                                  <li key={j} className="flex items-start gap-2 text-sm" style={{ color: T.textSub }}>
+                                    <span className="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full flex items-center justify-center text-xs" style={{ background: "#FEF2F2", color: "#B91C1C" }}>▲</span>
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </section>
+                <Divider />
+              </>
+            )}
+
+            {/* ── 9. OPPORTUNITY GAPS ─────────────────────────────────────────── */}           {(config.opportunityGaps?.length ?? 0) > 0 && (
               <>
                 <section>
                   <SectionHeader eyebrow="Strategy" title="Opportunity Gaps" subtitle={`Where ${config.clientName} can differentiate from the competition`} />

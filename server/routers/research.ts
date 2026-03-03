@@ -182,7 +182,7 @@ export const researchRouter = router({
 
       // Trim page text to 4000 chars (was 8000) — LLM doesn't need the full page to ID a brand
       const trimmedText = brandPageText.slice(0, 4000);
-      const identityPrompt = `Analyze this website content from ${url} and extract brand info. Return JSON only.
+      const identityPrompt = `Analyze this website content from ${url} and extract brand info. Identify 3-4 real direct competitors in the same category. Return JSON only.
 
 Content:
 ${trimmedText}`;
@@ -192,7 +192,7 @@ ${trimmedText}`;
           {
             role: "system",
             content:
-              "You are a creative strategist specializing in competitive ad analysis. Always respond with valid JSON only, no markdown code blocks.",
+              "You are a creative strategist specializing in competitive ad analysis. Always identify 3-4 real direct competitors. Always respond with valid JSON only, no markdown code blocks.",
           },
           { role: "user", content: identityPrompt },
         ],
@@ -290,7 +290,7 @@ ${trimmedText}`;
       // 1. Fetch real ads for ALL competitors in PARALLEL (was sequential — saves ~10-20s)
       const errors: string[] = [];
       const competitorAds: Array<{ competitor: any; ads: MetaAd[] }> = await Promise.all(
-        identity.competitors.slice(0, 2).map(async (competitor: any) => {
+        identity.competitors.slice(0, 4).map(async (competitor: any) => {
           try {
             const ads = await fetchMetaAds(
               competitor.searchTerms || competitor.name,
@@ -344,6 +344,7 @@ ${trimmedText}`;
       // 3. LLM analysis — uses real ad data if available, falls back to brand-only analysis
       const hasRealAds = totalRealAds > 0;
       const competitorNames = identity.competitors.map((c: any) => c.name).join(", ");
+      const clientBrandKey = identity.brandShortKey || "client";
       const analysisPrompt = hasRealAds
         ? `You are a senior creative strategist producing a premium competitor ad intelligence report for ${identity.brandName} (${identity.category}).
 
@@ -351,6 +352,7 @@ REAL ADS FROM META ADS LIBRARY:
 ${adCorpus}
 
 COMPETITORS: ${competitorNames}
+CLIENT BRAND: ${identity.brandName} (key: "${clientBrandKey}")
 TARGET AUDIENCE: ${identity.targetAudience}
 CLIENT VALUE PROP: ${identity.coreValueProp}
 
@@ -364,17 +366,18 @@ Return JSON with ALL of these fields:
 - strategicNarrative: 3 paragraphs — (1) what competitors are doing well, (2) patterns and themes across the category, (3) specific opportunities for ${identity.brandName}
 - keyTakeaways: 5-6 takeaways, each with title, body (2-3 sentences), icon (emoji), color (hex)
 - platformBreakdown: array of {platform, adCount, share (%), color (hex)} for Facebook/Instagram/Messenger/Audience Network
-- brandComparison: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, topFormat, ctaStyle, toneOfVoice}
+- brandComparison: one entry per competitor PLUS the client brand "${identity.brandName}" (brandKey: "${clientBrandKey}") with {brandKey, brandName, adCount, avgRunDays, topAngle, topFormat, ctaStyle, toneOfVoice}
 - categoryContext: 2 sentences on the broader ${identity.category} advertising landscape
 - opportunityGaps: 3-4 gaps, each with title, description (2 sentences), priority (High/Medium/Low)
-- brandProfiles: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength (1 sentence), whatsWorking (array of 3-4 specific bullet strings), whatsNotWorking (array of 2-3 specific bullet strings)}
-- adVolumeTimeline: array of 6 monthly data points {month (e.g. "Oct 2025"), [brandKey]: number} — realistic estimated ad counts per brand per month
+- brandProfiles: one entry per competitor PLUS one for the client brand "${identity.brandName}" (brandKey: "${clientBrandKey}") with {brandKey, brandName, adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength (1 sentence), whatsWorking (array of 3-4 specific bullet strings), whatsNotWorking (array of 2-3 specific bullet strings)}
+- adVolumeTimeline: array of 6 monthly data points {month (e.g. "Oct 2025"), [brandKey]: number} — realistic estimated ad counts per brand per month, including the client brand
 - strategicRecommendations: 4-5 recommendations, each with {title, rationale (2-3 sentences), action (specific 1-sentence action), priority (High/Medium/Low), effort (Low/Medium/High), impact (Low/Medium/High), icon (emoji)}
 - executiveSummaryBullets: 4-5 bullets, each with {label (e.g. "Key Finding"), text (1-2 sentences), icon (emoji), color (hex)}
-- swipeFileAds: exactly 10 realistic example ads (5 per competitor) with {id, brandKey (use the competitor's key), headline (compelling ad headline), bodyPreview (first 120 chars of body), fullBody (full ad copy, 2-4 sentences), format (Video/Image/Carousel/DCO), status (Active/Inactive), startDate (e.g. "Nov 19, 2025"), variations (1-4), angle (one of the messagingAngles titles), hook (opening line), cta (e.g. "Shop Now"/"Learn More"/"Subscribe"), platforms (array of Facebook/Instagram/Messenger/Audience Network/Threads), runningDuration (e.g. "3+ months")}`
+- clientBrandAnalysis: a single object for ${identity.brandName} with {brandKey: "${clientBrandKey}", brandName: "${identity.brandName}", adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength, whatsWorking (array of 3-4 strings), whatsNotWorking (array of 2-3 strings), positionVsCompetitors (2-3 sentences on how the client stacks up), biggestOpportunity (1-2 sentences)}`
         : `You are a senior creative strategist producing a premium competitor ad intelligence report for ${identity.brandName}.
 
 COMPETITORS TO ANALYZE: ${competitorNames}
+CLIENT BRAND: ${identity.brandName} (key: "${clientBrandKey}")
 CATEGORY: ${identity.category}
 TARGET AUDIENCE: ${identity.targetAudience}
 CLIENT VALUE PROP: ${identity.coreValueProp}
@@ -389,14 +392,14 @@ Return JSON with ALL of these fields:
 - strategicNarrative: 3 paragraphs — (1) what competitors are doing well, (2) patterns and themes across the category, (3) specific opportunities for ${identity.brandName}
 - keyTakeaways: 5-6 takeaways, each with title, body (2-3 sentences), icon (emoji), color (hex)
 - platformBreakdown: array of {platform, adCount, share (%), color (hex)} for Facebook/Instagram/Messenger/Audience Network
-- brandComparison: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, topFormat, ctaStyle, toneOfVoice}
+- brandComparison: one entry per competitor PLUS the client brand "${identity.brandName}" (brandKey: "${clientBrandKey}") with {brandKey, brandName, adCount, avgRunDays, topAngle, topFormat, ctaStyle, toneOfVoice}
 - categoryContext: 2 sentences on the broader ${identity.category} advertising landscape
 - opportunityGaps: 3-4 gaps, each with title, description (2 sentences), priority (High/Medium/Low)
-- brandProfiles: one entry per competitor with {brandKey, brandName, adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength (1 sentence), whatsWorking (array of 3-4 specific bullet strings), whatsNotWorking (array of 2-3 specific bullet strings)}
-- adVolumeTimeline: array of 6 monthly data points {month (e.g. "Oct 2025"), [brandKey]: number} — realistic estimated ad counts per brand per month
+- brandProfiles: one entry per competitor PLUS one for the client brand "${identity.brandName}" (brandKey: "${clientBrandKey}") with {brandKey, brandName, adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength (1 sentence), whatsWorking (array of 3-4 specific bullet strings), whatsNotWorking (array of 2-3 specific bullet strings)}
+- adVolumeTimeline: array of 6 monthly data points {month (e.g. "Oct 2025"), [brandKey]: number} — realistic estimated ad counts per brand per month, including the client brand
 - strategicRecommendations: 4-5 recommendations, each with {title, rationale (2-3 sentences), action (specific 1-sentence action), priority (High/Medium/Low), effort (Low/Medium/High), impact (Low/Medium/High), icon (emoji)}
 - executiveSummaryBullets: 4-5 bullets, each with {label (e.g. "Key Finding"), text (1-2 sentences), icon (emoji), color (hex)}
-- swipeFileAds: exactly 10 realistic example ads (5 per competitor) with {id, brandKey (use the competitor's key), headline (compelling ad headline), bodyPreview (first 120 chars of body), fullBody (full ad copy, 2-4 sentences), format (Video/Image/Carousel/DCO), status (Active/Inactive), startDate (e.g. "Nov 19, 2025"), variations (1-4), angle (one of the messagingAngles titles), hook (opening line), cta (e.g. "Shop Now"/"Learn More"/"Subscribe"), platforms (array of Facebook/Instagram/Messenger/Audience Network/Threads), runningDuration (e.g. "3+ months")}`;
+- clientBrandAnalysis: a single object for ${identity.brandName} with {brandKey: "${clientBrandKey}", brandName: "${identity.brandName}", adCount, avgRunDays, topAngle, dominantFormat, toneOfVoice, primaryCTA, uniqueStrength, whatsWorking (array of 3-4 strings), whatsNotWorking (array of 2-3 strings), positionVsCompetitors (2-3 sentences on how the client stacks up), biggestOpportunity (1-2 sentences)}`;
 
       const analysisResponse = await invokeLLM({
         messages: [
@@ -552,6 +555,9 @@ Return JSON with ALL of these fields:
                       month: { type: "string" },
                       brand1: { type: "number" },
                       brand2: { type: "number" },
+                      brand3: { type: "number" },
+                      brand4: { type: "number" },
+                      client: { type: "number" },
                     },
                     required: ["month", "brand1", "brand2"],
                     additionalProperties: false,
@@ -588,29 +594,25 @@ Return JSON with ALL of these fields:
                     additionalProperties: false,
                   },
                 },
-                swipeFileAds: {
-                  type: "array",
-                  items: {
-                    type: "object",
-                    properties: {
-                      id: { type: "string" },
-                      brandKey: { type: "string" },
-                      headline: { type: "string" },
-                      bodyPreview: { type: "string" },
-                      fullBody: { type: "string" },
-                      format: { type: "string" },
-                      status: { type: "string" },
-                      startDate: { type: "string" },
-                      variations: { type: "number" },
-                      angle: { type: "string" },
-                      hook: { type: "string" },
-                      cta: { type: "string" },
-                      platforms: { type: "array", items: { type: "string" } },
-                      runningDuration: { type: "string" },
-                    },
-                    required: ["id", "brandKey", "headline", "bodyPreview", "fullBody", "format", "status", "startDate", "variations", "angle", "hook", "cta", "platforms", "runningDuration"],
-                    additionalProperties: false,
+                clientBrandAnalysis: {
+                  type: "object",
+                  properties: {
+                    brandKey: { type: "string" },
+                    brandName: { type: "string" },
+                    adCount: { type: "number" },
+                    avgRunDays: { type: "number" },
+                    topAngle: { type: "string" },
+                    dominantFormat: { type: "string" },
+                    toneOfVoice: { type: "string" },
+                    primaryCTA: { type: "string" },
+                    uniqueStrength: { type: "string" },
+                    whatsWorking: { type: "array", items: { type: "string" } },
+                    whatsNotWorking: { type: "array", items: { type: "string" } },
+                    positionVsCompetitors: { type: "string" },
+                    biggestOpportunity: { type: "string" },
                   },
+                  required: ["brandKey", "brandName", "adCount", "avgRunDays", "topAngle", "dominantFormat", "toneOfVoice", "primaryCTA", "uniqueStrength", "whatsWorking", "whatsNotWorking", "positionVsCompetitors", "biggestOpportunity"],
+                  additionalProperties: false,
                 },
               },
               required: [
@@ -628,7 +630,7 @@ Return JSON with ALL of these fields:
                 "adVolumeTimeline",
                 "strategicRecommendations",
                 "executiveSummaryBullets",
-                "swipeFileAds",
+                "clientBrandAnalysis",
               ],
               additionalProperties: false,
             },
@@ -686,37 +688,13 @@ Return JSON with ALL of these fields:
         }
       }
 
-      // 4b. If no real ads, use AI-generated swipeFileAds from the analysis
-      if (allMappedAds.length === 0 && (analysis.swipeFileAds || []).length > 0) {
-        for (const ad of (analysis.swipeFileAds || []).slice(0, 10)) {
-          allMappedAds.push({
-            id: ad.id || `ai-ad-${allMappedAds.length + 1}`,
-            brandKey: ad.brandKey || (identity.competitors[0]?.key ?? "brand1"),
-            format: ad.format || "Image",
-            headline: ad.headline || "",
-            bodyPreview: ad.bodyPreview || ad.fullBody?.slice(0, 120) || "",
-            fullBody: ad.fullBody || "",
-            status: (ad.status === "Active" || ad.status === "Inactive") ? ad.status : "Active",
-            startDate: ad.startDate || "",
-            variations: typeof ad.variations === "number" ? ad.variations : 1,
-            angle: ad.angle || "",
-            hook: ad.hook || "",
-            cta: ad.cta || "Learn More",
-            platforms: Array.isArray(ad.platforms) ? ad.platforms : ["Facebook", "Instagram"],
-            runningDuration: ad.runningDuration || "",
-            thumbnailUrl: "",
-            metaUrl: "",
-          });
-        }
-      }
-
       // 5. Assemble final ReportConfig
       const today = new Date().toLocaleDateString("en-US", {
         month: "long",
         year: "numeric",
       });
 
-      const brands = identity.competitors.slice(0, 2).map((c: any) => ({
+      const brands = identity.competitors.slice(0, 4).map((c: any) => ({
         key: c.key,
         name: c.name,
         color: c.color,
@@ -772,6 +750,7 @@ Return JSON with ALL of these fields:
         topFormat: b.topFormat || "Image",
         ctaStyle: b.ctaStyle || "",
         toneOfVoice: b.toneOfVoice || "",
+        isClientBrand: b.brandKey === clientBrandKey,
       }));
 
       const opportunityGaps = (analysis.opportunityGaps || []).map((g: any) => ({
@@ -780,12 +759,17 @@ Return JSON with ALL of these fields:
         priority: (g.priority === "High" || g.priority === "Medium" || g.priority === "Low") ? g.priority : "Medium" as "High" | "Medium" | "Low",
       }));
 
-      // Map new rich fields
-      const brandProfiles = (analysis.brandProfiles || []).map((b: any) => ({
+      // Map new rich fields — includes client brand if LLM returned it in brandProfiles
+      const allBrandProfiles = (analysis.brandProfiles || []).map((b: any) => ({
         brandKey: b.brandKey || "",
         brandName: b.brandName || "",
-        color: identity.competitors.find((c: any) => c.key === b.brandKey)?.color || "#888",
-        emoji: identity.competitors.find((c: any) => c.key === b.brandKey)?.emoji || "🏢",
+        color: b.brandKey === clientBrandKey
+          ? (identity.brandColor || "#C2714F")
+          : (identity.competitors.find((c: any) => c.key === b.brandKey)?.color || "#888"),
+        emoji: b.brandKey === clientBrandKey
+          ? (identity.brandEmoji || "⭐")
+          : (identity.competitors.find((c: any) => c.key === b.brandKey)?.emoji || "🏢"),
+        isClientBrand: b.brandKey === clientBrandKey,
         adCount: typeof b.adCount === "number" ? b.adCount : 0,
         avgRunDays: typeof b.avgRunDays === "number" ? b.avgRunDays : 14,
         topAngle: b.topAngle || "",
@@ -797,13 +781,43 @@ Return JSON with ALL of these fields:
         whatsNotWorking: Array.isArray(b.whatsNotWorking) ? b.whatsNotWorking : [],
       }));
 
-      // Map adVolumeTimeline — replace brand1/brand2 keys with actual brand keys
-      const brandKeys = identity.competitors.slice(0, 2).map((c: any) => c.key);
-      const adVolumeTimeline = (analysis.adVolumeTimeline || []).map((point: any) => ({
-        month: point.month || "",
-        [brandKeys[0] || "brand1"]: typeof point.brand1 === "number" ? point.brand1 : 0,
-        [brandKeys[1] || "brand2"]: typeof point.brand2 === "number" ? point.brand2 : 0,
-      }));
+      // Ensure client brand profile exists (add from clientBrandAnalysis if not already in brandProfiles)
+      const hasClientInProfiles = allBrandProfiles.some((p: any) => p.brandKey === clientBrandKey);
+      const cba = analysis.clientBrandAnalysis;
+      if (!hasClientInProfiles && cba) {
+        allBrandProfiles.unshift({
+          brandKey: cba.brandKey || clientBrandKey,
+          brandName: cba.brandName || identity.brandName,
+          color: identity.brandColor || "#C2714F",
+          emoji: identity.brandEmoji || "⭐",
+          isClientBrand: true,
+          adCount: typeof cba.adCount === "number" ? cba.adCount : 0,
+          avgRunDays: typeof cba.avgRunDays === "number" ? cba.avgRunDays : 14,
+          topAngle: cba.topAngle || "",
+          dominantFormat: cba.dominantFormat || "Image",
+          toneOfVoice: cba.toneOfVoice || "",
+          primaryCTA: cba.primaryCTA || "",
+          uniqueStrength: cba.uniqueStrength || "",
+          whatsWorking: Array.isArray(cba.whatsWorking) ? cba.whatsWorking : [],
+          whatsNotWorking: Array.isArray(cba.whatsNotWorking) ? cba.whatsNotWorking : [],
+        });
+      }
+      const brandProfiles = allBrandProfiles;
+
+      // Map adVolumeTimeline — replace brand1/brand2/brand3/brand4/client keys with actual brand keys
+      const brandKeys = identity.competitors.slice(0, 4).map((c: any) => c.key);
+      const adVolumeTimeline = (analysis.adVolumeTimeline || []).map((point: any) => {
+        const entry: Record<string, any> = { month: point.month || "" };
+        brandKeys.forEach((key: string, i: number) => {
+          const fallbackKey = `brand${i + 1}` as keyof typeof point;
+          entry[key] = typeof point[key] === "number" ? point[key] :
+                        typeof point[fallbackKey] === "number" ? point[fallbackKey] : 0;
+        });
+        // Include client brand in timeline
+        entry[clientBrandKey] = typeof point[clientBrandKey] === "number" ? point[clientBrandKey] :
+                                  typeof point.client === "number" ? point.client : 0;
+        return entry;
+      });
 
       const strategicRecommendations = (analysis.strategicRecommendations || []).map((r: any) => ({
         title: r.title || "",
@@ -822,6 +836,32 @@ Return JSON with ALL of these fields:
         color: b.color || "#C2714F",
       }));
 
+      // Build client brand entry for the brands array
+      const clientBrandEntry = {
+        key: clientBrandKey,
+        name: identity.brandName,
+        color: identity.brandColor || "#C2714F",
+        emoji: identity.brandEmoji || "⭐",
+        isClientBrand: true,
+      };
+
+      // Map clientBrandAnalysis from LLM
+      const clientBrandAnalysis = cba ? {
+        brandKey: cba.brandKey || clientBrandKey,
+        brandName: cba.brandName || identity.brandName,
+        adCount: typeof cba.adCount === "number" ? cba.adCount : 0,
+        avgRunDays: typeof cba.avgRunDays === "number" ? cba.avgRunDays : 14,
+        topAngle: cba.topAngle || "",
+        dominantFormat: cba.dominantFormat || "Image",
+        toneOfVoice: cba.toneOfVoice || "",
+        primaryCTA: cba.primaryCTA || "",
+        uniqueStrength: cba.uniqueStrength || "",
+        whatsWorking: Array.isArray(cba.whatsWorking) ? cba.whatsWorking : [],
+        whatsNotWorking: Array.isArray(cba.whatsNotWorking) ? cba.whatsNotWorking : [],
+        positionVsCompetitors: cba.positionVsCompetitors || "",
+        biggestOpportunity: cba.biggestOpportunity || "",
+      } : null;
+
       const reportConfig = {
         clientName: identity.brandName,
         reportTitle: "Competitor Creative Analysis",
@@ -832,9 +872,9 @@ Return JSON with ALL of these fields:
         executiveSummary: analysis.executiveSummary || "",
         strategicNarrative: analysis.strategicNarrative || "",
         categoryContext: analysis.categoryContext || "",
-        brands,
+        brands: [clientBrandEntry, ...brands],
         angles,
-        ads: allMappedAds.slice(0, 10),
+        ads: allMappedAds.slice(0, 12),
         takeaways,
         psychTriggers,
         topHooks,
@@ -845,6 +885,7 @@ Return JSON with ALL of these fields:
         adVolumeTimeline,
         strategicRecommendations,
         executiveSummaryBullets,
+        clientBrandAnalysis,
         _meta: {
           brandName: identity.brandName,
           category: identity.category,

@@ -193,3 +193,21 @@
 - [x] Added graceful fallback (brand placeholder + Open on Meta button) when iframe fails
 - [x] AI-only cards show styled brand initial placeholder with 'AI-Generated Preview' label
 - [x] Verified rendering in browser — all 10 ad cards display correctly
+
+## 3–4 Competitors + Client Brand Analysis
+- [x] Audit current research.ts prompt and schema to understand competitor count and brand data flow
+- [x] Update LLM prompt to always generate 3–4 competitors (not 2)
+- [x] Add clientBrandAnalysis to LLM schema (positionVsCompetitors, biggestOpportunity, whatsWorking, whatsNotWorking)
+- [x] Update WizardBrand/ReportConfig types to include isClientBrand flag and clientBrandAnalysis
+- [x] Update Brands Under Analysis section to show client brand with "Your Brand" badge
+- [x] Update Brand Deep Dive section to include client brand card with "Your Brand" styling
+- [x] Highlight client brand row in Brand Comparison Table with YOU badge
+- [x] Add dedicated "Where [Brand] Stands" section using clientBrandAnalysis
+- [x] Test full report generation — verified 4 competitors + client brand in all sections
+
+## Remove AI-Generated Ad Cards from Swipe File
+- [x] Remove swipeFileAds from both LLM prompts (real-ads and AI-only)
+- [x] Remove swipeFileAds from the JSON schema
+- [x] Remove AI-only ad fallback mapping in server (section 4b)
+- [x] Update Swipe File UI to show "Real Ads Unavailable" state when no real ads exist
+- [x] Ensure real Meta ads (from competitorAds loop) still populate the Swipe File normally
