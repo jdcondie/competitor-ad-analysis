@@ -126,16 +126,16 @@ function StepUrl({
   const [phase, setPhase] = useState<"idle" | "extracting" | "approving" | "generating" | "done" | "error">("idle");
   const [statusMsg, setStatusMsg] = useState("");
   const [identity, setIdentity] = useState<any>(null);
-  // Editable competitor list for approval step
-  const [editableCompetitors, setEditableCompetitors] = useState<string[]>([]);
+  // Editable competitor list for approval step — stores full competitor objects
+  const [editableCompetitors, setEditableCompetitors] = useState<any[]>([]);
 
   const extractMutation = trpc.research.extractBrand.useMutation({
     onSuccess: (data) => {
       if (data.success && data.identity) {
         setIdentity(data.identity);
-        // Populate editable competitor list from extracted identity
-        const names: string[] = (data.identity.competitors || []).map((c: any) => c.name).filter(Boolean);
-        setEditableCompetitors(names);
+        // Populate editable competitor list from extracted identity — store full objects
+        const competitors = (data.identity.competitors || []).filter((c: any) => c.name);
+        setEditableCompetitors(competitors);
         setPhase("approving");
         setStatusMsg("Brand identified! Review and edit the competitors below, then generate your report.");
         toast.success(`Brand identified: ${data.identity.brandName}`);
@@ -213,12 +213,13 @@ function StepUrl({
 
   const handleGenerate = () => {
     if (!identity) { toast.error("Please extract brand info first"); return; }
-    // Use the user-approved/edited competitor list
-    const competitorNames = editableCompetitors.filter(Boolean);
-    // Merge edited competitor names back into identity
+    // Use the user-approved/edited competitor list (full objects)
+    const competitors = editableCompetitors.filter((c: any) => c && c.name);
+    const competitorNames = competitors.map((c: any) => c.name);
+    // Merge edited competitors back into identity
     const updatedIdentity = {
       ...identity,
-      competitors: competitorNames.map((name: string) => ({ name })),
+      competitors,
     };
     setPhase("generating");
     const initMsg = "Fetching real ads from Meta Ads Library...";
@@ -348,15 +349,16 @@ function StepUrl({
 
               {/* Editable competitor list */}
               <div className="space-y-2 mb-4">
-                {editableCompetitors.map((name, i) => (
+                {editableCompetitors.map((competitor, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <span className="w-5 h-5 rounded-full bg-[#F0EDE8] text-xs font-bold flex items-center justify-center flex-shrink-0" style={{ color: '#C2714F' }}>{i + 1}</span>
                     <input
                       type="text"
-                      value={name}
+                      value={competitor?.name || ''}
                       onChange={e => {
                         const updated = [...editableCompetitors];
-                        updated[i] = e.target.value;
+                        // Update name while preserving all other fields
+                        updated[i] = { ...(updated[i] || {}), name: e.target.value };
                         setEditableCompetitors(updated);
                       }}
                       disabled={phase === "generating" || phase === "done"}
@@ -380,7 +382,7 @@ function StepUrl({
               {/* Add competitor button */}
               {phase === "approving" && editableCompetitors.length < 5 && (
                 <button
-                  onClick={() => setEditableCompetitors([...editableCompetitors, ""])}
+                  onClick={() => setEditableCompetitors([...editableCompetitors, { name: '', key: '', emoji: '🏢', color: '#888888', searchTerms: '' }])}
                   className="text-xs font-medium flex items-center gap-1 mb-4 hover:opacity-80 transition-opacity"
                   style={{ color: '#C2714F' }}
                 >
@@ -412,7 +414,7 @@ function StepUrl({
 
               <button
                 onClick={handleGenerate}
-                disabled={!identity || phase === "generating" || phase === "done" || editableCompetitors.filter(Boolean).length === 0}
+                disabled={!identity || phase === "generating" || phase === "done" || editableCompetitors.filter((c: any) => c?.name).length === 0}
                 className="w-full py-3.5 bg-[#C2714F] text-white rounded-xl text-sm font-semibold hover:bg-[#a85e3e] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
                 {phase === "generating" ? (

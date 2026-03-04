@@ -225,3 +225,8 @@
 - [x] Users can edit competitor names, add new ones, or remove any before proceeding
 - [x] Step numbers updated: 1 = Brand Analysis, 2 = Approve Competitors, 3 = Generate Report
 - [x] Generate button disabled if no competitors approved
+
+## Bug Fix: Wizard Competitor Mutation Error
+- [x] Fix handleGenerate to reconstruct full competitor objects (key, emoji, color, searchTerms) from editableCompetitors string array
+- [x] Store full competitor objects in editableCompetitors state instead of just names
+- [x] Make key/emoji/color/searchTerms optional in server Zod schema with defaults for user-added competitors

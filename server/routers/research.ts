@@ -271,10 +271,10 @@ ${trimmedText}`;
           competitors: z.array(
             z.object({
               name: z.string(),
-              key: z.string(),
-              emoji: z.string(),
-              color: z.string(),
-              searchTerms: z.string(),
+              key: z.string().optional().default(''),
+              emoji: z.string().optional().default('\ud83c\udfe2'),
+              color: z.string().optional().default('#888888'),
+              searchTerms: z.string().optional().default(''),
             })
           ),
         }),
