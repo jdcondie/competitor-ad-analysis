@@ -123,16 +123,21 @@ function StepUrl({
   onNavigate?: (path: string) => void;
 }) {
   const [url, setUrl] = useState("");
-  const [phase, setPhase] = useState<"idle" | "extracting" | "extracted" | "generating" | "done" | "error">("idle");
+  const [phase, setPhase] = useState<"idle" | "extracting" | "approving" | "generating" | "done" | "error">("idle");
   const [statusMsg, setStatusMsg] = useState("");
   const [identity, setIdentity] = useState<any>(null);
+  // Editable competitor list for approval step
+  const [editableCompetitors, setEditableCompetitors] = useState<string[]>([]);
 
   const extractMutation = trpc.research.extractBrand.useMutation({
     onSuccess: (data) => {
       if (data.success && data.identity) {
         setIdentity(data.identity);
-        setPhase("extracted");
-        setStatusMsg("Brand identified! Click \"Fetch Real Ads\" below to pull competitor ads from Meta Ads Library.");
+        // Populate editable competitor list from extracted identity
+        const names: string[] = (data.identity.competitors || []).map((c: any) => c.name).filter(Boolean);
+        setEditableCompetitors(names);
+        setPhase("approving");
+        setStatusMsg("Brand identified! Review and edit the competitors below, then generate your report.");
         toast.success(`Brand identified: ${data.identity.brandName}`);
       } else {
         setPhase("error");
@@ -208,14 +213,20 @@ function StepUrl({
 
   const handleGenerate = () => {
     if (!identity) { toast.error("Please extract brand info first"); return; }
-    const competitorNames: string[] = (identity.competitors || []).map((c: any) => c.name).filter(Boolean);
+    // Use the user-approved/edited competitor list
+    const competitorNames = editableCompetitors.filter(Boolean);
+    // Merge edited competitor names back into identity
+    const updatedIdentity = {
+      ...identity,
+      competitors: competitorNames.map((name: string) => ({ name })),
+    };
     setPhase("generating");
     const initMsg = "Fetching real ads from Meta Ads Library...";
     setStatusMsg(initMsg);
     onGeneratingChange?.(true, initMsg, competitorNames);
     // Progress messages timed to match the faster parallel pipeline (~15-25s total)
     const progressMsgs = [
-      { ms: 1500, msg: `Fetching ads for ${identity.competitors?.[0]?.name || "Competitor 1"} & ${identity.competitors?.[1]?.name || "Competitor 2"} in parallel...` },
+      { ms: 1500, msg: `Fetching ads for ${competitorNames[0] || "Competitor 1"} & ${competitorNames[1] || "Competitor 2"} in parallel...` },
       { ms: 6000, msg: "Analyzing real ad copy with AI..." },
       { ms: 11000, msg: "Extracting messaging angles & hooks..." },
       { ms: 16000, msg: "Synthesizing key takeaways..." },
@@ -227,29 +238,21 @@ function StepUrl({
         onGeneratingChange?.(true, msg, competitorNames);
       }, ms);
     });
-    generateMutation.mutate({ identity });
+    generateMutation.mutate({ identity: updatedIdentity });
   };
 
   const isLoading = phase === "extracting" || phase === "generating";
 
   return (
     <div className="space-y-6">
-      {/* Hero explainer */}
+      {/* Hero explainer — 3-step grid ABOVE heading */}
       <div className="rounded-2xl p-7" style={{ background: 'linear-gradient(135deg, #F0EDE8, #EDE8E0)', color: '#1A1714' }}>
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-3xl">✦</span>
-          <div>
-            <h2 className="text-xl font-bold leading-tight" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
-              AI-Powered Report Generator
-            </h2>
-            <p className="text-sm" style={{ color: '#5A4E44' }}>Paste your brand URL — get a report built from real competitor ads in the Meta Ads Library</p>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+        {/* 3-step grid first */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-5">
           {[
             { icon: "🔍", label: "Step 1: Brand Analysis", desc: "Paste your URL to identify brand, category & competitors" },
-            { icon: "📊", label: "Step 2: Generate Report", desc: "AI fetches real ads from Meta Ads Library and extracts angles, hooks & takeaways" },
-            { icon: "✦", label: "Step 3: Review & Launch", desc: "Review the pre-filled report, adjust as needed, and launch" },
+            { icon: "📊", label: "Step 2: Approve Competitors", desc: "Review and edit the AI-identified competitors before generating" },
+            { icon: "✶", label: "Step 3: Generate Report", desc: "AI fetches real ads from Meta Ads Library and extracts angles, hooks & takeaways" },
           ].map(item => (
             <div key={item.label} className="rounded-xl p-3" style={{ background: '#F7F5F0' }}>
               <div className="flex items-center gap-2 mb-1">
@@ -259,6 +262,16 @@ function StepUrl({
               <p className="text-xs leading-relaxed" style={{ color: '#5A4E44' }}>{item.desc}</p>
             </div>
           ))}
+        </div>
+        {/* Heading below the grid */}
+        <div className="flex items-center gap-3">
+          <span className="text-3xl">✶</span>
+          <div>
+            <h2 className="text-xl font-bold leading-tight" style={{ fontFamily: 'var(--font-display)', letterSpacing: '-0.02em' }}>
+              AI-Powered Competitor Creative Analysis
+            </h2>
+            <p className="text-sm" style={{ color: '#5A4E44' }}>Paste your brand URL — get a report built from real competitor ads in the Meta Ads Library</p>
+          </div>
         </div>
       </div>
 
@@ -281,12 +294,12 @@ function StepUrl({
             onChange={e => setUrl(e.target.value)}
             onKeyDown={e => e.key === "Enter" && phase === "idle" && handleExtract()}
             placeholder="https://yourbrand.com"
-            disabled={isLoading || phase === "extracted" || phase === "done"}
+            disabled={isLoading || phase === "approving" || phase === "done"}
             className="flex-1 px-4 py-3 text-sm rounded-xl border-2 border-[#E5E0D8] bg-white text-[#1A1714] placeholder:text-[#9C8E80] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/30 focus:border-[#C2714F] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-mono"
           />
           <button
             onClick={phase === "idle" || phase === "error" ? handleExtract : undefined}
-            disabled={isLoading || phase === "extracted" || phase === "done" || !url}
+            disabled={isLoading || phase === "approving" || phase === "done" || !url}
             className="px-6 py-3 bg-[#C2714F] text-white rounded-xl text-sm font-semibold hover:bg-[#a85e3e] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2 whitespace-nowrap"
           >
             {phase === "extracting" ? (
@@ -297,7 +310,7 @@ function StepUrl({
                 </svg>
                 Identifying...
               </>
-            ) : phase === "extracted" || phase === "generating" || phase === "done" ? (
+            ) : phase === "approving" || phase === "generating" || phase === "done" ? (
               <>✓ Brand Identified</>
             ) : (
               <>🔍 Identify Brand</>
@@ -313,29 +326,93 @@ function StepUrl({
             {statusMsg}
           </p>
         )}
-        {identity && (
-          <div className="mt-3 rounded-xl p-3 text-sm" style={{ background: '#F0FAF5', border: '1px solid #A8D5B8' }}>
-            <p className="font-semibold mb-1" style={{ color: '#2D7A4F' }}>✓ Brand identified: {identity.brandName}</p>
-            <p className="text-xs" style={{ color: '#3D8A5F' }}>Category: {identity.category} · Competitors found: {(identity.competitors || []).map((c: any) => c.name).join(", ")}</p>
-          </div>
-        )}
       </Card>
+
+      {/* PHASE 1.5: Competitor Approval & Edit */}
+      <AnimatePresence>
+        {(phase === "approving" || phase === "generating" || phase === "done") && identity && (
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <Card className="p-6">
+              <div className="flex items-center gap-2 mb-1">
+                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                  phase === "generating" || phase === "done" ? "bg-green-500 text-white" : "bg-[#C2714F] text-white"
+                }`}>2</div>
+                <p className="font-semibold text-sm" style={{ color: '#1A1714' }}>Review & Approve Competitors</p>
+                {(phase === "generating" || phase === "done") && (
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ color: '#2D7A4F', background: '#E8F5EE' }}>✓ Approved</span>
+                )}
+              </div>
+              <p className="text-xs mb-4" style={{ color: '#6B5E52' }}>
+                <strong style={{ color: '#1A1714' }}>{identity.brandName}</strong> · {identity.category}
+              </p>
+
+              {/* Editable competitor list */}
+              <div className="space-y-2 mb-4">
+                {editableCompetitors.map((name, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-[#F0EDE8] text-xs font-bold flex items-center justify-center flex-shrink-0" style={{ color: '#C2714F' }}>{i + 1}</span>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={e => {
+                        const updated = [...editableCompetitors];
+                        updated[i] = e.target.value;
+                        setEditableCompetitors(updated);
+                      }}
+                      disabled={phase === "generating" || phase === "done"}
+                      placeholder={`Competitor ${i + 1} name`}
+                      className="flex-1 px-3 py-2 text-sm rounded-lg border border-[#E5E0D8] bg-white text-[#1A1714] placeholder:text-[#9C8E80] focus:outline-none focus:ring-2 focus:ring-[#C2714F]/20 focus:border-[#C2714F] transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                    />
+                    {phase === "approving" && (
+                      <button
+                        onClick={() => setEditableCompetitors(editableCompetitors.filter((_, idx) => idx !== i))}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-sm hover:bg-red-50 transition-colors flex-shrink-0"
+                        style={{ color: '#B5546A', border: '1px solid #E5E0D8' }}
+                        title="Remove competitor"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Add competitor button */}
+              {phase === "approving" && editableCompetitors.length < 5 && (
+                <button
+                  onClick={() => setEditableCompetitors([...editableCompetitors, ""])}
+                  className="text-xs font-medium flex items-center gap-1 mb-4 hover:opacity-80 transition-opacity"
+                  style={{ color: '#C2714F' }}
+                >
+                  <span className="text-base leading-none">+</span> Add another competitor
+                </button>
+              )}
+
+              {phase === "approving" && (
+                <div className="rounded-xl p-3 text-xs mb-2" style={{ background: '#FBF8F5', border: '1px solid #E5E0D8', color: '#6B5E52' }}>
+                  💡 Edit competitor names to match how they appear in Meta Ads Library for best results. You can add up to 5 competitors.
+                </div>
+              )}
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* PHASE 2: Generate Report */}
       <AnimatePresence>
-        {(phase === "extracted" || phase === "generating" || phase === "done") && (
+        {(phase === "approving" || phase === "generating" || phase === "done") && (
           <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
             <Card className="p-6">
               <div className="flex items-center gap-2 mb-4">
                 <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                   phase === "done" ? "bg-green-500 text-white" : "bg-[#C2714F] text-white"
-                }`}>2</div>
+                }`}>3</div>
                 <p className="font-semibold text-sm" style={{ color: '#1A1714' }}>Fetch Real Ads & Generate Report</p>
               </div>
 
               <button
                 onClick={handleGenerate}
-                disabled={!identity || phase === "generating" || phase === "done"}
+                disabled={!identity || phase === "generating" || phase === "done" || editableCompetitors.filter(Boolean).length === 0}
                 className="w-full py-3.5 bg-[#C2714F] text-white rounded-xl text-sm font-semibold hover:bg-[#a85e3e] disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2"
               >
                 {phase === "generating" ? (
@@ -349,7 +426,7 @@ function StepUrl({
                 ) : phase === "done" ? (
                   <>✓ Report Generated — Review Below</>
                 ) : (
-                  <>✦ Fetch Real Ads & Generate Report</>
+                  <>✶ Fetch Real Ads & Generate Report</>
                 )}
               </button>
               {phase === "generating" && (

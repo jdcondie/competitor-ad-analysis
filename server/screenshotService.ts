@@ -1,6 +1,7 @@
 /**
  * screenshotService.ts
  * Captures screenshots of Meta Ads Library ad snapshot pages using Playwright.
+ * Targets the actual ad creative image/video thumbnail, not the full page.
  * Uploads the captured image to S3 CDN and returns a public URL.
  */
 
@@ -11,8 +12,8 @@ const CHROMIUM_PATH = "/usr/bin/chromium-browser";
 
 /**
  * Captures a screenshot of a Meta Ads Library ad snapshot URL.
- * Waits for the ad creative to render, then crops to the ad card area.
- * Returns a CDN URL for the uploaded screenshot.
+ * Specifically targets the ad creative image/video element for a clean thumbnail.
+ * Returns a CDN URL for the uploaded screenshot, or null on failure.
  */
 export async function captureAdSnapshot(
   snapshotUrl: string,
@@ -32,11 +33,13 @@ export async function captureAdSnapshot(
         "--no-zygote",
         "--single-process",
         "--disable-extensions",
+        "--disable-background-networking",
+        "--disable-default-apps",
       ],
     });
 
     const context = await browser.newContext({
-      viewport: { width: 1280, height: 900 },
+      viewport: { width: 500, height: 800 },
       userAgent:
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
       locale: "en-US",
@@ -44,61 +47,86 @@ export async function captureAdSnapshot(
 
     const page = await context.newPage();
 
-    // Block unnecessary resources to speed up load
+    // Block fonts and tracking to speed up load
     await page.route("**/*.{woff,woff2,ttf,otf}", (route) => route.abort());
+    await page.route("**/analytics*", (route) => route.abort());
+    await page.route("**/pixel*", (route) => route.abort());
 
     await page.goto(snapshotUrl, {
-      waitUntil: "networkidle",
-      timeout: 30000,
+      waitUntil: "domcontentloaded",
+      timeout: 25000,
     });
 
-    // Wait for the ad creative container to appear
-    // Meta Ads Library snapshot pages render the ad inside an iframe or a specific div
-    await page.waitForTimeout(3000);
+    // Wait for images to load
+    await page.waitForTimeout(4000);
 
-    // Try to find the ad creative element — Meta uses different selectors
     let screenshotBuffer: Buffer | null = null;
 
-    // Strategy 1: Look for the main ad card container
-    const adCardSelectors = [
+    // Strategy 1: Find the actual ad creative image element
+    // Meta renders the ad creative in an img tag inside the ad preview container
+    const creativeImageSelectors = [
+      // Direct image inside the ad preview
+      "img[src*='fbcdn.net']",
+      "img[src*='fbsbx.com']",
+      "img[src*='cdninstagram.com']",
+      // Meta ad preview containers
+      '[data-testid="ad-archive-preview"] img',
       '[data-testid="ad-archive-preview"]',
-      ".x1lliihq", // Meta's ad preview class
-      "._8jh2",
-      "._7jyr",
-      '[role="main"]',
+      // Video thumbnail
+      "video",
+      // Fallback containers
+      "._7jyr img",
+      "._8jh2 img",
+      ".x1lliihq img",
     ];
 
-    for (const selector of adCardSelectors) {
+    for (const selector of creativeImageSelectors) {
       try {
-        const element = await page.$(selector);
-        if (element) {
+        const elements = await page.$$(selector);
+        for (const element of elements) {
           const box = await element.boundingBox();
-          if (box && box.width > 100 && box.height > 100) {
-            screenshotBuffer = await element.screenshot({
+          if (box && box.width >= 200 && box.height >= 150) {
+            screenshotBuffer = (await element.screenshot({
               type: "jpeg",
-              quality: 85,
-            }) as Buffer;
-            break;
+              quality: 90,
+            })) as Buffer;
+            if (screenshotBuffer && screenshotBuffer.length > 10000) {
+              break;
+            }
+            screenshotBuffer = null;
           }
         }
+        if (screenshotBuffer) break;
       } catch {
         // Try next selector
       }
     }
 
-    // Strategy 2: Screenshot the full page viewport if no specific element found
+    // Strategy 2: Screenshot the ad preview area (top portion of page where creative appears)
     if (!screenshotBuffer) {
-      // Scroll to top and take a viewport screenshot
+      try {
+        // The ad creative typically appears in the top 500px of the snapshot page
+        screenshotBuffer = (await page.screenshot({
+          type: "jpeg",
+          quality: 88,
+          clip: { x: 0, y: 0, width: 500, height: 500 },
+        })) as Buffer;
+      } catch {
+        // ignore
+      }
+    }
+
+    // Strategy 3: Full page screenshot as last resort
+    if (!screenshotBuffer || screenshotBuffer.length < 8000) {
       await page.evaluate(() => window.scrollTo(0, 0));
-      screenshotBuffer = await page.screenshot({
+      screenshotBuffer = (await page.screenshot({
         type: "jpeg",
         quality: 85,
-        clip: { x: 0, y: 0, width: 600, height: 700 },
-      }) as Buffer;
+        clip: { x: 0, y: 0, width: 500, height: 600 },
+      })) as Buffer;
     }
 
     if (!screenshotBuffer || screenshotBuffer.length < 5000) {
-      // Screenshot too small — likely a blank/error page
       return null;
     }
 
@@ -112,13 +140,13 @@ export async function captureAdSnapshot(
     return null;
   } finally {
     if (browser) {
-      await browser.close();
+      await browser.close().catch(() => {});
     }
   }
 }
 
 /**
- * Captures screenshots for multiple ads in parallel (max 3 concurrent).
+ * Captures screenshots for multiple ads sequentially (to avoid memory issues).
  * Returns a map of adId -> CDN URL (or null if capture failed).
  */
 export async function captureAdScreenshots(
@@ -126,18 +154,13 @@ export async function captureAdScreenshots(
 ): Promise<Record<string, string | null>> {
   const results: Record<string, string | null> = {};
 
-  // Process in batches of 3 to avoid overwhelming the server
-  const batchSize = 3;
-  for (let i = 0; i < ads.length; i += batchSize) {
-    const batch = ads.slice(i, i + batchSize);
-    const batchResults = await Promise.all(
-      batch.map(async (ad) => {
-        const url = await captureAdSnapshot(ad.snapshotUrl, ad.id);
-        return { id: ad.id, url };
-      })
-    );
-    for (const { id, url } of batchResults) {
-      results[id] = url;
+  // Process sequentially to avoid memory pressure from multiple Chromium instances
+  for (const ad of ads) {
+    try {
+      const url = await captureAdSnapshot(ad.snapshotUrl, ad.id);
+      results[ad.id] = url;
+    } catch {
+      results[ad.id] = null;
     }
   }
 

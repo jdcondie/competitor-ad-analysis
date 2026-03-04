@@ -111,35 +111,39 @@ const SectionHeader = ({ eyebrow, title, subtitle }: { eyebrow: string; title: s
 );
 
 // ─── FORMAT BADGE ─────────────────────────────────────────────────────────────
-const FormatBadge = ({ format }: { format: string }) => {
-  const isVideo = format === "Video";
-  const isCarousel = format === "Carousel";
+const FormatBadge = ({ format, small }: { format: string; small?: boolean }) => {
+  const isVideo = format?.toLowerCase().includes("video");
+  const isCarousel = format?.toLowerCase().includes("carousel");
+  const label = format || "Image";
+  const sz = small ? "8" : "10";
   return (
     <span
-      className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full"
+      className="inline-flex items-center gap-1 font-semibold rounded-full"
       style={{
+        fontSize: small ? "10px" : "11px",
+        padding: small ? "1px 6px" : "2px 8px",
         background: isVideo ? "#EEF3FC" : isCarousel ? "#EDF5F0" : "#F5F0FF",
         color: isVideo ? T.blue : isCarousel ? T.green : "#6B4FBB",
         border: `1px solid ${isVideo ? T.blueBorder : isCarousel ? T.greenBorder : "#D4C5F5"}`,
       }}
     >
       {isVideo ? (
-        <svg width="9" height="9" viewBox="0 0 12 12" fill="currentColor">
+        <svg width={sz} height={sz} viewBox="0 0 12 12" fill="currentColor">
           <path d="M2 2l8 4-8 4V2z" />
         </svg>
       ) : isCarousel ? (
-        <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg width={sz} height={sz} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
           <rect x="1" y="2" width="4" height="8" rx="0.5" />
           <rect x="7" y="2" width="4" height="8" rx="0.5" />
         </svg>
       ) : (
-        <svg width="9" height="9" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <svg width={sz} height={sz} viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
           <rect x="1" y="1" width="10" height="10" rx="1" />
           <circle cx="4" cy="4" r="1" fill="currentColor" stroke="none" />
           <path d="M1 8l3-3 2 2 2-2 3 3" />
         </svg>
       )}
-      {format}
+      {label}
     </span>
   );
 };
@@ -148,15 +152,17 @@ const FormatBadge = ({ format }: { format: string }) => {
 const AdCard = ({ ad, brands, index }: { ad: WizardAd; brands: WizardBrand[]; index: number }) => {
   const brand = brands.find(b => b.key === ad.brandKey);
   const [expanded, setExpanded] = React.useState(false);
+  const [imgError, setImgError] = React.useState(false);
   const [iframeLoading, setIframeLoading] = React.useState(true);
   const [iframeError, setIframeError] = React.useState(false);
   const isActive = ad.status === "Active";
   const cardNum = String(index + 1).padStart(2, "0");
 
-  // Determine if we have a real Meta snapshot URL (not an AI-only card)
-  const hasMetaPreview = !!(ad.metaUrl && ad.metaUrl.includes("facebook.com"));
+  // Priority: CDN screenshot > Meta iframe > placeholder
+  const hasThumbnail = !!(ad.thumbnailUrl && !imgError);
+  const hasMetaPreview = !hasThumbnail && !!(ad.metaUrl && ad.metaUrl.includes("facebook.com"));
 
-  // Build a gradient placeholder for AI-only cards
+  // Build a gradient placeholder for cards without real thumbnails
   const placeholderGradient = brand
     ? `linear-gradient(135deg, ${brand.color}22 0%, ${brand.color}08 100%)`
     : `linear-gradient(135deg, ${T.bgAlt} 0%, ${T.bg} 100%)`;

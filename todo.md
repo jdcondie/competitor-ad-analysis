@@ -211,3 +211,17 @@
 - [x] Remove AI-only ad fallback mapping in server (section 4b)
 - [x] Update Swipe File UI to show "Real Ads Unavailable" state when no real ads exist
 - [x] Ensure real Meta ads (from competitorAds loop) still populate the Swipe File normally
+
+## Real Ad Thumbnails + Reference Card Redesign
+- [ ] Fix Playwright screenshot service to capture real ad creative from ad_snapshot_url
+- [ ] Store screenshots as CDN images via storagePut, embed thumbnailUrl in ad card data
+- [ ] Redesign AdCard to match reference: brand-colored tag, format badge, discount badge, real thumbnail with format overlay badge, headline, expandable body copy, Angle/CTA/Hook columns, platform tags, View on Meta button
+- [ ] Add 2-column grid layout for ad cards (matching reference)
+- [ ] Test end-to-end: new report generation → screenshot capture → real thumbnails in cards
+
+## Wizard Visual Editor Changes
+- [x] Move 3-step explainer grid above the "AI-Powered Competitor Creative Analysis" heading
+- [x] Add competitor approval/edit step: after brand identification, show editable competitor list before generating report
+- [x] Users can edit competitor names, add new ones, or remove any before proceeding
+- [x] Step numbers updated: 1 = Brand Analysis, 2 = Approve Competitors, 3 = Generate Report
+- [x] Generate button disabled if no competitors approved
